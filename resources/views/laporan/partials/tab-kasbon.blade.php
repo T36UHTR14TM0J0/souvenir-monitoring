@@ -138,7 +138,8 @@
                             <form action="{{ route('pengeluaran.toggle-kasbon', $kb->id) }}" method="POST" style="display: inline-block;">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="btn btn-sm {{ $kb->status_kasbon === 'lunas' ? 'btn-outline-warning' : 'btn-outline-success' }}" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" title="Klik untuk ubah status">
+                                <button type="submit" class="btn btn-sm {{ $kb->status_kasbon === 'lunas' ? 'btn-outline-warning' : 'btn-outline-success' }}" style="font-size: 0.75rem; font-weight: 600; border-radius: 0.375rem; padding: 0.25rem 0.625rem;" title="Klik untuk ubah status">
+                                    <i class="fas {{ $kb->status_kasbon === 'lunas' ? 'fa-undo' : 'fa-check' }} me-1"></i>
                                     {{ $kb->status_kasbon === 'lunas' ? 'Tandai Belum' : 'Tandai Lunas' }}
                                 </button>
                             </form>

@@ -9,6 +9,7 @@
         --sidebar-bg-2: #1f3a5c;
         --sidebar-bg-3: #1a304d;
         --sidebar-cream: #fbfaf7;
+        --danger-color: #dc2626;
         --gray-50: #f9fafb;
         --gray-100: #f3f4f6;
         --gray-200: #e5e7eb;
@@ -44,23 +45,23 @@
     .page-title-icon {
         width: 40px;
         height: 40px;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: #fff;
-        border: 1px solid rgba(16, 185, 129, 0.3);
+        background: linear-gradient(135deg, var(--sidebar-bg-1) 0%, var(--sidebar-bg-3) 100%);
+        color: var(--sidebar-cream);
+        border: 1px solid rgba(95, 143, 194, 0.3);
         border-radius: 0.625rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         font-size: 1rem;
         flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 4px 12px rgba(38, 71, 111, 0.25);
     }
 
     .page-subtitle { font-size: 0.875rem; color: var(--gray-500); margin-bottom: 0; }
 
     .btn-primary-custom {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        border: 1px solid #10b981;
+        background: linear-gradient(135deg, var(--sidebar-bg-1) 0%, var(--sidebar-bg-3) 100%);
+        border: 1px solid var(--sidebar-bg-1);
         color: #fff;
         font-weight: 500;
         padding: 0.625rem 1.125rem;
@@ -70,15 +71,36 @@
         align-items: center;
         gap: 0.5rem;
         font-size: 0.875rem;
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 2px 8px rgba(38, 71, 111, 0.25);
         text-decoration: none;
         height: 42px;
     }
 
     .btn-primary-custom:hover {
-        background: #047857;
+        background: linear-gradient(135deg, var(--sidebar-bg-2) 0%, var(--sidebar-bg-3) 100%);
+        border-color: var(--sidebar-bg-2);
         color: #fff;
         transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(38, 71, 111, 0.35);
+    }
+
+    .btn-reset {
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--gray-200);
+        background: #fff;
+        color: var(--gray-600);
+        border-radius: 0.5rem;
+        transition: all 0.18s ease;
+        text-decoration: none;
+        flex-shrink: 0;
+    }
+    .btn-reset:hover {
+        background: var(--gray-50);
+        color: var(--gray-900);
     }
 
     .kpi-card {
@@ -130,9 +152,9 @@
         height: 42px;
     }
     .form-control-modern:focus, .form-select-modern:focus {
-        border-color: #10b981;
+        border-color: #26476f;
         outline: none;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+        box-shadow: 0 0 0 3px rgba(38, 71, 111, 0.12);
     }
 
     .table-modern thead th {
@@ -153,22 +175,23 @@
     }
 
     .btn-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 0.375rem;
+        width: 34px;
+        height: 34px;
+        border-radius: 0.5rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border: none;
+        border: 1px solid transparent;
         background: transparent;
-        transition: all 0.15s ease;
-        font-size: 0.8125rem;
+        transition: all 0.18s ease;
+        font-size: 0.8rem;
         text-decoration: none;
+        cursor: pointer;
     }
-    .btn-edit   { color: #d97706; }
-    .btn-edit:hover { background-color: #fef3c7; color: #92400e; }
-    .btn-delete { color: #dc2626; }
-    .btn-delete:hover { background-color: #fee2e2; color: #991b1b; }
+    .btn-icon-edit       { color: #2563eb; }
+    .btn-icon-edit:hover { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+    .btn-icon-delete     { color: #dc2626; }
+    .btn-icon-delete:hover { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
 </style>
 @endpush
 
@@ -224,7 +247,7 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="kpi-label">Total Semua Kas Masuk Bulan Ini</div>
-                        <div class="kpi-value text-navy">Rp {{ number_format($totalBulanIni, 0, ',', '.') }}</div>
+                        <div class="kpi-value" style="color: #26476f;">Rp {{ number_format($totalBulanIni, 0, ',', '.') }}</div>
                     </div>
                     <div class="kpi-icon kpi-icon-navy">
                         <i class="fas fa-wallet"></i>
@@ -260,7 +283,7 @@
                             <i class="fas fa-filter"></i>
                             <span>Filter</span>
                         </button>
-                        <a href="{{ route('kas-masuk.index') }}" class="btn btn-outline-secondary" style="height:42px; display:inline-flex; align-items:center;">
+                        <a href="{{ route('kas-masuk.index') }}" class="btn-reset" title="Reset Filter">
                             <i class="fas fa-redo"></i>
                         </a>
                     </div>
@@ -300,17 +323,17 @@
                             </td>
                             <td><strong>{{ $km->sumber }}</strong></td>
                             <td>{{ $km->keterangan }}</td>
-                            <td class="text-end text-green" style="font-weight: 700; font-size: 1rem;">
+                            <td class="text-end" style="font-weight: 700; font-size: 0.95rem; color: #059669;">
                                 + Rp {{ number_format($km->jumlah, 0, ',', '.') }}
                             </td>
                             <td class="pe-4 text-end">
-                                <a href="{{ route('kas-masuk.edit', $km) }}" class="btn-icon btn-edit" title="Edit">
+                                <a href="{{ route('kas-masuk.edit', $km) }}" class="btn-icon btn-icon-edit" title="Edit">
                                     <i class="fas fa-pen"></i>
                                 </a>
                                 <form action="{{ route('kas-masuk.destroy', $km) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Hapus kas masuk ini?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-icon btn-delete" title="Hapus">
+                                    <button type="submit" class="btn-icon btn-icon-delete" title="Hapus">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>

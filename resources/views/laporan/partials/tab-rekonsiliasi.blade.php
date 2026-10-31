@@ -140,8 +140,9 @@
             <i class="fas fa-hand-holding-dollar"></i>
             Riwayat Setoran Kas / Modal Pemilik (Debit)
         </h6>
-        <a href="{{ route('kas-masuk.index') }}" class="btn btn-sm btn-outline-primary" style="font-size:0.75rem;">
-            Lihat Semua Kas Masuk
+        <a href="{{ route('kas-masuk.index') }}" class="btn-primary-custom" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; height: auto;">
+            <i class="fas fa-list"></i>
+            <span>Lihat Semua Kas Masuk</span>
         </a>
     </div>
     <div class="table-responsive">
