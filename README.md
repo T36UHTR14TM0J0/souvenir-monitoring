@@ -1,58 +1,228 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🛍️ Souvenir Monitoring System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi Manajemen & Pemantauan Keuangan, Penjualan, Stok Produk, dan Operasional Toko Souvenir berbasis **Laravel**.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📋 Daftar Isi
+1. [Kebutuhan Sistem (Prerequisites)](#-kebutuhan-sistem-prerequisites)
+2. [Instalasi di Komputer Lokal (Localhost / Laragon / XAMPP)](#-instalasi-di-komputer-lokal-localhost)
+3. [Instalasi di Server Hosting (cPanel / DomaiNesia / Shared Hosting)](#-instalasi-di-server-hosting-cpanel--domainesia)
+4. [Akun Default & Hak Akses (Credentials)](#-akun-default--hak-akses-credentials)
+5. [Struktur Branch Git & Fitur Tambahan](#-struktur-branch-git--fitur-tambahan)
+6. [Daftar Perintah Pemeliharaan (Maintenance Cheat Sheet)](#-daftar-perintah-pemeliharaan)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## ⚙️ Kebutuhan Sistem (Prerequisites)
 
-## Learning Laravel
+* **PHP:** Versi 8.2 atau 8.3 (dengan ekstensi: `pdo_mysql`, `mbstring`, `openssl`, `gd`, `fileinfo`, `zip`)
+* **Composer:** Versi 2.x
+* **Database:** MySQL 8.x atau MariaDB 10.4+
+* **Web Server:** Apache / Nginx / OpenLiteSpeed
+* **Git:** Terpasang di komputer dan server hosting
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 💻 Instalasi di Komputer Lokal (Localhost)
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+Panduan untuk Windows (Laragon / XAMPP), macOS, atau Linux:
 
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
+### 1. Clone Repositori
+Buka terminal / PowerShell dan arahkan ke direktori web server Anda (misal `D:\laragon\www\` atau `C:\xampp\htdocs\`):
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/T36UHTR14TM0J0/souvenir-monitoring.git
+cd souvenir-monitoring
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Pasang Dependensi Composer
+```bash
+composer install
+```
 
-## Contributing
+### 3. Konfigurasi Environment (`.env`)
+Salin file `.env.example` menjadi `.env`:
+```bash
+# Windows PowerShell
+copy .env.example .env
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Linux / macOS / Git Bash
+cp .env.example .env
+```
 
-## Code of Conduct
+Buka file `.env` dan sesuaikan koneksi database MySQL:
+```ini
+APP_NAME="Souvenir Monitoring"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost:8000
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=souvenir_monitoring
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## Security Vulnerabilities
+### 4. Generate Application Key
+```bash
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 5. Buat Database & Jalankan Migrasi + Seeder
+Buat database bernama `souvenir_monitoring` di phpMyAdmin / MySQL client Anda, lalu jalankan:
+```bash
+php artisan migrate --seed
+```
+*Perintah ini akan membuat seluruh tabel dan mengisi akun pengguna default serta data master awal.*
 
-## License
+### 6. Buat Symlink Storage (Penting untuk upload gambar & struk)
+```bash
+php artisan storage:link
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 7. Jalankan Server Lokal
+```bash
+php artisan serve
+```
+Buka browser dan akses: **`http://127.0.0.1:8000`** (atau via Laragon virtual host: `http://souvenir-monitoring.test`).
+
+---
+
+## 🌐 Instalasi di Server Hosting (cPanel / DomaiNesia)
+
+Berikut panduan langkah-demi-langkah memasang aplikasi pada server hosting cPanel:
+
+### Langkah 1: Buat Database MySQL di cPanel
+1. Masuk ke cPanel hosting Anda.
+2. Buka menu **MySQL Databases** / **MySQL Database Wizard**.
+3. Buat database baru (misal: `tokosouv_souvenirdb`).
+4. Buat user database baru (misal: `tokosouv_dbuser`) dan buat password yang kuat.
+5. Hubungkan User ke Database dengan mencentang **ALL PRIVILEGES**.
+
+### Langkah 2: Clone Repositori ke Hosting
+1. Buka menu **Terminal** di cPanel.
+2. Arahkan ke folder tujuan (misal di dalam `public_html` atau root user):
+   ```bash
+   cd ~/public_html
+   git clone https://github.com/T36UHTR14TM0J0/souvenir-monitoring.git
+   cd souvenir-monitoring
+   ```
+   > **Catatan jika Repo Private:**  
+   > Jika meminta username & token, masukkan Personal Access Token (PAT) GitHub Anda atau ubah URL remote dengan token:
+   > `git remote set-url origin https://TOKEN_ANDA@github.com/T36UHTR14TM0J0/souvenir-monitoring.git`
+
+### Langkah 3: Konfigurasi File `.env` di Hosting
+Salin file `.env` dan sesuaikan untuk environment production:
+```bash
+cp .env.example .env
+nano .env   # atau edit melalui File Manager cPanel
+```
+
+Pastikan variabel penting ini diatur:
+```ini
+APP_NAME="Souvenir Monitoring"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=http://tokosouvenirjibranime.my.id/souvenir-monitoring/public
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=tokosouv_souvenirdb
+DB_USERNAME=tokosouv_dbuser
+DB_PASSWORD=PasswordDatabaseAnda
+```
+
+### Langkah 4: Jalankan Perintah Setup Production
+Jalankan rangkaian perintah berikut di Terminal cPanel:
+
+```bash
+# 1. Pasang dependensi tanpa package dev (lebih cepat & aman)
+composer install --no-dev --optimize-autoloader
+
+# 2. Generate Application Key (jika belum ada)
+php artisan key:generate
+
+# 3. Jalankan migrasi dan isi akun default
+php artisan migrate --seed --force
+
+# 4. Hubungkan link storage upload
+php artisan storage:link
+
+# 5. Optimasi performa cache Laravel
+php artisan optimize
+```
+
+### Langkah 5: Pengaturan Akses URL / Document Root
+* **Jika menggunakan Subdomain (Direkomendasikan):**  
+  Arahkan *Document Root* subdomain langsung ke folder `souvenir-monitoring/public`.
+* **Jika menggunakan Subfolder (`public_html/souvenir-monitoring`):**  
+  Akses aplikasi via browser di:  
+  `http://domain-anda.com/souvenir-monitoring/public/index.php/login`
+
+---
+
+## 🔑 Akun Default & Hak Akses (Credentials)
+
+Setelah menjalankan `php artisan db:seed`, sistem telah menyediakan 3 akun default siap pakai:
+
+| Role | Email Login | Password Default | Hak Akses Utama |
+| :--- | :--- | :--- | :--- |
+| **Pemilik (Owner)** | `pemilik@gmail.com` | `Pemilik123!` | Akses penuh ke seluruh menu, laporan laba rugi, keuangan & audit sistem |
+| **Admin** | `admin@gmail.com` | `Admin123!` | Kelola produk, stok barang souvenir, kategori, dan master data |
+| **Kasir** | `kasir@gmail.com` | `Kasir123!` | Mengelola transaksi kasir POS, penjualan, dan cetak struk |
+
+> ⚠️ **PENTING:** Segera ubah password default ini setelah login pertama kali di server production demi keamanan.
+
+---
+
+## 🌿 Struktur Branch Git & Fitur Tambahan
+
+Repositori ini memiliki 2 branch terpisah untuk menjaga stabilitas sistem:
+
+1. **`main` (Production Base):**  
+   Branch utama yang stabil dan menjalankan sistem monitoring souvenir standar.
+2. **`feature/upgrade-keuangan-v2` (Upgrade Keuangan Mini ERP):**  
+   Branch khusus yang memisahkan **3 Kantong Kas** (Bisnis Toko, Kebutuhan Pribadi/Prive Pemilik, dan Kasbon Tim) serta dilengkapi modul *Kas Masuk* modal awal dan laporan keuangan 4 tab.  
+   * Dokumentasi lengkap upgrade ini tersedia di file: [`DOKUMENTASI_FITUR_KEUANGAN.md`](DOKUMENTASI_FITUR_KEUANGAN.md) pada branch tersebut.
+   * Lampiran dokumen PDF resmi: `public/docs/Rincian_Penambahan_Fitur_Keuangan_Rp600rb.pdf`.
+
+**Cara mengaktifkan branch upgrade keuangan di server:**
+```bash
+git checkout feature/upgrade-keuangan-v2
+php artisan migrate --force
+php artisan optimize:clear
+php artisan import:keuangan-2025    # Mengimpor data riil Excel 2025
+```
+
+---
+
+## 🛠️ Daftar Perintah Pemeliharaan
+
+Gunakan perintah-perintah ini untuk perawatan rutin aplikasi:
+
+* **Tarik Update Terbaru dari GitHub:**
+  ```bash
+  git pull origin main
+  php artisan migrate --force
+  php artisan optimize
+  ```
+* **Bersihkan Seluruh Cache Aplikasi (Jika ada error tampilan / route):**
+  ```bash
+  php artisan optimize:clear
+  ```
+* **Simpan Kredensial Git di Server (Biar tidak ditanya username/password):**
+  ```bash
+  git config --global credential.helper store
+  ```
+* **Cek Status Database Migration:**
+  ```bash
+  php artisan migrate:status
+  ```
+
+---
+
+*Dikembangkan untuk Sistem Pemantauan Toko Souvenir.*
