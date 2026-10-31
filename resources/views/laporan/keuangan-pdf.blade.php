@@ -246,7 +246,7 @@
          HEADER
          ============================================ --}}
     <div class="header">
-        <h1>LAPORAN KEUANGAN TOKO SOUVENIR</h1>
+        <h1>LAPORAN KEUANGAN TOKO SOUVENIR JIBRANIME</h1>
         <div class="subtitle">Sistem Monitoring Keuangan</div>
         <div class="periode">
             @php
@@ -839,7 +839,7 @@
     </table>
 
     <div class="footer">
-        <div>Laporan ini digenerate secara otomatis oleh Sistem Monitoring Keuangan Toko Souvenir</div>
+        <div>Laporan ini digenerate secara otomatis oleh Sistem Monitoring Keuangan Toko Souvenir Jibranime</div>
         <div>Dicetak pada: {{ now()->translatedFormat('d F Y, H:i:s') }} WIB</div>
     </div>
 

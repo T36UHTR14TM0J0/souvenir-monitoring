@@ -1,6 +1,6 @@
-# 🛍️ Souvenir Monitoring System
+# 🛍️ Toko Souvenir Jibranime - Monitoring System
 
-Aplikasi Manajemen & Pemantauan Keuangan, Penjualan, Stok Produk, dan Operasional Toko Souvenir berbasis **Laravel**.
+Aplikasi Manajemen & Pemantauan Keuangan, Penjualan, Stok Produk, dan Operasional Toko Souvenir Jibranime berbasis **Laravel**.
 
 ---
 
@@ -52,7 +52,7 @@ cp .env.example .env
 
 Buka file `.env` dan sesuaikan koneksi database MySQL:
 ```ini
-APP_NAME="Souvenir Monitoring"
+APP_NAME="Toko Souvenir Jibranime"
 APP_ENV=local
 APP_KEY=
 APP_DEBUG=true
@@ -123,7 +123,7 @@ nano .env   # atau edit melalui File Manager cPanel
 
 Pastikan variabel penting ini diatur:
 ```ini
-APP_NAME="Souvenir Monitoring"
+APP_NAME="Toko Souvenir Jibranime"
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=http://tokosouvenirjibranime.my.id/souvenir-monitoring/public
@@ -225,4 +225,4 @@ Gunakan perintah-perintah ini untuk perawatan rutin aplikasi:
 
 ---
 
-*Dikembangkan untuk Sistem Pemantauan Toko Souvenir.*
+*Dikembangkan khusus untuk Sistem Manajemen Toko Souvenir Jibranime.*

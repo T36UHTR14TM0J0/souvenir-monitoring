@@ -5,13 +5,13 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="Sistem Monitoring Keuangan Toko Souvenir">
+    <meta name="description" content="Sistem Monitoring Keuangan Toko Souvenir Jibranime">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link rel="shortcut icon" href="{{ asset('assets/img/icons/icon-48x48.png') }}" />
 
-    <title>Sign In | Souvenir Monitoring</title>
+    <title>Sign In | Toko Souvenir Jibranime</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&display=swap" rel="stylesheet">
 
@@ -576,12 +576,12 @@
                                 <path d="M16 10a4 4 0 0 1-8 0"/>
                             </svg>
                         </div>
-                        <div class="brand-logo-text">Souvenir Bali</div>
+                        <div class="brand-logo-text">Toko Souvenir Jibranime</div>
                     </div>
 
                     <h1 class="brand-title">
                         Kelola Keuangan<br>
-                        <span class="brand-title-accent">Toko Souvenir</span>
+                        <span class="brand-title-accent">Toko Souvenir Jibranime</span>
                     </h1>
                     <p class="brand-subtitle">
                         Pantau pemasukan, pengeluaran, dan laba dalam satu dashboard yang elegan.
@@ -618,7 +618,7 @@
 
                 <div class="brand-footer">
                     <span class="brand-footer-dot"></span>
-                    <span>&copy; {{ date('Y') }} Souvenir Monitoring</span>
+                    <span>&copy; {{ date('Y') }} Toko Souvenir Jibranime</span>
                 </div>
             </div>
 
