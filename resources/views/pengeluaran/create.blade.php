@@ -105,66 +105,42 @@
         gap: 0.5rem;
         font-size: 0.875rem;
         text-decoration: none;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
     }
 
     .btn-danger-custom:hover {
         background-color: var(--danger-hover);
-        border-color: var(--danger-hover);
         color: #fff;
         transform: translateY(-1px);
     }
 
     .form-label-custom {
-        font-weight: 500;
+        font-size: 0.8125rem;
+        font-weight: 600;
         color: var(--gray-700);
-        font-size: 0.875rem;
-        margin-bottom: 0.5rem;
-        display: inline-block;
+        margin-bottom: 0.375rem;
+        display: block;
     }
 
     .form-label-custom .required {
-        color: var(--danger-color);
-        margin-left: 2px;
+        color: #dc2626;
     }
 
-    .form-control-modern,
-    .form-select-modern {
-        border: 1px solid var(--gray-200);
-        border-radius: 0.5rem;
+    .form-control-modern {
+        border: 1.5px solid var(--gray-300);
+        border-radius: 0.625rem;
         padding: 0.625rem 0.875rem;
         font-size: 0.875rem;
-        color: var(--gray-800);
-        transition: all 0.15s ease;
+        color: var(--gray-900);
+        transition: all 0.2s ease;
         background-color: #fff;
         width: 100%;
     }
 
-    .form-control-modern:focus,
-    .form-select-modern:focus {
+    .form-control-modern:focus {
         border-color: #26476f;
-        box-shadow: 0 0 0 3px rgba(38, 71, 111, 0.1);
+        box-shadow: 0 0 0 3px rgba(38, 71, 111, 0.12);
         outline: none;
-    }
-
-    .form-control-modern.is-invalid,
-    .form-select-modern.is-invalid {
-        border-color: var(--danger-color) !important;
-    }
-
-    .invalid-feedback {
-        display: block !important;
-        font-size: 0.75rem !important;
-        color: var(--danger-color) !important;
-        margin-top: 0.375rem !important;
-        font-weight: 500 !important;
-    }
-
-    .invalid-feedback::before {
-        content: '\f06a';
-        font-family: 'Font Awesome 6 Free';
-        font-weight: 900;
-        font-size: 0.75rem;
-        margin-right: 0.375rem;
     }
 
     .form-section-title {
@@ -182,6 +158,55 @@
     .form-section-title i {
         color: #dc2626;
         font-size: 0.875rem;
+    }
+
+    /* ALOKASI TABS / SWITCHER */
+    .alokasi-switch-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .alokasi-card {
+        border: 2px solid var(--gray-200);
+        border-radius: 0.625rem;
+        padding: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        background: #fff;
+    }
+
+    .alokasi-card:hover {
+        border-color: rgba(38, 71, 111, 0.3);
+        transform: translateY(-1px);
+    }
+
+    .alokasi-card.active {
+        border-color: #26476f;
+        background: linear-gradient(135deg, #26476f 0%, #1a304d 100%);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(38, 71, 111, 0.25);
+    }
+
+    .alokasi-card .alokasi-icon {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .alokasi-card.active .alokasi-icon {
+        color: #fde68a;
+    }
+
+    .alokasi-card .alokasi-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+
+    .alokasi-card .alokasi-desc {
+        font-size: 0.7rem;
+        opacity: 0.8;
     }
 
     .kategori-grid {
@@ -264,13 +289,11 @@
     @media (max-width: 768px) {
         .page-title-custom { font-size: 1.25rem; }
         .page-title-icon { width: 36px; height: 36px; }
+        .alokasi-switch-grid { grid-template-columns: 1fr; }
         .form-actions { flex-direction: column-reverse; align-items: stretch; }
         .form-actions .btn-primary-custom,
         .form-actions .btn-danger-custom { width: 100%; }
-
-        .kategori-grid {
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-        }
+        .kategori-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
     }
 </style>
 @endpush
@@ -285,7 +308,7 @@
             </span>
             Tambah Pengeluaran
         </h1>
-        <p class="page-subtitle-custom">Input biaya operasional atau pengeluaran toko.</p>
+        <p class="page-subtitle-custom">Input biaya operasional toko, pengeluaran pribadi/prive, atau kasbon tim.</p>
     </div>
 
     <form action="{{ route('pengeluaran.store') }}" method="POST" id="pengeluaranForm" novalidate>
@@ -296,7 +319,34 @@
                 <div class="card card-modern bg-white">
                     <div class="card-body p-4">
 
+                        {{-- ALOKASI PENGELUARAN --}}
                         <div class="form-section-title">
+                            <i class="fas fa-layer-group"></i>
+                            Pilih Alokasi Keuangan <span class="text-danger">*</span>
+                        </div>
+
+                        <input type="hidden" name="tipe_alokasi" id="tipeAlokasiInput" value="{{ old('tipe_alokasi', 'bisnis') }}">
+
+                        <div class="alokasi-switch-grid">
+                            <div class="alokasi-card {{ old('tipe_alokasi', 'bisnis') === 'bisnis' ? 'active' : '' }}" data-alokasi="bisnis">
+                                <div class="alokasi-icon"><i class="fas fa-store"></i></div>
+                                <div class="alokasi-title">1. Bisnis (Toko)</div>
+                                <div class="alokasi-desc">Operasional, listrik, bensin, ongkir, dll.</div>
+                            </div>
+                            <div class="alokasi-card {{ old('tipe_alokasi') === 'pribadi' ? 'active' : '' }}" data-alokasi="pribadi">
+                                <div class="alokasi-icon"><i class="fas fa-user-tie"></i></div>
+                                <div class="alokasi-title">2. Pribadi / Prive</div>
+                                <div class="alokasi-desc">Makan/lunch, beli gas, tarik tunai owner.</div>
+                            </div>
+                            <div class="alokasi-card {{ old('tipe_alokasi') === 'kasbon' ? 'active' : '' }}" data-alokasi="kasbon">
+                                <div class="alokasi-icon"><i class="fas fa-hand-holding-dollar"></i></div>
+                                <div class="alokasi-title">3. Kasbon Tim</div>
+                                <div class="alokasi-desc">Pinjaman karyawan (Om Jaka, Om Ucing, dll).</div>
+                            </div>
+                        </div>
+
+                        {{-- INFO PENGELUARAN --}}
+                        <div class="form-section-title mt-4">
                             <i class="fas fa-info-circle"></i>
                             Informasi Pengeluaran
                         </div>
@@ -321,6 +371,32 @@
                             </div>
                         </div>
 
+                        {{-- BIDANG KHUSUS KASBON (JIKA KASBON DIPILIH) --}}
+                        <div id="kasbonFields" style="{{ old('tipe_alokasi') === 'kasbon' ? 'display:block;' : 'display:none;' }}" class="mt-3 p-3 bg-light rounded border">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label-custom" for="karyawan_nama">
+                                        Nama Peminjam / Karyawan <span class="required">*</span>
+                                    </label>
+                                    <input type="text" name="karyawan_nama" id="karyawan_nama"
+                                           class="form-control form-control-modern @error('karyawan_nama') is-invalid @enderror"
+                                           value="{{ old('karyawan_nama') }}"
+                                           placeholder="Contoh: Om Jaka, Om Ucing, Om Gawil">
+                                    @error('karyawan_nama')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label-custom" for="status_kasbon">
+                                        Status Pinjaman
+                                    </label>
+                                    <select name="status_kasbon" id="status_kasbon" class="form-control form-control-modern">
+                                        <option value="belum_lunas" {{ old('status_kasbon', 'belum_lunas') === 'belum_lunas' ? 'selected' : '' }}>Belum Lunas (Piutang Aktif)</option>
+                                        <option value="lunas" {{ old('status_kasbon') === 'lunas' ? 'selected' : '' }}>Sudah Lunas</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- PILIH KATEGORI --}}
                         <div class="form-section-title mt-4">
                             <i class="fas fa-tags"></i>
                             Pilih Kategori
@@ -328,32 +404,74 @@
 
                         <input type="hidden" name="kategori" id="kategoriInput" value="{{ old('kategori', 'operasional') }}">
 
-                        <div class="kategori-grid" id="kategoriGrid">
-                            @php
-                                $kategoriIcons = [
-                                    'operasional'  => 'fa-briefcase',
-                                    'gaji'         => 'fa-users',
-                                    'listrik'      => 'fa-bolt',
-                                    'sewa'         => 'fa-store',
-                                    'transport'    => 'fa-truck',
-                                    'perlengkapan' => 'fa-box',
-                                    'pemeliharaan' => 'fa-tools',
-                                    'pajak'        => 'fa-file-invoice-dollar',
-                                    'lainnya'      => 'fa-ellipsis-h',
-                                ];
-                            @endphp
-                            @foreach($kategoris as $key => $label)
-                                <div class="kategori-card {{ old('kategori', 'operasional') == $key ? 'selected' : '' }}"
-                                     data-kategori="{{ $key }}">
-                                    <div class="kategori-icon">
-                                        <i class="fas {{ $kategoriIcons[$key] ?? 'fa-tag' }}"></i>
+                        {{-- GRID KATEGORI BISNIS --}}
+                        <div class="kategori-group" id="group-bisnis" style="{{ old('tipe_alokasi', 'bisnis') === 'bisnis' ? 'display:block;' : 'display:none;' }}">
+                            <div class="kategori-grid">
+                                @php
+                                    $kategoriIcons = [
+                                        'operasional'  => 'fa-briefcase',
+                                        'gaji'         => 'fa-users',
+                                        'listrik'      => 'fa-bolt',
+                                        'sewa'         => 'fa-store',
+                                        'transport'    => 'fa-truck',
+                                        'perlengkapan' => 'fa-box',
+                                        'pemeliharaan' => 'fa-tools',
+                                        'pajak'        => 'fa-file-invoice-dollar',
+                                        'lainnya'      => 'fa-ellipsis-h',
+                                    ];
+                                @endphp
+                                @foreach($kategoriBisnis as $key => $label)
+                                    <div class="kategori-card {{ old('kategori', 'operasional') == $key ? 'selected' : '' }}"
+                                         data-kategori="{{ $key }}">
+                                        <div class="kategori-icon">
+                                            <i class="fas {{ $kategoriIcons[$key] ?? 'fa-tag' }}"></i>
+                                        </div>
+                                        <div class="kategori-label">{{ $label }}</div>
                                     </div>
-                                    <div class="kategori-label">{{ $label }}</div>
-                                </div>
-                            @endforeach
+                                @endforeach
+                            </div>
+                        </div>
+
+                        {{-- GRID KATEGORI PRIBADI --}}
+                        <div class="kategori-group" id="group-pribadi" style="{{ old('tipe_alokasi') === 'pribadi' ? 'display:block;' : 'display:none;' }}">
+                            <div class="kategori-grid">
+                                @php
+                                    $pribadiIcons = [
+                                        'makan_pribadi'   => 'fa-utensils',
+                                        'kebutuhan_rumah' => 'fa-house',
+                                        'prive_penarikan' => 'fa-wallet',
+                                        'pribadi_lainnya' => 'fa-receipt',
+                                    ];
+                                @endphp
+                                @foreach($kategoriPribadi as $key => $label)
+                                    <div class="kategori-card {{ old('kategori') == $key ? 'selected' : '' }}"
+                                         data-kategori="{{ $key }}">
+                                        <div class="kategori-icon">
+                                            <i class="fas {{ $pribadiIcons[$key] ?? 'fa-tag' }}"></i>
+                                        </div>
+                                        <div class="kategori-label">{{ $label }}</div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        {{-- GRID KATEGORI KASBON --}}
+                        <div class="kategori-group" id="group-kasbon" style="{{ old('tipe_alokasi') === 'kasbon' ? 'display:block;' : 'display:none;' }}">
+                            <div class="kategori-grid">
+                                @foreach($kategoriKasbon as $key => $label)
+                                    <div class="kategori-card {{ old('kategori', 'kasbon_karyawan') == $key ? 'selected' : '' }}"
+                                         data-kategori="{{ $key }}">
+                                        <div class="kategori-icon">
+                                            <i class="fas fa-hand-holding-dollar"></i>
+                                        </div>
+                                        <div class="kategori-label">{{ $label }}</div>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                         @error('kategori')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
 
+                        {{-- DETAIL PENGELUARAN --}}
                         <div class="form-section-title mt-4">
                             <i class="fas fa-edit"></i>
                             Detail Pengeluaran
@@ -367,7 +485,7 @@
                                 <input type="text" name="keterangan" id="keterangan"
                                        class="form-control form-control-modern @error('keterangan') is-invalid @enderror"
                                        value="{{ old('keterangan') }}"
-                                       placeholder="Contoh: Bayar listrik bulan Oktober, Gaji karyawan minggu ke-2..."
+                                       placeholder="Contoh: Bensin antar pesanan, Lunch siang tim, Kasbon mingguan..."
                                        maxlength="255">
                                 @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
@@ -406,7 +524,7 @@
                     <div class="card-body p-4">
                         <div class="form-section-title">
                             <i class="fas fa-calculator"></i>
-                            Preview
+                            Ringkasan Input
                         </div>
 
                         <div style="background: linear-gradient(135deg, #26476f 0%, #1a304d 100%); border-radius: 0.625rem; padding: 1.25rem; color: #fff;">
@@ -417,17 +535,17 @@
                                 Rp 0
                             </div>
                             <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.15);">
-                                <div style="font-size: 0.75rem; opacity: 0.75; margin-bottom: 0.25rem;">Kategori</div>
+                                <div style="font-size: 0.75rem; opacity: 0.75; margin-bottom: 0.25rem;">Alokasi & Kategori</div>
                                 <div style="font-size: 0.875rem; font-weight: 600;" id="previewKategori">
-                                    Operasional
+                                    Bisnis &bull; Operasional
                                 </div>
                             </div>
                         </div>
 
-                        <div style="margin-top: 1rem; padding: 0.75rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: 0.5rem;">
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: 0.5rem;" id="infoAlokasiBox">
                             <div style="font-size: 0.75rem; color: #92400e;">
                                 <i class="fas fa-info-circle me-1"></i>
-                                <strong>Catatan:</strong> Data pengeluaran tidak mempengaruhi stok produk. Hanya tercatat sebagai biaya operasional.
+                                <span id="infoAlokasiText">Pengeluaran <strong>Bisnis</strong> akan mengurangi laba bersih toko secara riil.</span>
                             </div>
                         </div>
                     </div>
@@ -463,15 +581,61 @@
         return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka || 0);
     }
 
+    // ALOKASI SWITCHER
+    document.querySelectorAll('.alokasi-card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.alokasi-card').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+
+            const alokasi = this.dataset.alokasi;
+            document.getElementById('tipeAlokasiInput').value = alokasi;
+
+            // Show/hide category groups
+            document.getElementById('group-bisnis').style.display = (alokasi === 'bisnis') ? 'block' : 'none';
+            document.getElementById('group-pribadi').style.display = (alokasi === 'pribadi') ? 'block' : 'none';
+            document.getElementById('group-kasbon').style.display = (alokasi === 'kasbon') ? 'block' : 'none';
+
+            // Show/hide kasbon fields
+            document.getElementById('kasbonFields').style.display = (alokasi === 'kasbon') ? 'block' : 'none';
+
+            // Set default category for active group
+            let defaultKat = 'operasional';
+            if (alokasi === 'pribadi') defaultKat = 'makan_pribadi';
+            if (alokasi === 'kasbon') defaultKat = 'kasbon_karyawan';
+
+            const activeGroup = document.getElementById('group-' + alokasi);
+            const firstCard = activeGroup.querySelector(`[data-kategori="${defaultKat}"]`) || activeGroup.querySelector('.kategori-card');
+            if (firstCard) {
+                firstCard.click();
+            }
+
+            // Update info box
+            const infoText = document.getElementById('infoAlokasiText');
+            if (alokasi === 'bisnis') {
+                infoText.innerHTML = 'Pengeluaran <strong>Bisnis</strong> akan mengurangi laba bersih operasional toko.';
+            } else if (alokasi === 'pribadi') {
+                infoText.innerHTML = 'Pengeluaran <strong>Pribadi / Prive</strong> TIDAK mengurangi laba bersih toko, tapi dicatat sebagai penarikan modal pemilik.';
+            } else {
+                infoText.innerHTML = 'Pengeluaran <strong>Kasbon</strong> dicatat sebagai piutang pinjaman karyawan dan dapat dilunasi nanti.';
+            }
+        });
+    });
+
     // KATEGORI SELECTOR
     document.querySelectorAll('.kategori-card').forEach(card => {
         card.addEventListener('click', function() {
-            document.querySelectorAll('.kategori-card').forEach(c => c.classList.remove('selected'));
+            const parent = this.closest('.kategori-grid');
+            if (parent) {
+                parent.querySelectorAll('.kategori-card').forEach(c => c.classList.remove('selected'));
+            }
             this.classList.add('selected');
 
             const kategori = this.dataset.kategori;
             document.getElementById('kategoriInput').value = kategori;
-            document.getElementById('previewKategori').textContent = KATEGORI_LABELS[kategori] || kategori;
+
+            const alokasi = document.getElementById('tipeAlokasiInput').value;
+            const alokasiTitle = alokasi.charAt(0).toUpperCase() + alokasi.slice(1);
+            document.getElementById('previewKategori').textContent = alokasiTitle + ' • ' + (KATEGORI_LABELS[kategori] || kategori);
         });
     });
 
@@ -485,6 +649,7 @@
     document.getElementById('pengeluaranForm').addEventListener('submit', function (e) {
         e.preventDefault();
 
+        const alokasi = document.getElementById('tipeAlokasiInput').value;
         const jumlah = parseFloat(document.getElementById('jumlah').value) || 0;
         if (jumlah < 1) {
             Swal.fire({
@@ -495,6 +660,20 @@
             });
             document.getElementById('jumlah').focus();
             return false;
+        }
+
+        if (alokasi === 'kasbon') {
+            const nama = document.getElementById('karyawan_nama').value.trim();
+            if (!nama) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Nama Peminjam Wajib Diisi',
+                    text: 'Untuk kasbon, silakan masukkan nama peminjam / anggota tim.',
+                    confirmButtonColor: SWAL_PRIMARY
+                });
+                document.getElementById('karyawan_nama').focus();
+                return false;
+            }
         }
 
         const keterangan = document.getElementById('keterangan').value.trim();
@@ -518,6 +697,10 @@
             html: `
                 <p style="color: #4b5563; margin-bottom: 0.5rem;">Pastikan data sudah benar.</p>
                 <div style="background: rgba(38, 71, 111, 0.06); padding: 0.75rem; border-radius: 8px; text-align: left;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.375rem;">
+                        <span style="color: #6b7280;">Alokasi:</span>
+                        <span style="font-weight: 700; color: #26476f;">${alokasi.toUpperCase()}</span>
+                    </div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.375rem;">
                         <span style="color: #6b7280;">Kategori:</span>
                         <span style="font-weight: 600; color: #26476f;">${kategoriLabel}</span>

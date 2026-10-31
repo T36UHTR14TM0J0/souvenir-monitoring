@@ -9,6 +9,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LaporanKeuanganController;
 use App\Http\Controllers\PengeluaranController;
+use App\Http\Controllers\KasMasukController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\TransaksiPembelianController;
 use App\Http\Controllers\TransaksiPenjualanController;
@@ -188,11 +189,31 @@ Route::middleware(['auth', 'user.active'])->group(function () {
             ->name('pengeluaran.edit');
         Route::put('/pengeluaran/{pengeluaran}', [PengeluaranController::class, 'update'])
             ->name('pengeluaran.update');
+        Route::patch('/pengeluaran/{pengeluaran}/toggle-kasbon', [PengeluaranController::class, 'toggleKasbon'])
+            ->name('pengeluaran.toggle-kasbon');
     });
 
     Route::middleware('permission:pengeluaran-delete')->group(function () {
         Route::delete('/pengeluaran/{pengeluaran}', [PengeluaranController::class, 'destroy'])
             ->name('pengeluaran.destroy');
+    });
+
+    // ============================================
+    // KAS MASUK & MODAL PEMILIK
+    // ============================================
+    Route::middleware('permission:pengeluaran-list')->group(function () {
+        Route::get('/kas-masuk', [KasMasukController::class, 'index'])->name('kas-masuk.index');
+    });
+    Route::middleware('permission:pengeluaran-create')->group(function () {
+        Route::get('/kas-masuk/create', [KasMasukController::class, 'create'])->name('kas-masuk.create');
+        Route::post('/kas-masuk', [KasMasukController::class, 'store'])->name('kas-masuk.store');
+    });
+    Route::middleware('permission:pengeluaran-edit')->group(function () {
+        Route::get('/kas-masuk/{kasMasuk}/edit', [KasMasukController::class, 'edit'])->name('kas-masuk.edit');
+        Route::put('/kas-masuk/{kasMasuk}', [KasMasukController::class, 'update'])->name('kas-masuk.update');
+    });
+    Route::middleware('permission:pengeluaran-delete')->group(function () {
+        Route::delete('/kas-masuk/{kasMasuk}', [KasMasukController::class, 'destroy'])->name('kas-masuk.destroy');
     });
 
 

@@ -360,44 +360,54 @@
     </div>
 
     <div class="row g-3 mb-4">
-        <div class="col-12 col-md-4">
+        <div class="col-6 col-lg-3">
             <div class="kpi-card">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="kpi-label">Pengeluaran Hari Ini</div>
-                        <div class="kpi-value">Rp {{ number_format($totalHariIni, 0, ',', '.') }}</div>
-                    </div>
-                    <div class="kpi-icon kpi-icon-red">
-                        <i class="fas fa-calendar-day"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-4">
-            <div class="kpi-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="kpi-label">Pengeluaran Bulan Ini</div>
-                        <div class="kpi-value">Rp {{ number_format($totalBulanIni, 0, ',', '.') }}</div>
+                        <div class="kpi-label">Bisnis Toko (Bulan Ini)</div>
+                        <div class="kpi-value" style="font-size: 1.25rem;">Rp {{ number_format($totalBisnisBulanIni, 0, ',', '.') }}</div>
                     </div>
                     <div class="kpi-icon kpi-icon-navy">
-                        <i class="fas fa-calendar-alt"></i>
+                        <i class="fas fa-store"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-md-4">
+        <div class="col-6 col-lg-3">
             <div class="kpi-card">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="kpi-label">Total Transaksi Bulan Ini</div>
-                        <div class="kpi-value">
-                            {{ number_format($totalTransaksi, 0, ',', '.') }}
-                            <span style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">transaksi</span>
-                        </div>
+                        <div class="kpi-label">Pribadi / Prive (Bulan Ini)</div>
+                        <div class="kpi-value" style="font-size: 1.25rem; color: #dc2626;">Rp {{ number_format($totalPribadiBulanIni, 0, ',', '.') }}</div>
+                    </div>
+                    <div class="kpi-icon kpi-icon-red">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Kasbon Tim (Bulan Ini)</div>
+                        <div class="kpi-value" style="font-size: 1.25rem; color: #d97706;">Rp {{ number_format($totalKasbonBulanIni, 0, ',', '.') }}</div>
                     </div>
                     <div class="kpi-icon kpi-icon-amber">
-                        <i class="fas fa-receipt"></i>
+                        <i class="fas fa-hand-holding-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Total Semua Pengeluaran</div>
+                        <div class="kpi-value" style="font-size: 1.25rem;">Rp {{ number_format($totalBulanIni, 0, ',', '.') }}</div>
+                    </div>
+                    <div class="kpi-icon" style="background: rgba(38, 71, 111, 0.1); color: #26476f;">
+                        <i class="fas fa-wallet"></i>
                     </div>
                 </div>
             </div>
@@ -408,13 +418,23 @@
         <div class="card-body p-3 p-md-4">
             <form method="GET" action="{{ route('pengeluaran.index') }}">
                 <div class="row g-3 align-items-end">
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-3">
                         <div class="position-relative">
                             <i class="fas fa-search position-absolute" style="left: 14px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.875rem;"></i>
                             <input type="text" name="search" class="form-control form-control-modern ps-5"
-                                   placeholder="Cari kode / keterangan..."
+                                   placeholder="Cari kode, ket, orang..."
                                    value="{{ request('search') }}">
                         </div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <select name="tipe_alokasi" class="form-select form-select-modern" style="width: 100%;">
+                            <option value="">Semua Alokasi</option>
+                            @foreach($tipeAlokasis as $tKey => $tLabel)
+                                <option value="{{ $tKey }}" {{ request('tipe_alokasi') == $tKey ? 'selected' : '' }}>
+                                    {{ $tLabel }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-6 col-md-2">
                         <select name="kategori" class="form-select form-select-modern" style="width: 100%;">
@@ -457,13 +477,14 @@
                 <table class="table table-modern align-middle">
                     <thead>
                         <tr>
-                            <th class="ps-4" style="width: 60px;">No</th>
+                            <th class="ps-4" style="width: 50px;">No</th>
                             <th>Kode</th>
                             <th>Tanggal</th>
+                            <th>Alokasi</th>
                             <th>Kategori</th>
                             <th>Keterangan</th>
                             <th class="text-end">Jumlah</th>
-                            <th class="pe-4 text-end" style="width: 120px;">Aksi</th>
+                            <th class="pe-4 text-end" style="width: 140px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -484,13 +505,36 @@
                                 </div>
                             </td>
                             <td>
+                                @if($pgl->tipe_alokasi === 'bisnis')
+                                    <span class="badge" style="background: rgba(38,71,111,0.1); color: #26476f; font-size: 0.75rem;">
+                                        <i class="fas fa-store me-1"></i> Bisnis
+                                    </span>
+                                @elseif($pgl->tipe_alokasi === 'pribadi')
+                                    <span class="badge" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; font-size: 0.75rem;">
+                                        <i class="fas fa-user-tie me-1"></i> Pribadi
+                                    </span>
+                                @else
+                                    <span class="badge" style="background: #fffbeb; color: #d97706; border: 1px solid #fde68a; font-size: 0.75rem;">
+                                        <i class="fas fa-hand-holding-dollar me-1"></i> Kasbon
+                                    </span>
+                                    @if($pgl->status_kasbon === 'lunas')
+                                        <span class="badge bg-success" style="font-size: 0.65rem;">Lunas</span>
+                                    @else
+                                        <span class="badge bg-warning text-dark" style="font-size: 0.65rem;">Belum</span>
+                                    @endif
+                                @endif
+                            </td>
+                            <td>
                                 <span class="badge-kategori badge-{{ $pgl->kategori }}">
                                     <i class="fas fa-tag"></i>
                                     {{ $pgl->kategori_label }}
                                 </span>
                             </td>
                             <td>
-                                <div style="font-size: 0.875rem; color: #374151; max-width: 300px;" class="text-truncate">
+                                <div style="font-size: 0.875rem; color: #374151; max-width: 260px;" class="text-truncate">
+                                    @if($pgl->tipe_alokasi === 'kasbon' && $pgl->karyawan_nama)
+                                        <span class="fw-bold text-primary">[{{ $pgl->karyawan_nama }}]</span>
+                                    @endif
                                     {{ $pgl->keterangan }}
                                 </div>
                             </td>
@@ -523,7 +567,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5">
+                            <td colspan="8" class="text-center py-5">
                                 <div class="empty-icon mb-3">
                                     <i class="fas fa-money-bill-transfer fs-3"></i>
                                 </div>

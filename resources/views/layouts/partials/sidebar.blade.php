@@ -85,6 +85,14 @@
                             </a>
                         </li>
                     @endif
+                    @if(Route::has('kas-masuk.index'))
+                        <li class="sidebar-item {{ request()->routeIs('kas-masuk.*') ? 'active' : '' }}">
+                            <a class="sidebar-link" href="{{ route('kas-masuk.index') }}">
+                                <span class="sidebar-link-icon"><i class="fas fa-hand-holding-dollar"></i></span>
+                                <span>Kas Masuk & Modal</span>
+                            </a>
+                        </li>
+                    @endif
                 @endcan
             @endcanany
 

@@ -62,13 +62,12 @@
         border: 1px solid var(--gray-300);
         color: var(--gray-700);
         font-weight: 500;
-        padding: 0.625rem 1.25rem;
-        border-radius: 0.625rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
         transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
+        gap: 0.375rem;
         font-size: 0.875rem;
         text-decoration: none;
     }
@@ -76,29 +75,22 @@
     .btn-secondary-custom:hover {
         background-color: var(--gray-50);
         border-color: var(--gray-400);
-        color: var(--gray-700);
+        color: var(--gray-900);
     }
 
     .info-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: 1.25rem;
     }
 
-    .info-item {
-        padding: 0.875rem;
-        background: var(--gray-50);
-        border-radius: 0.5rem;
-        border-left: 3px solid #dc2626;
-    }
-
     .info-item-label {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         font-weight: 600;
         color: var(--gray-500);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        margin-bottom: 0.375rem;
+        margin-bottom: 0.25rem;
     }
 
     .info-item-value {
@@ -109,11 +101,11 @@
 
     .jumlah-box {
         background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-        border-radius: 0.875rem;
-        padding: 2rem;
         color: #fff;
-        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.25);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
         text-align: center;
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25);
     }
 
     .jumlah-box .label {
@@ -134,6 +126,7 @@
         .page-title-custom { font-size: 1.25rem; }
         .page-title-icon { width: 36px; height: 36px; }
         .jumlah-box .value { font-size: 1.5rem; }
+        .info-grid { grid-template-columns: 1fr; }
     }
 </style>
 @endpush
@@ -167,7 +160,7 @@
 
     <div class="row g-4">
         <div class="col-12 col-lg-8">
-            <div class="card card-modern bg-white">
+            <div class="card card-modern bg-white mb-3">
                 <div class="card-body p-4">
                     <h6 class="mb-3" style="font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #dc2626;">
                         <i class="fas fa-info-circle me-1"></i> Informasi Pengeluaran
@@ -178,8 +171,12 @@
                             <div class="info-item-value">{{ $pengeluaran->tanggal->format('d F Y') }}</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-item-label">Waktu Input</div>
-                            <div class="info-item-value">{{ $pengeluaran->created_at->format('H:i') }} WIB</div>
+                            <div class="info-item-label">Alokasi Keuangan</div>
+                            <div class="info-item-value">
+                                <span class="badge" style="background:#26476f; color:#fff; font-size:0.8rem;">
+                                    {{ $pengeluaran->tipe_alokasi_label }}
+                                </span>
+                            </div>
                         </div>
                         <div class="info-item">
                             <div class="info-item-label">Kategori</div>
@@ -189,35 +186,46 @@
                             <div class="info-item-label">Input Oleh</div>
                             <div class="info-item-value">{{ $pengeluaran->user->name ?? '-' }}</div>
                         </div>
-                    </div>
-
-                    <div class="mt-4 p-3" style="background: var(--gray-50); border-radius: 0.5rem;">
-                        <div class="info-item-label">Keterangan</div>
-                        <div style="font-size: 0.95rem; color: #374151; font-weight: 500;">
-                            {{ $pengeluaran->keterangan }}
+                        @if($pengeluaran->tipe_alokasi === 'kasbon')
+                            <div class="info-item">
+                                <div class="info-item-label">Nama Peminjam</div>
+                                <div class="info-item-value text-primary font-weight-bold">{{ $pengeluaran->karyawan_nama ?? '-' }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-item-label">Status Kasbon</div>
+                                <div class="info-item-value">
+                                    <span class="badge {{ $pengeluaran->status_kasbon === 'lunas' ? 'bg-success' : 'bg-warning text-dark' }}">
+                                        {{ $pengeluaran->status_kasbon === 'lunas' ? 'LUNAS' : 'BELUM LUNAS' }}
+                                    </span>
+                                </div>
+                            </div>
+                        @endif
+                        <div class="info-item" style="grid-column: span 2;">
+                            <div class="info-item-label">Keterangan</div>
+                            <div class="info-item-value">{{ $pengeluaran->keterangan }}</div>
                         </div>
+                        @if($pengeluaran->catatan)
+                            <div class="info-item" style="grid-column: span 2;">
+                                <div class="info-item-label">Catatan Tambahan</div>
+                                <div class="info-item-value" style="font-weight: 400; color: #4b5563;">{{ $pengeluaran->catatan }}</div>
+                            </div>
+                        @endif
                     </div>
-
-                    @if($pengeluaran->catatan)
-                    <div class="mt-3 p-3" style="background: var(--gray-50); border-radius: 0.5rem;">
-                        <div class="info-item-label">Catatan</div>
-                        <div style="font-size: 0.875rem; color: #4b5563;">{{ $pengeluaran->catatan }}</div>
-                    </div>
-                    @endif
                 </div>
             </div>
         </div>
 
         <div class="col-12 col-lg-4">
-            <div class="jumlah-box">
-                <div class="label">Jumlah Pengeluaran</div>
-                <div class="value">- Rp {{ number_format($pengeluaran->jumlah, 0, ',', '.') }}</div>
-                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2); font-size: 0.8rem; opacity: 0.9;">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Biaya operasional
+            <div class="card card-modern bg-white">
+                <div class="card-body p-4">
+                    <div class="jumlah-box">
+                        <div class="label">Nominal Pengeluaran</div>
+                        <div class="value">Rp {{ number_format($pengeluaran->jumlah, 0, ',', '.') }}</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
 </div>
 @endsection

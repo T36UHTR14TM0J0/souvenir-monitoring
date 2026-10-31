@@ -102,20 +102,19 @@
 
     .btn-danger-custom:hover {
         background-color: var(--danger-hover);
-        border-color: var(--danger-hover);
         color: #fff;
         transform: translateY(-1px);
     }
 
     .form-label-custom {
-        font-weight: 500;
+        font-size: 0.8125rem;
+        font-weight: 600;
         color: var(--gray-700);
-        font-size: 0.875rem;
-        margin-bottom: 0.5rem;
-        display: inline-block;
+        margin-bottom: 0.375rem;
+        display: block;
     }
 
-    .form-label-custom .required { color: var(--danger-color); margin-left: 2px; }
+    .form-label-custom .required { color: var(--danger-color); }
 
     .form-control-modern,
     .form-select-modern {
@@ -147,14 +146,6 @@
         color: var(--danger-color) !important;
         margin-top: 0.375rem !important;
         font-weight: 500 !important;
-    }
-
-    .invalid-feedback::before {
-        content: '\f06a';
-        font-family: 'Font Awesome 6 Free';
-        font-weight: 900;
-        font-size: 0.75rem;
-        margin-right: 0.375rem;
     }
 
     .form-section-title {
@@ -215,14 +206,14 @@
                 </div>
 
                 <div class="row g-3">
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-4">
                         <label class="form-label-custom">Kode Pengeluaran</label>
                         <input type="text" class="form-control form-control-modern"
                                value="{{ $pengeluaran->kode_pengeluaran }}" readonly
                                style="background-color: #f9fafb; font-family: monospace; font-weight: 600; color: #dc2626;">
                     </div>
 
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-4">
                         <label class="form-label-custom" for="tanggal">
                             Tanggal <span class="required">*</span>
                         </label>
@@ -231,6 +222,40 @@
                                value="{{ old('tanggal', $pengeluaran->tanggal->format('Y-m-d')) }}"
                                max="{{ date('Y-m-d') }}">
                         @error('tanggal')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label class="form-label-custom" for="tipe_alokasi">
+                            Alokasi Keuangan <span class="required">*</span>
+                        </label>
+                        <select name="tipe_alokasi" id="tipe_alokasi" class="form-select form-select-modern @error('tipe_alokasi') is-invalid @enderror">
+                            @foreach($tipeAlokasis as $tKey => $tLabel)
+                                <option value="{{ $tKey }}" {{ old('tipe_alokasi', $pengeluaran->tipe_alokasi) === $tKey ? 'selected' : '' }}>
+                                    {{ $tLabel }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('tipe_alokasi')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="col-12 col-md-6" id="karyawanNamaWrap" style="{{ old('tipe_alokasi', $pengeluaran->tipe_alokasi) === 'kasbon' ? 'display:block;' : 'display:none;' }}">
+                        <label class="form-label-custom" for="karyawan_nama">
+                            Nama Peminjam / Karyawan <span class="required">*</span>
+                        </label>
+                        <input type="text" name="karyawan_nama" id="karyawan_nama"
+                               class="form-control form-control-modern @error('karyawan_nama') is-invalid @enderror"
+                               value="{{ old('karyawan_nama', $pengeluaran->karyawan_nama) }}">
+                        @error('karyawan_nama')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="col-12 col-md-6" id="statusKasbonWrap" style="{{ old('tipe_alokasi', $pengeluaran->tipe_alokasi) === 'kasbon' ? 'display:block;' : 'display:none;' }}">
+                        <label class="form-label-custom" for="status_kasbon">
+                            Status Kasbon
+                        </label>
+                        <select name="status_kasbon" id="status_kasbon" class="form-select form-select-modern">
+                            <option value="belum_lunas" {{ old('status_kasbon', $pengeluaran->status_kasbon) !== 'lunas' ? 'selected' : '' }}>Belum Lunas (Piutang Aktif)</option>
+                            <option value="lunas" {{ old('status_kasbon', $pengeluaran->status_kasbon) === 'lunas' ? 'selected' : '' }}>Sudah Lunas</option>
+                        </select>
                     </div>
 
                     <div class="col-12 col-md-6">
@@ -299,43 +324,11 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-(function () {
-    'use strict';
-
-    const SWAL_PRIMARY = '#26476f';
-    const SWAL_CANCEL  = '#a8a29e';
-
-    document.getElementById('pengeluaranForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const jumlah = parseFloat(document.getElementById('jumlah').value) || 0;
-        if (jumlah < 1) {
-            Swal.fire({ icon: 'warning', title: 'Jumlah Tidak Valid', text: 'Jumlah minimal Rp 1.', confirmButtonColor: SWAL_PRIMARY });
-            return false;
-        }
-
-        Swal.fire({
-            title: 'Simpan Perubahan?',
-            text: 'Pastikan data yang diubah sudah benar.',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-save me-1"></i> Ya, Simpan!',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: SWAL_PRIMARY,
-            cancelButtonColor: SWAL_CANCEL,
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const btn = document.getElementById('submitBtn');
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Menyimpan...</span>';
-                HTMLFormElement.prototype.submit.call(document.getElementById('pengeluaranForm'));
-            }
-        });
-    });
-
-})();
+document.getElementById('tipe_alokasi').addEventListener('change', function() {
+    const isKasbon = this.value === 'kasbon';
+    document.getElementById('karyawanNamaWrap').style.display = isKasbon ? 'block' : 'none';
+    document.getElementById('statusKasbonWrap').style.display = isKasbon ? 'block' : 'none';
+});
 </script>
 @endpush

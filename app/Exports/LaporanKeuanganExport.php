@@ -37,11 +37,14 @@ class LaporanKeuanganExport implements FromArray, WithHeadings, WithStyles, With
     public function headings(): array
     {
         return match ($this->tab) {
-            'laba-rugi'   => ['Bulan', 'Penjualan', 'Pembelian', 'Laba Kotor', 'Pengeluaran', 'Laba Bersih'],
-            'penjualan'   => ['Kode', 'Tanggal', 'Pelanggan', 'Item', 'Diskon', 'Grand Total'],
-            'pembelian'   => ['Kode', 'Tanggal', 'Supplier', 'Item', 'Diskon', 'Grand Total'],
-            'pengeluaran' => ['Kode', 'Tanggal', 'Kategori', 'Keterangan', 'Jumlah'],
-            default       => [],
+            'laba-rugi'    => ['Bulan', 'Penjualan', 'Pembelian', 'Laba Kotor', 'Pengeluaran Bisnis', 'Laba Bersih'],
+            'penjualan'    => ['Kode', 'Tanggal', 'Pelanggan', 'Item', 'Diskon', 'Grand Total'],
+            'pembelian'    => ['Kode', 'Tanggal', 'Supplier', 'Item', 'Diskon', 'Grand Total'],
+            'pengeluaran'  => ['Kode', 'Tanggal', 'Kategori', 'Keterangan', 'Jumlah'],
+            'pribadi'      => ['Kode', 'Tanggal', 'Kategori Pribadi', 'Keterangan', 'Jumlah'],
+            'rekonsiliasi' => ['Bulan', 'Modal Disetor', 'Prive Ditarik', 'Selisih (Netto)'],
+            'kasbon'       => ['Kode', 'Tanggal', 'Nama Peminjam', 'Keterangan', 'Jumlah', 'Status'],
+            default        => [],
         };
     }
 
@@ -53,11 +56,14 @@ class LaporanKeuanganExport implements FromArray, WithHeadings, WithStyles, With
     public function columnWidths(): array
     {
         return match ($this->tab) {
-            'laba-rugi'   => ['A' => 15, 'B' => 20, 'C' => 20, 'D' => 20, 'E' => 20, 'F' => 20],
-            'penjualan'   => ['A' => 20, 'B' => 15, 'C' => 25, 'D' => 8,  'E' => 18, 'F' => 20],
-            'pembelian'   => ['A' => 20, 'B' => 15, 'C' => 25, 'D' => 8,  'E' => 18, 'F' => 20],
-            'pengeluaran' => ['A' => 20, 'B' => 15, 'C' => 20, 'D' => 40, 'E' => 20],
-            default       => [],
+            'laba-rugi'    => ['A' => 15, 'B' => 20, 'C' => 20, 'D' => 20, 'E' => 20, 'F' => 20],
+            'penjualan'    => ['A' => 20, 'B' => 15, 'C' => 25, 'D' => 8,  'E' => 18, 'F' => 20],
+            'pembelian'    => ['A' => 20, 'B' => 15, 'C' => 25, 'D' => 8,  'E' => 18, 'F' => 20],
+            'pengeluaran'  => ['A' => 20, 'B' => 15, 'C' => 20, 'D' => 40, 'E' => 20],
+            'pribadi'      => ['A' => 20, 'B' => 15, 'C' => 25, 'D' => 40, 'E' => 20],
+            'rekonsiliasi' => ['A' => 20, 'B' => 22, 'C' => 22, 'D' => 22],
+            'kasbon'       => ['A' => 20, 'B' => 15, 'C' => 22, 'D' => 35, 'E' => 20, 'F' => 18],
+            default        => [],
         };
     }
 
@@ -102,9 +108,10 @@ class LaporanKeuanganExport implements FromArray, WithHeadings, WithStyles, With
                 $highestRow = $sheet->getHighestRow();
                 $headingRow = 5;
                 $lastColumn = match ($this->tab) {
-                    'laba-rugi', 'penjualan', 'pembelian' => 'F',
-                    'pengeluaran'                          => 'E',
-                    default                                => 'E',
+                    'laba-rugi', 'penjualan', 'pembelian', 'kasbon' => 'F',
+                    'pengeluaran', 'pribadi'                         => 'E',
+                    'rekonsiliasi'                                   => 'D',
+                    default                                          => 'E',
                 };
 
                 // Style header row (row 5)

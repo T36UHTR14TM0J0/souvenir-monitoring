@@ -394,7 +394,7 @@
         <a href="{{ route('laporan.keuangan', ['tab' => 'laba-rugi', 'bulan' => $bulan, 'tahun' => $tahun]) }}"
            class="tab-btn {{ $tab === 'laba-rugi' ? 'active' : '' }}">
             <i class="fas fa-balance-scale"></i>
-            <span>Laba/Rugi</span>
+            <span>Laba/Rugi (Toko)</span>
         </a>
         <a href="{{ route('laporan.keuangan', ['tab' => 'penjualan', 'bulan' => $bulan, 'tahun' => $tahun]) }}"
            class="tab-btn {{ $tab === 'penjualan' ? 'active' : '' }}">
@@ -409,7 +409,22 @@
         <a href="{{ route('laporan.keuangan', ['tab' => 'pengeluaran', 'bulan' => $bulan, 'tahun' => $tahun]) }}"
            class="tab-btn {{ $tab === 'pengeluaran' ? 'active' : '' }}">
             <i class="fas fa-money-bill-transfer"></i>
-            <span>Pengeluaran</span>
+            <span>Pengeluaran Toko</span>
+        </a>
+        <a href="{{ route('laporan.keuangan', ['tab' => 'pribadi', 'bulan' => $bulan, 'tahun' => $tahun]) }}"
+           class="tab-btn {{ $tab === 'pribadi' ? 'active' : '' }}">
+            <i class="fas fa-wallet"></i>
+            <span>Keuangan Pribadi (Prive)</span>
+        </a>
+        <a href="{{ route('laporan.keuangan', ['tab' => 'rekonsiliasi', 'bulan' => $bulan, 'tahun' => $tahun]) }}"
+           class="tab-btn {{ $tab === 'rekonsiliasi' ? 'active' : '' }}">
+            <i class="fas fa-scale-balanced"></i>
+            <span>Hubungan Owner ⇄ Toko</span>
+        </a>
+        <a href="{{ route('laporan.keuangan', ['tab' => 'kasbon', 'bulan' => $bulan, 'tahun' => $tahun]) }}"
+           class="tab-btn {{ $tab === 'kasbon' ? 'active' : '' }}">
+            <i class="fas fa-hand-holding-dollar"></i>
+            <span>Kasbon Tim</span>
         </a>
     </div>
 
@@ -471,6 +486,18 @@
 
     @if($tab === 'pengeluaran')
         @include('laporan.partials.tab-pengeluaran', ['rows' => $rows, 'total' => $total, 'chart' => $chart])
+    @endif
+
+    @if($tab === 'pribadi')
+        @include('laporan.partials.tab-pribadi', ['rows' => $rows, 'total' => $total, 'chart' => $chart])
+    @endif
+
+    @if($tab === 'rekonsiliasi')
+        @include('laporan.partials.tab-rekonsiliasi', ['rows' => $rows, 'total' => $total, 'chart' => $chart, 'list_modal' => $list_modal ?? collect()])
+    @endif
+
+    @if($tab === 'kasbon')
+        @include('laporan.partials.tab-kasbon', ['rows' => $rows, 'total' => $total, 'chart' => $chart, 'per_karyawan' => $per_karyawan ?? collect()])
     @endif
 
 </div>
@@ -602,11 +629,36 @@
             });
         }
 
-        if (tab === 'penjualan' || tab === 'pembelian' || tab === 'pengeluaran') {
+        if (tab === 'rekonsiliasi') {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [
+                        {
+                            label: 'Modal Disetor (Debit)',
+                            data: chartData.modal,
+                            backgroundColor: '#10b981',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'Prive Ditarik (Pribadi)',
+                            data: chartData.prive,
+                            backgroundColor: '#dc2626',
+                            borderRadius: 4,
+                        }
+                    ]
+                },
+                options: window.chartOptions()
+            });
+        }
+
+        if (tab === 'penjualan' || tab === 'pembelian' || tab === 'pengeluaran' || tab === 'pribadi') {
             const colors = {
                 penjualan:   { border: '#10b981', bg: 'rgba(16, 185, 129, 0.1)',  label: 'Penjualan' },
                 pembelian:   { border: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)',  label: 'Pembelian' },
-                pengeluaran: { border: '#dc2626', bg: 'rgba(220, 38, 38, 0.1)',   label: 'Pengeluaran' },
+                pengeluaran: { border: '#dc2626', bg: 'rgba(220, 38, 38, 0.1)',   label: 'Pengeluaran Toko' },
+                pribadi:     { border: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)',   label: 'Pengeluaran Pribadi' },
             };
             const c = colors[tab];
 

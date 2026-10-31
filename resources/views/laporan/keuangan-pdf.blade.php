@@ -590,6 +590,237 @@
     @endif
 
     {{-- ============================================
+         TAB: KEUANGAN PRIBADI
+         ============================================ --}}
+    @if($tab === 'pribadi')
+
+        <table class="summary-grid">
+            <tr>
+                <td>
+                    <div class="summary-label">Total Pribadi</div>
+                    <div class="summary-value red">Rp {{ number_format($total['pengeluaran'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">{{ $total['transaksi'] }} Transaksi</div>
+                </td>
+                <td>
+                    <div class="summary-label">Makan / Lunch</div>
+                    <div class="summary-value amber">Rp {{ number_format($total['makan_pribadi'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">Konsumsi Pribadi</div>
+                </td>
+                <td>
+                    <div class="summary-label">Kebutuhan Rumah</div>
+                    <div class="summary-value navy">Rp {{ number_format($total['kebutuhan_rumah'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">Gas, Galon, Dapur</div>
+                </td>
+                <td>
+                    <div class="summary-label">Prive Penarikan</div>
+                    <div class="summary-value green">Rp {{ number_format($total['prive_penarikan'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">Tarik Tunai Pemilik</div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="section-title">DETAIL PENGELUARAN PRIBADI ({{ $rows->count() }} data)</div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Kode</th>
+                    <th>Tanggal</th>
+                    <th>Kategori</th>
+                    <th>Keterangan</th>
+                    <th>Jumlah</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($rows as $prb)
+                    <tr>
+                        <td style="font-family: 'Courier New', monospace;">{{ $prb->kode_pengeluaran }}</td>
+                        <td>{{ $prb->tanggal->format('d M Y') }}</td>
+                        <td style="text-align: left;">
+                            <span class="badge">{{ $prb->kategori_label }}</span>
+                        </td>
+                        <td style="text-align: left;">{{ $prb->keterangan }}</td>
+                        <td class="text-red">Rp {{ number_format($prb->jumlah, 0, ',', '.') }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="5" class="empty-row">Tidak ada pengeluaran pribadi pada periode ini</td></tr>
+                @endforelse
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">TOTAL PENGELUARAN PRIBADI</td>
+                    <td class="text-red">Rp {{ number_format($total['pengeluaran'], 0, ',', '.') }}</td>
+                </tr>
+            </tfoot>
+        </table>
+
+    @endif
+
+    {{-- ============================================
+         TAB: REKONSILIASI OWNER
+         ============================================ --}}
+    @if($tab === 'rekonsiliasi')
+
+        <table class="summary-grid">
+            <tr>
+                <td>
+                    <div class="summary-label">Modal Disetor</div>
+                    <div class="summary-value green">Rp {{ number_format($total['modal_disetor'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">Suntikan Dana ke Toko</div>
+                </td>
+                <td>
+                    <div class="summary-label">Prive Ditarik</div>
+                    <div class="summary-value red">Rp {{ number_format($total['prive_ditarik'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">Uang Toko Terpakai Pribadi</div>
+                </td>
+                <td>
+                    <div class="summary-label">Saldo Netto Pemilik</div>
+                    <div class="summary-value {{ $total['saldo_netto'] >= 0 ? 'green' : 'amber' }}">
+                        Rp {{ number_format($total['saldo_netto'], 0, ',', '.') }}
+                    </div>
+                    <div class="summary-sub">{{ $total['saldo_netto'] >= 0 ? 'Modal Mengendap di Toko' : 'Prive Melebihi Modal' }}</div>
+                </td>
+                <td>
+                    <div class="summary-label">Kasbon Belum Lunas</div>
+                    <div class="summary-value amber">Rp {{ number_format($total['kasbon_aktif'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">Piutang Tim Berjalan</div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="section-title">REKONSILIASI PER BULAN (MODAL VS PRIVE)</div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Bulan</th>
+                    <th>Modal Disetor (Debit)</th>
+                    <th>Prive Ditarik (Pribadi)</th>
+                    <th>Selisih Netto</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($rows as $rek)
+                    <tr>
+                        <td>{{ $rek['bulan_label'] }}</td>
+                        <td class="text-green">{{ $rek['modal'] > 0 ? 'Rp ' . number_format($rek['modal'], 0, ',', '.') : '-' }}</td>
+                        <td class="text-red">{{ $rek['prive'] > 0 ? 'Rp ' . number_format($rek['prive'], 0, ',', '.') : '-' }}</td>
+                        <td class="{{ $rek['selisih'] >= 0 ? 'text-green' : 'text-amber' }}">
+                            {{ $rek['selisih'] != 0 ? 'Rp ' . number_format($rek['selisih'], 0, ',', '.') : '-' }}
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>TOTAL</td>
+                    <td class="text-green">Rp {{ number_format($total['modal_disetor'], 0, ',', '.') }}</td>
+                    <td class="text-red">Rp {{ number_format($total['prive_ditarik'], 0, ',', '.') }}</td>
+                    <td class="{{ $total['saldo_netto'] >= 0 ? 'text-green' : 'text-amber' }}">
+                        Rp {{ number_format($total['saldo_netto'], 0, ',', '.') }}
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+
+    @endif
+
+    {{-- ============================================
+         TAB: BUKU KASBON KARYAWAN
+         ============================================ --}}
+    @if($tab === 'kasbon')
+
+        <table class="summary-grid">
+            <tr>
+                <td>
+                    <div class="summary-label">Total Kasbon Diberikan</div>
+                    <div class="summary-value navy">Rp {{ number_format($total['total_kasbon'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">{{ $total['transaksi'] }} Transaksi</div>
+                </td>
+                <td>
+                    <div class="summary-label">Sudah Lunas</div>
+                    <div class="summary-value green">Rp {{ number_format($total['total_lunas'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">Telah Dibayar / Dipotong</div>
+                </td>
+                <td>
+                    <div class="summary-label">Sisa Belum Lunas</div>
+                    <div class="summary-value red">Rp {{ number_format($total['total_belum_lunas'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">Piutang Aktif</div>
+                </td>
+            </tr>
+        </table>
+
+        @if($per_karyawan->isNotEmpty())
+            <div class="section-title">REKAP KASBON PER KARYAWAN</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nama Karyawan</th>
+                        <th class="text-center">Jumlah Pinjaman</th>
+                        <th>Total Pinjam</th>
+                        <th>Sudah Bayar</th>
+                        <th>Sisa Piutang</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($per_karyawan as $pk)
+                        <tr>
+                            <td style="font-weight: bold;">{{ $pk['nama'] }}</td>
+                            <td class="text-center">{{ $pk['count'] }}x</td>
+                            <td>Rp {{ number_format($pk['total'], 0, ',', '.') }}</td>
+                            <td class="text-green">Rp {{ number_format($pk['lunas'], 0, ',', '.') }}</td>
+                            <td class="{{ $pk['sisa'] > 0 ? 'text-red' : 'text-green' }}" style="font-weight: bold;">
+                                Rp {{ number_format($pk['sisa'], 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+
+        <div class="section-title">DETAIL TRANSAKSI KASBON ({{ $rows->count() }} data)</div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Kode</th>
+                    <th>Tanggal</th>
+                    <th>Nama Karyawan</th>
+                    <th>Keterangan</th>
+                    <th>Jumlah</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($rows as $kb)
+                    <tr>
+                        <td style="font-family: 'Courier New', monospace;">{{ $kb->kode_pengeluaran }}</td>
+                        <td>{{ $kb->tanggal->format('d M Y') }}</td>
+                        <td style="font-weight: bold;">{{ $kb->karyawan_nama ?? '-' }}</td>
+                        <td>{{ $kb->keterangan }}</td>
+                        <td class="text-navy">Rp {{ number_format($kb->jumlah, 0, ',', '.') }}</td>
+                        <td>
+                            <span class="badge {{ $kb->status_kasbon === 'lunas' ? 'success' : 'warning' }}">
+                                {{ $kb->status_kasbon === 'lunas' ? 'LUNAS' : 'BELUM LUNAS' }}
+                            </span>
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="6" class="empty-row">Tidak ada data kasbon pada periode ini</td></tr>
+                @endforelse
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">TOTAL</td>
+                    <td class="text-navy">Rp {{ number_format($total['total_kasbon'], 0, ',', '.') }}</td>
+                    <td>Sisa: Rp {{ number_format($total['total_belum_lunas'], 0, ',', '.') }}</td>
+                </tr>
+            </tfoot>
+        </table>
+
+    @endif
+
+    {{-- ============================================
          FOOTER — TANDA TANGAN
          ============================================ --}}
     <table class="footer-signature">
