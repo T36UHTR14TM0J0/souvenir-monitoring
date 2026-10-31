@@ -15,7 +15,14 @@ class ImportKeuangan2025Command extends Command
 
     public function handle()
     {
-        $filePath = $this->argument('file') ?: storage_path('app/import_keuangan_2025.json');
+        $filePath = $this->argument('file');
+        if (!$filePath) {
+            if (file_exists(database_path('data/import_keuangan_2025.json'))) {
+                $filePath = database_path('data/import_keuangan_2025.json');
+            } else {
+                $filePath = storage_path('app/import_keuangan_2025.json');
+            }
+        }
 
         if (!file_exists($filePath)) {
             $this->error("File tidak ditemukan: {$filePath}");
