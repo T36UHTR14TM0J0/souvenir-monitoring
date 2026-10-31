@@ -7,8 +7,8 @@
                 <i class="fas fa-store"></i>
             </div>
             <div class="sidebar-brand-text">
-                <div class="sidebar-brand-title">Souvenir Bali</div>
-                <div class="sidebar-brand-subtitle">Monitoring Keuangan</div>
+                <div class="sidebar-brand-title">Souvenir Jibranime</div>
+                <div class="sidebar-brand-subtitle">Toko Souvenir</div>
             </div>
         </a>
 
