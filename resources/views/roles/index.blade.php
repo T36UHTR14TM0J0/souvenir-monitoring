@@ -30,7 +30,7 @@
                             <th>Role</th>
                             <th>Statistik</th>
                             <th>Permissions</th>
-                            <th class="pe-4 text-end" style="width: 140px;">Aksi</th>
+                            <th class="text-center col-aksi" style="width: 70px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -86,11 +86,11 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="pe-4 text-end">
-                                <div class="d-inline-flex gap-1">
+                            <td class="text-center col-aksi">
+                                <div class="d-inline-flex flex-column gap-1 align-items-center">
                                     @can('role-edit')
                                         <a href="{{ route('roles.edit', $role) }}"
-                                           class="btn-icon btn-icon-edit"
+                                           class="btn-icon btn-icon-warning"
                                            title="Edit Role">
                                             <i class="fas fa-pen"></i>
                                         </a>

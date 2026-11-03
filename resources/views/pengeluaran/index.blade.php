@@ -478,13 +478,13 @@
                     <thead>
                         <tr>
                             <th class="ps-4" style="width: 50px;">No</th>
-                            <th>Kode</th>
-                            <th>Tanggal</th>
-                            <th>Alokasi</th>
-                            <th>Kategori</th>
+                            <th style="width: 130px;">Kode</th>
+                            <th style="width: 120px;">Tanggal</th>
+                            <th style="width: 130px;">Alokasi</th>
+                            <th style="width: 150px;">Kategori</th>
                             <th>Keterangan</th>
-                            <th class="text-end">Jumlah</th>
-                            <th class="pe-4 text-end" style="width: 140px;">Aksi</th>
+                            <th class="text-end text-nowrap col-nominal" style="width: 160px; min-width: 160px;">Jumlah</th>
+                            <th class="text-center col-aksi" style="width: 70px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -498,7 +498,7 @@
                             </td>
                             <td>
                                 <div style="font-size: 0.875rem; color: #374151;">
-                                    {{ $pgl->tanggal->format('d M Y') }}
+                                    {{ $pgl->tanggal->translatedFormat('d M Y') }}
                                 </div>
                                 <div style="font-size: 0.75rem; color: #9ca3af;">
                                     <i class="far fa-clock me-1"></i>{{ $pgl->created_at->format('H:i') }} WIB
@@ -538,18 +538,18 @@
                                     {{ $pgl->keterangan }}
                                 </div>
                             </td>
-                            <td class="text-end">
-                                <div class="jumlah-display">
+                            <td class="text-end text-nowrap col-nominal" style="width: 160px; min-width: 160px;">
+                                <div class="jumlah-display text-nowrap">
                                     - Rp {{ number_format($pgl->jumlah, 0, ',', '.') }}
                                 </div>
                             </td>
-                            <td class="pe-4 text-end">
-                                <div class="d-inline-flex gap-1">
+                            <td class="text-center col-aksi">
+                                <div class="d-inline-flex flex-column gap-1 align-items-center">
                                     <a href="{{ route('pengeluaran.show', $pgl) }}" class="btn-icon btn-view" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     @can('pengeluaran-edit')
-                                    <a href="{{ route('pengeluaran.edit', $pgl) }}" class="btn-icon btn-edit" title="Edit">
+                                    <a href="{{ route('pengeluaran.edit', $pgl) }}" class="btn-icon btn-icon-warning" title="Edit">
                                         <i class="fas fa-pen"></i>
                                     </a>
                                     @endcan

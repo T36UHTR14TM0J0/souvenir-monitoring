@@ -276,12 +276,12 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
         padding: 0.75rem 0.875rem;
-        text-align: right;
+        text-align: center !important;
         white-space: nowrap;
         border: none;
     }
-    .table-laporan thead th:first-child { text-align: left; }
-    .table-laporan thead th.text-center { text-align: center; }
+    .table-laporan thead th:first-child { text-align: center !important; }
+    .table-laporan thead th.text-center { text-align: center !important; }
 
     .table-laporan tbody td {
         padding: 0.625rem 0.875rem;
@@ -309,10 +309,10 @@
     }
     .table-laporan tfoot td:first-child { text-align: left; }
 
-    .text-green { color: #059669; font-weight: 600; }
-    .text-red   { color: #dc2626; font-weight: 600; }
-    .text-amber { color: #d97706; font-weight: 600; }
-    .text-navy  { color: #26476f; font-weight: 600; }
+    .text-green { color: #059669; font-weight: 600; white-space: nowrap !important; }
+    .text-red   { color: #dc2626; font-weight: 600; white-space: nowrap !important; }
+    .text-amber { color: #d97706; font-weight: 600; white-space: nowrap !important; }
+    .text-navy  { color: #26476f; font-weight: 600; white-space: nowrap !important; }
     .text-muted-cell { color: var(--gray-400); }
 
     .badge-soft {

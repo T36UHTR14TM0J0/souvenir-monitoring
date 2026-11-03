@@ -56,7 +56,7 @@ class TransaksiPembelianController extends Controller
     {
         $kodePembelian = Pembelian::generateKodePembelian();
 
-        $produks = Produk::with('kategori')
+        $produks = Produk::with(['kategori', 'satuan'])
             ->orderBy('nama_produk')
             ->get();
 
@@ -65,6 +65,7 @@ class TransaksiPembelianController extends Controller
                 'id'          => $p->id,
                 'nama'        => $p->nama_produk,
                 'kode'        => $p->kode_produk,
+                'satuan'      => $p->satuan->singkatan ?? 'pcs',
                 'harga_beli'  => (float) $p->harga_beli,
                 'stok'        => (int) $p->stok,
                 'kategori_id' => $p->kategori_id,
@@ -151,7 +152,7 @@ class TransaksiPembelianController extends Controller
 
     public function show(Pembelian $transaksiPembelian)
     {
-        $transaksiPembelian->load(['details.produk', 'user']);
+        $transaksiPembelian->load(['details.produk.satuan', 'user']);
 
         return view('transaksi-pembelian.show', [
             'pembelian' => $transaksiPembelian,

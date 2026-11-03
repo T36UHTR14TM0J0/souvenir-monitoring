@@ -88,8 +88,8 @@
                     <th>Tanggal</th>
                     <th>Pelanggan</th>
                     <th class="text-center">Item</th>
-                    <th>Diskon</th>
-                    <th>Grand Total</th>
+                    <th style="width: 140px; min-width: 140px;">Diskon</th>
+                    <th style="width: 160px; min-width: 160px;">Grand Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -98,7 +98,7 @@
                         <td style="font-family: monospace; color: #26476f; font-weight: 600;">
                             {{ $trx->kode_transaksi }}
                         </td>
-                        <td>{{ $trx->tanggal->format('d M Y') }}</td>
+                        <td>{{ $trx->tanggal->translatedFormat('d M Y') }}</td>
                         <td>{{ $trx->nama_pelanggan ?? '-' }}</td>
                         <td class="text-center">{{ $trx->details->count() }}</td>
                         <td class="text-amber">

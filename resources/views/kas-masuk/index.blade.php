@@ -188,8 +188,10 @@
         text-decoration: none;
         cursor: pointer;
     }
-    .btn-icon-edit       { color: #2563eb; }
-    .btn-icon-edit:hover { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+    .btn-icon-edit,
+    .btn-icon-warning    { color: #f59e0b; }
+    .btn-icon-edit:hover,
+    .btn-icon-warning:hover { background: #fffbeb; border-color: #fde68a; color: #b45309; }
     .btn-icon-delete     { color: #dc2626; }
     .btn-icon-delete:hover { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
 </style>
@@ -298,14 +300,14 @@
             <table class="table table-modern align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4">No</th>
-                        <th>Kode</th>
-                        <th>Tanggal</th>
-                        <th>Tipe</th>
-                        <th>Sumber Dana</th>
+                        <th class="ps-4" style="width: 50px;">No</th>
+                        <th style="width: 140px;">Kode</th>
+                        <th style="width: 120px;">Tanggal</th>
+                        <th style="width: 120px;">Tipe</th>
+                        <th style="width: 150px;">Sumber Dana</th>
                         <th>Keterangan</th>
-                        <th class="text-end">Jumlah</th>
-                        <th class="pe-4 text-end">Aksi</th>
+                        <th class="text-end text-nowrap col-nominal" style="width: 170px; min-width: 170px;">Jumlah</th>
+                        <th class="text-center col-aksi" style="width: 70px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -315,7 +317,7 @@
                             <td style="font-family: monospace; font-weight: 700; color: #10b981;">
                                 {{ $km->kode_transaksi }}
                             </td>
-                            <td>{{ $km->tanggal->format('d M Y') }}</td>
+                            <td>{{ $km->tanggal->translatedFormat('d M Y') }}</td>
                             <td>
                                 <span class="badge" style="background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0;">
                                     {{ $km->tipe_label }}
@@ -323,20 +325,22 @@
                             </td>
                             <td><strong>{{ $km->sumber }}</strong></td>
                             <td>{{ $km->keterangan }}</td>
-                            <td class="text-end" style="font-weight: 700; font-size: 0.95rem; color: #059669;">
+                            <td class="text-end text-nowrap col-nominal" style="font-weight: 700; font-size: 0.95rem; color: #059669; width: 170px; min-width: 170px; white-space: nowrap;">
                                 + Rp {{ number_format($km->jumlah, 0, ',', '.') }}
                             </td>
-                            <td class="pe-4 text-end">
-                                <a href="{{ route('kas-masuk.edit', $km) }}" class="btn-icon btn-icon-edit" title="Edit">
-                                    <i class="fas fa-pen"></i>
-                                </a>
-                                <form action="{{ route('kas-masuk.destroy', $km) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Hapus kas masuk ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-icon btn-icon-delete" title="Hapus">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
+                            <td class="text-center col-aksi">
+                                <div class="d-inline-flex flex-column gap-1 align-items-center">
+                                    <a href="{{ route('kas-masuk.edit', $km) }}" class="btn-icon btn-icon-warning" title="Edit">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <form action="{{ route('kas-masuk.destroy', $km) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Hapus kas masuk ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn-icon btn-icon-delete" title="Hapus">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -349,10 +353,9 @@
                 </tbody>
             </table>
         </div>
+        {{-- PAGINATION --}}
         @if($kasMasuks->hasPages())
-            <div class="p-3 border-top">
-                {{ $kasMasuks->links() }}
-            </div>
+            <x-pagination :paginator="$kasMasuks" label="kas masuk" />
         @endif
     </div>
 

@@ -374,7 +374,7 @@
                                         </span>
                                     @else
                                         <span class="badge-soft warning">
-                                            <i class="fas fa-exclamation-triangle"></i> {{ $psm->stok }} pcs
+                                            <i class="fas fa-exclamation-triangle"></i> {{ $psm->stok }} {{ $psm->satuan->singkatan ?? 'pcs' }}
                                         </span>
                                     @endif
                                 </div>
@@ -417,7 +417,7 @@
                                         {{ $trx->kode_transaksi }}
                                     </div>
                                     <div class="list-meta">
-                                        {{ $trx->tanggal->format('d M Y') }} • {{ $trx->created_at->format('H:i') }} WIB
+                                        {{ $trx->tanggal->translatedFormat('d M Y') }} • {{ $trx->created_at->format('H:i') }} WIB
                                         @if($trx->nama_pelanggan)
                                             • {{ $trx->nama_pelanggan }}
                                         @endif
@@ -461,7 +461,7 @@
                                         {{ $pbl->kode_pembelian }}
                                     </div>
                                     <div class="list-meta">
-                                        {{ $pbl->tanggal->format('d M Y') }}
+                                        {{ $pbl->tanggal->translatedFormat('d M Y') }}
                                         @if($pbl->supplier)
                                             • {{ $pbl->supplier }}
                                         @endif
@@ -514,7 +514,7 @@
                                                 {{ $pgl->kode_pengeluaran }}
                                             </div>
                                             <div class="list-meta">
-                                                {{ $pgl->tanggal->format('d M Y') }} • {{ $pgl->kategori_label }} • {{ $pgl->keterangan }}
+                                                {{ $pgl->tanggal->translatedFormat('d M Y') }} • {{ $pgl->kategori_label }} • {{ $pgl->keterangan }}
                                             </div>
                                         </div>
                                         <div class="list-value">

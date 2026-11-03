@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Data Produk')
+@section('title', 'Daftar Produk')
 
 @section('content')
 <div class="container-fluid px-0">
@@ -8,8 +8,8 @@
     {{-- HEADER --}}
     <x-page-header
         icon="fas fa-box"
-        title="Data Produk"
-        subtitle="Kelola daftar produk toko souvenir beserta harga dan stoknya."
+        title="Daftar Produk"
+        subtitle="Kelola katalog produk souvenir, harga, stok, dan kategori."
     >
         @can('produk-create')
             <a href="{{ route('produk.create') }}" class="btn btn-primary-custom">
@@ -25,7 +25,7 @@
             <form method="GET" action="{{ route('produk.index') }}">
                 <div class="row g-2 g-md-3 align-items-center">
 
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-3">
                         <div class="form-search-wrapper">
                             <i class="fas fa-search form-search-icon"></i>
                             <input type="text"
@@ -48,6 +48,17 @@
                     </div>
 
                     <div class="col-12 col-md-2">
+                        <select name="satuan_id" class="form-select form-select-modern">
+                            <option value="">Semua Satuan</option>
+                            @foreach($satuans as $sat)
+                                <option value="{{ $sat->id }}" {{ request('satuan_id') == $sat->id ? 'selected' : '' }}>
+                                    {{ $sat->nama_satuan }} ({{ $sat->singkatan }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-2">
                         <select name="stok_status" class="form-select form-select-modern">
                             <option value="">Semua Stok</option>
                             <option value="menipis" {{ request('stok_status') == 'menipis' ? 'selected' : '' }}>
@@ -56,7 +67,7 @@
                         </select>
                     </div>
 
-                    <div class="col-12 col-md-3 d-flex gap-2">
+                    <div class="col-12 col-md-2 d-flex gap-2">
                         <button type="submit" class="btn btn-primary-custom flex-fill justify-content-center">
                             <i class="fas fa-filter"></i>
                             <span>Filter</span>
@@ -80,10 +91,11 @@
                         <tr>
                             <th class="ps-4" style="width: 60px;">No</th>
                             <th>Produk</th>
-                            <th>Kategori</th>
-                            <th class="text-end">Harga</th>
-                            <th class="text-center">Stok</th>
-                            <th class="pe-4 text-end">Aksi</th>
+                            <th style="width: 140px;">Kategori</th>
+                            <th style="width: 100px;">Satuan</th>
+                            <th class="text-end text-nowrap col-nominal" style="width: 170px; min-width: 170px;">Harga</th>
+                            <th class="text-center" style="width: 110px;">Stok</th>
+                            <th class="text-center col-aksi" style="width: 70px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -100,7 +112,11 @@
                                         <i class="fas fa-cube"></i>
                                     </div>
                                     <div class="min-w-0">
-                                        <div class="cell-title text-truncate">{{ $produk->nama_produk }}</div>
+                                        <div class="cell-title text-truncate">
+                                            <a href="{{ route('produk.show', $produk) }}" class="text-dark text-decoration-none hover-primary">
+                                                {{ $produk->nama_produk }}
+                                            </a>
+                                        </div>
                                         <div class="mt-1">
                                             <span class="kode-produk">{{ $produk->kode_produk }}</span>
                                         </div>
@@ -113,11 +129,16 @@
                                     {{ $produk->kategori->nama_kategori }}
                                 </span>
                             </td>
-                            <td class="text-end">
-                                <div class="harga-jual">
+                            <td>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fw-medium" style="font-size: 0.8rem;">
+                                    <i class="fas fa-ruler-combined me-1"></i>{{ $produk->satuan->singkatan ?? ($produk->satuan->nama_satuan ?? 'pcs') }}
+                                </span>
+                            </td>
+                            <td class="text-end text-nowrap col-nominal" style="width: 170px; min-width: 170px;">
+                                <div class="harga-jual text-nowrap">
                                     Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}
                                 </div>
-                                <div class="harga-beli">
+                                <div class="harga-beli text-nowrap">
                                     Beli: Rp {{ number_format($produk->harga_beli, 0, ',', '.') }}
                                 </div>
                             </td>
@@ -125,20 +146,25 @@
                                 @if($produk->stok <= $produk->stok_minimal)
                                     <span class="badge-stok-low">
                                         <i class="fas fa-exclamation-triangle"></i>
-                                        {{ $produk->stok }}
+                                        {{ $produk->stok }} {{ $produk->satuan->singkatan ?? 'pcs' }}
                                     </span>
                                 @else
                                     <span class="badge-stok-ok">
                                         <i class="fas fa-check"></i>
-                                        {{ $produk->stok }}
+                                        {{ $produk->stok }} {{ $produk->satuan->singkatan ?? 'pcs' }}
                                     </span>
                                 @endif
                             </td>
-                            <td class="pe-4 text-end">
-                                <div class="d-inline-flex gap-1">
+                            <td class="text-center col-aksi">
+                                <div class="d-inline-flex flex-column gap-1 align-items-center">
+                                    <a href="{{ route('produk.show', $produk) }}"
+                                       class="btn-icon btn-icon-info"
+                                       title="Lihat Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
                                     @can('produk-edit')
                                         <a href="{{ route('produk.edit', $produk) }}"
-                                           class="btn-icon btn-icon-edit"
+                                           class="btn-icon btn-icon-warning"
                                            title="Edit">
                                             <i class="fas fa-pen"></i>
                                         </a>
@@ -158,7 +184,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6">
+                            <td colspan="7">
                                 <x-empty-state
                                     icon="fas fa-folder-open"
                                     title="Tidak Ada Data"

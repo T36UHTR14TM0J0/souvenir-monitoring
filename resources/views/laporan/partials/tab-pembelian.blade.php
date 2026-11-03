@@ -88,8 +88,8 @@
                     <th>Tanggal</th>
                     <th>Supplier</th>
                     <th class="text-center">Item</th>
-                    <th>Diskon</th>
-                    <th>Grand Total</th>
+                    <th style="width: 140px; min-width: 140px;">Diskon</th>
+                    <th style="width: 160px; min-width: 160px;">Grand Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -98,7 +98,7 @@
                         <td style="font-family: monospace; color: #2563eb; font-weight: 600;">
                             {{ $pbl->kode_pembelian }}
                         </td>
-                        <td>{{ $pbl->tanggal->format('d M Y') }}</td>
+                        <td>{{ $pbl->tanggal->translatedFormat('d M Y') }}</td>
                         <td>{{ $pbl->supplier ?? '-' }}</td>
                         <td class="text-center">{{ $pbl->details->count() }}</td>
                         <td class="text-amber">

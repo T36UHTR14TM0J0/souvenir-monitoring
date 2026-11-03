@@ -202,11 +202,11 @@
                 <hr style="border-color: var(--gray-100); margin: 1.75rem 0 1.5rem;">
 
                 <div class="form-actions">
-                    <a href="{{ route('kas-masuk.index') }}" class="btn-danger-custom">
+                    <a href="{{ route('kas-masuk.index') }}" class="btn btn-danger-custom">
                         <i class="fas fa-arrow-left"></i>
-                        <span>Batal</span>
+                        <span>Kembali</span>
                     </a>
-                    <button type="submit" class="btn-primary-custom" id="submitBtn">
+                    <button type="submit" class="btn btn-primary-custom" id="submitBtn">
                         <i class="fas fa-save"></i>
                         <span>Simpan Perubahan</span>
                     </button>

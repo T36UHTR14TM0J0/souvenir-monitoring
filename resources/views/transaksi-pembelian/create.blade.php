@@ -77,6 +77,7 @@
         box-shadow: 0 2px 8px rgba(38, 71, 111, 0.25);
         cursor: pointer;
         width: 100%;
+        text-decoration: none;
     }
 
     .btn-primary-custom:hover {
@@ -362,7 +363,7 @@
                                     <th>Kode</th>
                                     <th>Nama Produk</th>
                                     <th class="text-center">Stok Saat Ini</th>
-                                    <th class="text-end">Harga Beli</th>
+                                    <th class="text-end text-nowrap col-nominal" style="width: 140px; min-width: 140px;">Harga Beli</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -372,12 +373,12 @@
                                     <td style="font-weight: 500; color: var(--gray-800);">{{ $p->nama_produk }}</td>
                                     <td class="text-center">
                                         @if($p->stok > 0)
-                                            <span class="badge-stock bg-info-custom">{{ $p->stok }} Pcs</span>
+                                            <span class="badge-stock bg-info-custom">{{ $p->stok }} {{ $p->satuan->singkatan ?? 'Pcs' }}</span>
                                         @else
                                             <span class="badge-stock bg-danger-custom">Habis</span>
                                         @endif
                                     </td>
-                                    <td class="text-end" style="color: #2563eb; font-weight: 600;">Rp {{ number_format($p->harga_beli, 0, ',', '.') }}</td>
+                                    <td class="text-end text-nowrap col-nominal" style="color: #2563eb; font-weight: 600; width: 140px; min-width: 140px; white-space: nowrap;">Rp {{ number_format($p->harga_beli, 0, ',', '.') }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -403,9 +404,9 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 35%;">Produk</th>
-                                        <th style="width: 20%;">Harga Beli</th>
+                                        <th style="width: 25%; min-width: 130px;">Harga Beli</th>
                                         <th style="width: 20%; text-align: center;">Qty</th>
-                                        <th style="width: 20%; text-align: right;">Subtotal</th>
+                                        <th style="width: 20%; min-width: 140px; text-align: center;" class="text-nowrap col-nominal">Subtotal</th>
                                         <th style="width: 5%;"></th>
                                     </tr>
                                 </thead>
@@ -418,6 +419,10 @@
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div id="cartErrorMsg" class="alert alert-danger mt-3 py-2 px-3" style="display: none; font-size: 0.85rem;">
+                            <i class="fas fa-circle-exclamation me-1"></i> Silakan pilih minimal 1 produk ke dalam daftar pembelian sebelum menyimpan.
                         </div>
                     </div>
                 </div>
@@ -460,13 +465,15 @@
 
                     <div class="row g-2 mt-auto">
                         <div class="col-6">
-                            <a href="{{ route('transaksi-pembelian.index') }}" class="btn-danger-custom">
-                                Batal
+                            <a href="{{ route('transaksi-pembelian.index') }}" class="btn btn-danger-custom w-100 justify-content-center">
+                                <i class="fas fa-arrow-left"></i>
+                                <span>Kembali</span>
                             </a>
                         </div>
                         <div class="col-6">
-                            <button type="submit" class="btn-primary-custom" id="submitBtn" {{ $produks->isEmpty() ? 'disabled' : '' }}>
-                                Simpan
+                            <button type="submit" class="btn btn-primary-custom w-100 justify-content-center" id="submitBtn" {{ $produks->isEmpty() ? 'disabled' : '' }}>
+                                <i class="fas fa-save"></i>
+                                <span>Simpan Pembelian</span>
                             </button>
                         </div>
                     </div>
@@ -479,19 +486,15 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 (function () {
     'use strict';
 
-    const SWAL_PRIMARY = '#26476f';
-    const SWAL_CANCEL  = '#a8a29e';
     const PRODUKS = @json($produksJson);
-
     let rowCounter = 0;
 
     // FITUR PENCARIAN
-    document.getElementById('searchProduct').addEventListener('keyup', function() {
+    document.getElementById('searchProduct')?.addEventListener('keyup', function() {
         let keyword = this.value.toLowerCase();
         let rows = document.querySelectorAll('#productTable tbody tr');
 
@@ -509,6 +512,9 @@
     window.addToCart = function(produkId) {
         const p = PRODUKS.find(x => x.id == produkId);
         if(!p) return;
+
+        const cartErrorMsg = document.getElementById('cartErrorMsg');
+        if (cartErrorMsg) cartErrorMsg.style.display = 'none';
 
         document.getElementById('emptyCartMsg').style.display = 'none';
         const rowId = `cart_row_${p.id}`;
@@ -528,7 +534,7 @@
         tr.innerHTML = `
             <td>
                 <div style="font-weight: 600; color: var(--gray-800);">${p.nama}</div>
-                <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 2px;">Stok saat ini: ${p.stok}</div>
+                <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 2px;">Stok saat ini: ${p.stok} ${p.satuan || 'pcs'}</div>
                 <input type="hidden" name="items[${rowCounter}][produk_id]" value="${p.id}">
             </td>
             <td>
@@ -544,8 +550,8 @@
                     <button type="button" class="btn-qty" onclick="changeQty('${rowId}', 1)">+</button>
                 </div>
             </td>
-            <td class="text-end">
-                <span class="subtotal-display">${formatRupiah(p.harga_beli)}</span>
+            <td class="text-end text-nowrap col-nominal" style="min-width: 140px; white-space: nowrap;">
+                <span class="subtotal-display text-nowrap">${formatRupiah(p.harga_beli)}</span>
             </td>
             <td class="text-center">
                 <button type="button" class="btn-remove-row" onclick="removeRow('${rowId}')" title="Hapus">
@@ -621,49 +627,31 @@
         document.getElementById('summaryGrandTotal').textContent = formatRupiah(grandTotal);
     }
 
-    document.getElementById('total_diskon').addEventListener('input', updateSummary);
+    document.getElementById('total_diskon')?.addEventListener('input', updateSummary);
 
-    // VALIDASI FORM SUBMIT
-    document.getElementById('pembelianForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-
+    // VALIDASI FORM SUBMIT TANPA SWEETALERT
+    document.getElementById('pembelianForm')?.addEventListener('submit', function (e) {
         const rows = document.querySelectorAll('#itemsBody tr:not(#emptyCartMsg)');
+        const cartErrorMsg = document.getElementById('cartErrorMsg');
+
         if (rows.length === 0) {
-            Swal.fire({ icon: 'warning', title: 'Keranjang Kosong', text: 'Silakan pilih minimal 1 produk.', confirmButtonColor: SWAL_PRIMARY });
+            e.preventDefault();
+            if (cartErrorMsg) {
+                cartErrorMsg.style.display = 'block';
+                cartErrorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return false;
         }
 
-        const grandTotal = document.getElementById('summaryGrandTotal').textContent;
+        if (cartErrorMsg) {
+            cartErrorMsg.style.display = 'none';
+        }
 
-        Swal.fire({
-            title: 'Simpan Pembelian?',
-            html: `
-                <p style="color: #4b5563; margin-bottom: 0.5rem;">Pastikan data sudah benar.</p>
-                <div style="background: rgba(38, 71, 111, 0.06); padding: 0.75rem; border-radius: 8px;">
-                    <div style="font-size: 0.8rem; color: #6b7280;">Grand Total</div>
-                    <div style="font-size: 1.5rem; font-weight: 700; color: #26476f;">${grandTotal}</div>
-                </div>
-                <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 0.5rem 0.75rem; margin-top: 0.75rem; text-align: left;">
-                    <div style="font-size: 0.75rem; color: #065f46;">
-                        <i class="fas fa-arrow-up"></i> Stok produk akan bertambah otomatis.
-                    </div>
-                </div>
-            `,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-save me-1"></i> Ya, Simpan!',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: SWAL_PRIMARY,
-            cancelButtonColor: SWAL_CANCEL,
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const btn = document.getElementById('submitBtn');
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-                HTMLFormElement.prototype.submit.call(document.getElementById('pembelianForm'));
-            }
-        });
+        const btn = document.getElementById('submitBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> <span>Memproses...</span>';
+        }
     });
 
 })();

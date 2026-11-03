@@ -183,7 +183,7 @@
             <p class="page-subtitle-custom">Kode: <strong style="color: #26476f;">{{ $transaksi->kode_transaksi }}</strong></p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('transaksi-penjualan.index') }}" class="btn-secondary-custom">
+            <a href="{{ route('transaksi-penjualan.index') }}" class="btn btn-danger-custom">
                 <i class="fas fa-arrow-left"></i>
                 <span>Kembali</span>
             </a>
@@ -202,7 +202,7 @@
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-item-label">Tanggal</div>
-                            <div class="info-item-value">{{ $transaksi->tanggal->format('d F Y') }}</div>
+                            <div class="info-item-value">{{ $transaksi->tanggal->translatedFormat('d F Y') }}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-item-label">Waktu Input</div>
@@ -249,9 +249,9 @@
                                 <tr>
                                     <th class="ps-4" style="width: 50px;">No</th>
                                     <th>Nama Produk</th>
-                                    <th class="text-end">Harga</th>
+                                    <th class="text-end text-nowrap col-nominal" style="width: 150px; min-width: 150px;">Harga</th>
                                     <th class="text-center">Qty</th>
-                                    <th class="pe-4 text-end">Subtotal</th>
+                                    <th class="pe-4 text-end text-nowrap col-nominal" style="width: 160px; min-width: 160px;">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -264,9 +264,9 @@
                                             {{ $detail->produk->kode_produk ?? '-' }}
                                         </div>
                                     </td>
-                                    <td class="text-end">Rp {{ number_format($detail->harga_satuan, 0, ',', '.') }}</td>
-                                    <td class="text-center"><strong>{{ $detail->qty }}</strong></td>
-                                    <td class="pe-4 text-end fw-semibold" style="color: #26476f;">
+                                    <td class="text-end text-nowrap col-nominal" style="width: 150px; min-width: 150px;">Rp {{ number_format($detail->harga_satuan, 0, ',', '.') }}</td>
+                                    <td class="text-center"><strong>{{ $detail->qty }}</strong> <small class="text-muted">{{ $detail->produk->satuan->singkatan ?? 'pcs' }}</small></td>
+                                    <td class="pe-4 text-end fw-semibold text-nowrap col-nominal" style="color: #26476f; width: 160px; min-width: 160px;">
                                         Rp {{ number_format($detail->subtotal, 0, ',', '.') }}
                                     </td>
                                 </tr>

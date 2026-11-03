@@ -170,7 +170,7 @@ class DashboardController extends Controller
         // ============================================
         // PRODUK STOK MENIPIS
         // ============================================
-        $produkStokMenipis = Produk::with('kategori')
+        $produkStokMenipis = Produk::with(['kategori', 'satuan'])
             ->whereColumn('stok', '<=', 'stok_minimal')
             ->orderBy('stok', 'asc')
             ->limit(10)

@@ -62,7 +62,7 @@
                             <th>Nama Kategori</th>
                             <th>Deskripsi</th>
                             <th>Jumlah Produk</th>
-                            <th class="pe-4 text-end">Aksi</th>
+                            <th class="text-center col-aksi" style="width: 70px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -102,11 +102,11 @@
                                     {{ $kategori->produks_count }} produk
                                 </span>
                             </td>
-                            <td class="pe-4 text-end">
-                                <div class="d-inline-flex gap-1">
+                            <td class="text-center col-aksi">
+                                <div class="d-inline-flex flex-column gap-1 align-items-center">
                                     @can('kategori-edit')
                                         <a href="{{ route('kategori.edit', $kategori) }}"
-                                           class="btn-icon btn-icon-edit"
+                                           class="btn-icon btn-icon-warning"
                                            title="Edit">
                                             <i class="fas fa-pen"></i>
                                         </a>

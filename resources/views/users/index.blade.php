@@ -81,7 +81,7 @@
                             <th>Role</th>
                             <th>Status</th>
                             <th>Login Terakhir</th>
-                            <th class="pe-4 text-end">Aksi</th>
+                            <th class="text-center col-aksi" style="width: 70px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -129,10 +129,10 @@
                                     {{ $user->last_login_at?->diffForHumans() ?? 'Belum pernah' }}
                                 </span>
                             </td>
-                            <td class="pe-4 text-end">
-                                <div class="d-inline-flex gap-1">
+                            <td class="text-center col-aksi">
+                                <div class="d-inline-flex flex-column gap-1 align-items-center">
                                     @can('user-edit')
-                                        <a href="{{ route('users.edit', $user) }}" class="btn-icon btn-icon-edit" title="Edit">
+                                        <a href="{{ route('users.edit', $user) }}" class="btn-icon btn-icon-warning" title="Edit">
                                             <i class="fas fa-pen"></i>
                                         </a>
                                         <button type="button"

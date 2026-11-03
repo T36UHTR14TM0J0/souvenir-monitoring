@@ -13,6 +13,7 @@ class Produk extends Model
 
     protected $fillable = [
         'kategori_id',
+        'satuan_id',
         'kode_produk',
         'nama_produk',
         'harga_beli',
@@ -32,6 +33,11 @@ class Produk extends Model
         return $this->belongsTo(Kategori::class);
     }
 
+    public function satuan()
+    {
+        return $this->belongsTo(Satuan::class);
+    }
+
     public function scopeStokMenipis($query)
     {
         return $query->whereColumn('stok', '<=', 'stok_minimal');
@@ -39,9 +45,23 @@ class Produk extends Model
 
     public static function generateKodeProduk(): string
     {
-        $last = self::orderBy('id', 'desc')->first();
-        $number = $last ? ((int) substr($last->kode_produk, 3)) + 1 : 1;
+        $last = self::where('kode_produk', 'like', 'PRD%')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if ($last) {
+            $numOnly = preg_replace('/\D/', '', $last->kode_produk);
+            $number  = ((int) $numOnly) + 1;
+        } else {
+            $number = 1;
+        }
+
         return 'PRD' . str_pad($number, 5, '0', STR_PAD_LEFT);
+    }
+
+    public function transaksiDetails()
+    {
+        return $this->hasMany(TransaksiDetail::class);
     }
 
     public function pembelianDetails()

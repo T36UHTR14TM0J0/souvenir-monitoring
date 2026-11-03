@@ -631,6 +631,12 @@
                 <form method="POST" action="{{ route('login') }}" id="loginForm">
                     @csrf
 
+                    @if($errors->any())
+                        <div class="alert alert-danger py-2 px-3 mb-3" style="font-size: 0.85rem; border-radius: 8px;">
+                            {{ $errors->first() }}
+                        </div>
+                    @endif
+
                     <div class="mb-3">
                         <label class="form-label">Email</label>
                         <input class="form-control @error('email') is-invalid @enderror"
@@ -640,6 +646,9 @@
                                placeholder="nama@gmail.com"
                                required
                                autofocus />
+                        @error('email')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="mb-3">
@@ -658,6 +667,9 @@
                                 </svg>
                             </button>
                         </div>
+                        @error('password')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="mb-4"></div>
@@ -712,17 +724,6 @@
                     timer: @json(session('swal.type')) === 'success' ? 2500 : undefined,
                     timerProgressBar: @json(session('swal.type')) === 'success',
                     showConfirmButton: @json(session('swal.type')) !== 'success',
-                });
-            @endif
-
-            @if($errors->any() && !session('swal'))
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Login Gagal',
-                    text: @json($errors->first()),
-                    confirmButtonText: 'Coba Lagi',
-                    confirmButtonColor: '#2f5889',
-                    background: '#ffffff',
                 });
             @endif
 

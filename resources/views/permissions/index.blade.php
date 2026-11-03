@@ -90,7 +90,7 @@
                             <th>Permission</th>
                             <th>Grup</th>
                             <th>Digunakan</th>
-                            <th class="pe-4 text-end" style="width: 100px;">Aksi</th>
+                            <th class="text-center col-aksi" style="width: 70px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -129,7 +129,7 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="pe-4 text-end">
+                            <td class="text-center col-aksi">
                                 @can('permission-delete')
                                     <button type="button"
                                             class="btn-icon btn-icon-danger btn-delete-permission"

@@ -82,9 +82,9 @@
             <thead>
                 <tr>
                     <th>Bulan</th>
-                    <th style="text-align: right;">Modal Disetor (Debit)</th>
-                    <th style="text-align: right;">Prive Ditarik (Pribadi)</th>
-                    <th style="text-align: right;">Selisih Netto Bulan Ini</th>
+                    <th style="text-align: center; min-width: 150px;">Modal Disetor (Debit)</th>
+                    <th style="text-align: center; min-width: 150px;">Prive Ditarik (Pribadi)</th>
+                    <th style="text-align: center; min-width: 150px;">Selisih Netto Bulan Ini</th>
                     <th style="text-align: center;">Status Arus Modal</th>
                 </tr>
             </thead>
@@ -153,7 +153,7 @@
                     <th style="width: 110px;">Tanggal</th>
                     <th style="width: 180px;">Sumber Pembayaran</th>
                     <th>Keterangan</th>
-                    <th style="width: 150px; text-align: right;">Jumlah</th>
+                    <th style="width: 150px; min-width: 150px; text-align: center;">Jumlah</th>
                 </tr>
             </thead>
             <tbody>

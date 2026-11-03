@@ -25,7 +25,7 @@
                 </li>
             @endcan
 
-            @canany(['produk-list', 'kategori-list'])
+            @canany(['produk-list', 'kategori-list', 'satuan-list'])
                 <li class="sidebar-header">Master Data</li>
 
                 @can('produk-list')
@@ -45,6 +45,17 @@
                             <a class="sidebar-link" href="{{ route('kategori.index') }}">
                                 <span class="sidebar-link-icon"><i class="fas fa-tags"></i></span>
                                 <span>Kategori</span>
+                            </a>
+                        </li>
+                    @endif
+                @endcan
+
+                @can('satuan-list')
+                    @if(Route::has('satuan.index'))
+                        <li class="sidebar-item {{ request()->routeIs('satuan.*') ? 'active' : '' }}">
+                            <a class="sidebar-link" href="{{ route('satuan.index') }}">
+                                <span class="sidebar-link-icon"><i class="fas fa-ruler-combined"></i></span>
+                                <span>Satuan</span>
                             </a>
                         </li>
                     @endif

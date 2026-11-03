@@ -133,7 +133,7 @@
                     <th style="width: 110px;">Tanggal</th>
                     <th style="width: 180px;">Kategori</th>
                     <th>Keterangan</th>
-                    <th style="width: 150px; text-align: right;">Jumlah</th>
+                    <th style="width: 150px; min-width: 150px; text-align: center;">Jumlah</th>
                 </tr>
             </thead>
             <tbody>

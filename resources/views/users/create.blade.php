@@ -18,10 +18,10 @@
             <form action="{{ route('users.store') }}" method="POST" id="userForm" novalidate>
                 @csrf
 
-                {{-- ============ SECTION: INFORMASI AKUN ============ --}}
+                {{-- ============ SECTION: INFORMASI PENGGUNA ============ --}}
                 <div class="form-section-title">
-                    <i class="fas fa-user-circle"></i>
-                    Informasi Akun
+                    <i class="fas fa-info-circle"></i>
+                    Informasi Pengguna
                 </div>
 
                 <div class="row g-3">
@@ -40,14 +40,13 @@
                                    placeholder="Masukkan nama lengkap"
                                    autofocus>
                         </div>
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @else
-                            <div class="required-note">
-                                <i class="fas fa-circle-info"></i>
-                                <span>Wajib diisi</span>
-                            </div>
-                        @enderror
+                        <div class="invalid-feedback" id="error_name" @if(!$errors->has('name')) style="display: none !important;" @endif>
+                            @error('name'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_name" @if($errors->has('name')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Wajib diisi</span>
+                        </div>
                     </div>
 
                     {{-- Email --}}
@@ -64,14 +63,13 @@
                                    value="{{ old('email') }}"
                                    placeholder="nama@email.com">
                         </div>
-                        @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @else
-                            <div class="required-note">
-                                <i class="fas fa-circle-info"></i>
-                                <span>Wajib diisi</span>
-                            </div>
-                        @enderror
+                        <div class="invalid-feedback" id="error_email" @if(!$errors->has('email')) style="display: none !important;" @endif>
+                            @error('email'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_email" @if($errors->has('email')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Wajib diisi dengan email valid</span>
+                        </div>
                     </div>
 
                     {{-- Role --}}
@@ -89,14 +87,13 @@
                                 </option>
                             @endforeach
                         </select>
-                        @error('role')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @else
-                            <div class="required-note">
-                                <i class="fas fa-circle-info"></i>
-                                <span>Wajib diisi</span>
-                            </div>
-                        @enderror
+                        <div class="invalid-feedback" id="error_role" @if(!$errors->has('role')) style="display: none !important;" @endif>
+                            @error('role'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_role" @if($errors->has('role')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Wajib dipilih</span>
+                        </div>
                     </div>
                 </div>
 
@@ -127,14 +124,13 @@
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @else
-                                <div class="required-note">
-                                    <i class="fas fa-circle-info"></i>
-                                    <span>Wajib diisi, minimal 8 karakter</span>
-                                </div>
-                            @enderror
+                            <div class="invalid-feedback" id="error_password" @if(!$errors->has('password')) style="display: none !important;" @endif>
+                                @error('password'){{ $message }}@enderror
+                            </div>
+                            <div class="required-note" id="note_password" @if($errors->has('password')) style="display: none !important;" @endif>
+                                <i class="fas fa-circle-info"></i>
+                                <span>Wajib diisi, minimal 8 karakter</span>
+                            </div>
                             <div class="password-strength" id="passwordStrength">
                                 <div class="password-strength-bar"></div>
                                 <div class="password-strength-bar"></div>
@@ -163,7 +159,8 @@
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
-                            <div class="required-note">
+                            <div class="invalid-feedback" id="error_password_confirmation" style="display: none !important;"></div>
+                            <div class="required-note" id="note_password_confirmation">
                                 <i class="fas fa-circle-info"></i>
                                 <span>Wajib diisi, harus sama dengan password</span>
                             </div>
@@ -181,8 +178,10 @@
                            id="is_active"
                            {{ old('is_active', true) ? 'checked' : '' }}>
                     <label class="form-check-label form-check-label-modern" for="is_active">
-                        Aktifkan Akun
-                        <small>User dapat langsung login ke sistem setelah akun dibuat.</small>
+                        <strong>Aktifkan Akun</strong>
+                        <span class="d-block text-muted" style="font-size: 0.8rem;">
+                            User yang aktif dapat login ke dalam sistem
+                        </span>
                     </label>
                 </div>
 
@@ -210,9 +209,6 @@
 (function () {
     'use strict';
 
-    const SWAL_PRIMARY = '#26476f';
-    const SWAL_CANCEL  = '#a8a29e';
-
     const form          = document.getElementById('userForm');
     const submitBtn     = document.getElementById('submitBtn');
     const passwordInput = document.getElementById('password');
@@ -220,53 +216,199 @@
 
     if (!form) return;
 
-    /* ---------- FORM SUBMIT ---------- */
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
+    const fields = ['name', 'email', 'role', 'password', 'password_confirmation'];
 
-        if (passwordInput.value.length < 8) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Password Terlalu Pendek',
-                text: 'Password minimal harus 8 karakter.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: SWAL_PRIMARY,
-            });
-            passwordInput.focus();
-            return false;
-        }
+    function setFieldError(fieldId, message) {
+        const input   = document.getElementById(fieldId);
+        const errorEl = document.getElementById('error_' + fieldId);
+        const noteEl  = document.getElementById('note_' + fieldId);
 
-        if (passwordInput.value !== confirmInput.value) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Password Tidak Cocok',
-                text: 'Pastikan password dan konfirmasi password sama.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: SWAL_PRIMARY,
-            });
-            confirmInput.focus();
-            return false;
-        }
-
-        Swal.fire({
-            title: 'Simpan User?',
-            text: 'Pastikan semua data yang diisi sudah benar.',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-save me-1"></i> Ya, Simpan!',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: SWAL_PRIMARY,
-            cancelButtonColor: SWAL_CANCEL,
-            reverseButtons: true,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Menyimpan...</span>';
-                HTMLFormElement.prototype.submit.call(form);
+        if (input) {
+            input.classList.add('is-invalid');
+            const select2 = input.nextElementSibling;
+            if (select2 && select2.classList.contains('select2-container')) {
+                select2.classList.add('is-invalid');
             }
+        }
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.style.setProperty('display', 'block', 'important');
+        }
+        if (noteEl) {
+            noteEl.style.setProperty('display', 'none', 'important');
+        }
+    }
+
+    function clearFieldError(fieldId) {
+        const input   = document.getElementById(fieldId);
+        const errorEl = document.getElementById('error_' + fieldId);
+        const noteEl  = document.getElementById('note_' + fieldId);
+
+        if (input) {
+            input.classList.remove('is-invalid');
+            const select2 = input.nextElementSibling;
+            if (select2 && select2.classList.contains('select2-container')) {
+                select2.classList.remove('is-invalid');
+            }
+        }
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.style.setProperty('display', 'none', 'important');
+        }
+        if (noteEl) {
+            noteEl.style.removeProperty('display');
+        }
+    }
+
+    fields.forEach(function (fieldId) {
+        const el = document.getElementById(fieldId);
+        if (!el) return;
+        const evt = el.tagName === 'SELECT' ? 'change' : 'input';
+        el.addEventListener(evt, function () {
+            clearFieldError(fieldId);
         });
     });
 
+    if (window.jQuery) {
+        $('#role').on('change', function () {
+            clearFieldError('role');
+        });
+    }
+
+    /* ---------- PASSWORD STRENGTH ---------- */
+    passwordInput.addEventListener('input', function () {
+        const val = this.value;
+        const bars = document.querySelectorAll('.password-strength-bar');
+        const text = document.getElementById('passwordStrengthText');
+
+        let strength = 0;
+        if (val.length >= 8) strength++;
+        if (/[A-Z]/.test(val)) strength++;
+        if (/[0-9]/.test(val)) strength++;
+        if (/[^A-Za-z0-9]/.test(val)) strength++;
+
+        bars.forEach((bar, idx) => {
+            bar.className = 'password-strength-bar';
+            if (idx < strength) {
+                if (strength <= 1) bar.classList.add('weak');
+                else if (strength <= 2) bar.classList.add('medium');
+                else bar.classList.add('strong');
+            }
+        });
+
+        const labels = ['', 'Lemah', 'Sedang', 'Kuat', 'Sangat Kuat'];
+        text.textContent = val.length ? `Kekuatan: ${labels[strength]}` : '';
+        text.className = 'password-strength-text ' + (strength <= 1 ? 'text-danger' : strength <= 2 ? 'text-warning' : 'text-success');
+
+        checkPasswordMatch();
+    });
+
+    confirmInput.addEventListener('input', checkPasswordMatch);
+
+    function checkPasswordMatch() {
+        const matchText = document.getElementById('passwordMatchText');
+        if (!confirmInput.value.length) {
+            matchText.textContent = '';
+            return;
+        }
+        if (passwordInput.value === confirmInput.value) {
+            matchText.textContent = '✓ Password cocok';
+            matchText.className = 'password-strength-text text-success';
+            clearFieldError('password_confirmation');
+        } else {
+            matchText.textContent = '✗ Password tidak cocok';
+            matchText.className = 'password-strength-text text-danger';
+        }
+    }
+
+    /* ---------- FORM SUBMIT TANPA SWEETALERT ---------- */
+    form.addEventListener('submit', function (e) {
+        let isValid = true;
+        let firstInvalid = null;
+
+        fields.forEach(clearFieldError);
+
+        const nameEl = document.getElementById('name');
+        const emailEl = document.getElementById('email');
+        const roleEl = document.getElementById('role');
+
+        const nameVal = nameEl ? nameEl.value.trim() : '';
+        if (!nameVal) {
+            setFieldError('name', 'Nama lengkap wajib diisi.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = nameEl;
+        }
+
+        const emailVal = emailEl ? emailEl.value.trim() : '';
+        if (!emailVal) {
+            setFieldError('email', 'Email wajib diisi.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = emailEl;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+            setFieldError('email', 'Format email tidak valid.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = emailEl;
+        }
+
+        if (!roleEl || !roleEl.value) {
+            setFieldError('role', 'Role pengguna wajib dipilih.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = roleEl;
+        }
+
+        const passVal = passwordInput ? passwordInput.value : '';
+        if (passVal.length < 8) {
+            setFieldError('password', 'Password minimal harus 8 karakter.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = passwordInput;
+        }
+
+        const confirmVal = confirmInput ? confirmInput.value : '';
+        if (passVal !== confirmVal) {
+            setFieldError('password_confirmation', 'Konfirmasi password tidak cocok dengan password.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = confirmInput;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            if (firstInvalid) {
+                if (window.jQuery && $(firstInvalid).data('select2')) {
+                    $(firstInvalid).select2('open');
+                } else {
+                    firstInvalid.focus();
+                }
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return false;
+        }
+
+        // Form valid
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> <span>Menyimpan...</span>';
+        }
+    });
+
+    const initialInvalid = document.querySelector('.is-invalid');
+    if (initialInvalid) {
+        initialInvalid.focus();
+        initialInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 })();
+
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon  = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
 </script>
 @endpush

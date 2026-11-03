@@ -146,12 +146,12 @@
         </div>
         <div class="d-flex gap-2">
             @can('pengeluaran-edit')
-            <a href="{{ route('pengeluaran.edit', $pengeluaran) }}" class="btn-secondary-custom">
-                <i class="fas fa-pen"></i>
+            <a href="{{ route('pengeluaran.edit', $pengeluaran) }}" class="btn btn-warning-custom">
+                <i class="fas fa-edit"></i>
                 <span>Edit</span>
             </a>
             @endcan
-            <a href="{{ route('pengeluaran.index') }}" class="btn-secondary-custom">
+            <a href="{{ route('pengeluaran.index') }}" class="btn btn-danger-custom">
                 <i class="fas fa-arrow-left"></i>
                 <span>Kembali</span>
             </a>
@@ -168,7 +168,7 @@
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-item-label">Tanggal</div>
-                            <div class="info-item-value">{{ $pengeluaran->tanggal->format('d F Y') }}</div>
+                            <div class="info-item-value">{{ $pengeluaran->tanggal->translatedFormat('d F Y') }}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-item-label">Alokasi Keuangan</div>

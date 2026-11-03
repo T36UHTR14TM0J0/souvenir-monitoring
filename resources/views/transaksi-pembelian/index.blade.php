@@ -434,12 +434,12 @@
                     <thead>
                         <tr>
                             <th class="ps-4" style="width: 60px;">No</th>
-                            <th>Kode Pembelian</th>
-                            <th>Tanggal</th>
+                            <th style="width: 150px;">Kode Pembelian</th>
+                            <th style="width: 130px;">Tanggal</th>
                             <th>Supplier</th>
-                            <th>Items</th>
-                            <th class="text-end">Grand Total</th>
-                            <th class="pe-4 text-end" style="width: 100px;">Aksi</th>
+                            <th style="width: 100px;">Items</th>
+                            <th class="text-end text-nowrap col-nominal" style="width: 170px; min-width: 170px;">Grand Total</th>
+                            <th class="text-center col-aksi" style="width: 70px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -453,7 +453,7 @@
                             </td>
                             <td>
                                 <div style="font-size: 0.875rem; color: #374151;">
-                                    {{ $pbl->tanggal->format('d M Y') }}
+                                    {{ $pbl->tanggal->translatedFormat('d M Y') }}
                                 </div>
                                 <div style="font-size: 0.75rem; color: #9ca3af;">
                                     <i class="far fa-clock me-1"></i>{{ $pbl->created_at->format('H:i') }} WIB
@@ -474,7 +474,7 @@
                                     <i class="fas fa-box"></i>{{ $pbl->details->count() }} item
                                 </span>
                             </td>
-                            <td class="text-end">
+                            <td class="text-end text-nowrap col-nominal" style="width: 170px; min-width: 170px;">
                                 <div class="grand-total">Rp {{ number_format($pbl->grand_total, 0, ',', '.') }}</div>
                                 @if($pbl->total_diskon > 0)
                                     <div style="font-size: 0.7rem; color: #9ca3af;">
@@ -482,8 +482,8 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="pe-4 text-end">
-                                <div class="d-inline-flex gap-1">
+                            <td class="text-center col-aksi">
+                                <div class="d-inline-flex flex-column gap-1 align-items-center">
                                     <a href="{{ route('transaksi-pembelian.show', $pbl) }}" class="btn-icon btn-view" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>

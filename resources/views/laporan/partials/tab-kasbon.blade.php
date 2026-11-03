@@ -53,9 +53,9 @@
                 <tr>
                     <th>Nama Anggota Tim</th>
                     <th style="text-align: center;">Frekuensi</th>
-                    <th style="text-align: right;">Total Dipinjam</th>
-                    <th style="text-align: right;">Sudah Dibayar</th>
-                    <th style="text-align: right;">Sisa Hutang (Piutang)</th>
+                    <th style="text-align: center; min-width: 140px;">Total Dipinjam</th>
+                    <th style="text-align: center; min-width: 140px;">Sudah Dibayar</th>
+                    <th style="text-align: center; min-width: 150px;">Sisa Hutang (Piutang)</th>
                     <th style="text-align: center; width: 140px;">Status</th>
                 </tr>
             </thead>
@@ -106,7 +106,7 @@
                     <th style="width: 110px;">Tanggal</th>
                     <th style="width: 160px;">Nama Peminjam</th>
                     <th>Keterangan</th>
-                    <th style="width: 140px; text-align: right;">Nominal</th>
+                    <th style="width: 150px; min-width: 150px; text-align: center;">Nominal</th>
                     <th style="width: 130px; text-align: center;">Status</th>
                     <th style="width: 120px; text-align: center;">Aksi</th>
                 </tr>

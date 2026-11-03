@@ -41,14 +41,13 @@
                                    maxlength="100"
                                    autofocus>
                         </div>
-                        @error('nama_kategori')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @else
-                            <div class="required-note">
-                                <i class="fas fa-circle-info"></i>
-                                <span>Wajib diisi, maksimal 100 karakter</span>
-                            </div>
-                        @enderror
+                        <div class="invalid-feedback" id="error_nama_kategori" @if(!$errors->has('nama_kategori')) style="display: none !important;" @endif>
+                            @error('nama_kategori'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_nama_kategori" @if($errors->has('nama_kategori')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Wajib diisi, maksimal 100 karakter</span>
+                        </div>
                     </div>
 
                     {{-- Deskripsi --}}
@@ -62,14 +61,13 @@
                                   class="form-control form-control-modern @error('deskripsi') is-invalid @enderror"
                                   placeholder="Deskripsi singkat kategori (opsional)"
                                   maxlength="500">{{ old('deskripsi') }}</textarea>
-                        @error('deskripsi')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @else
-                            <div class="required-note">
-                                <i class="fas fa-circle-info"></i>
-                                <span>Opsional, maksimal 500 karakter</span>
-                            </div>
-                        @enderror
+                        <div class="invalid-feedback" id="error_deskripsi" @if(!$errors->has('deskripsi')) style="display: none !important;" @endif>
+                            @error('deskripsi'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_deskripsi" @if($errors->has('deskripsi')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Opsional, maksimal 500 karakter</span>
+                        </div>
                     </div>
                 </div>
 
@@ -105,52 +103,98 @@
 (function () {
     'use strict';
 
-    const SWAL_PRIMARY = '#26476f';
-    const SWAL_CANCEL  = '#a8a29e';
-
     const form      = document.getElementById('kategoriForm');
     const submitBtn = document.getElementById('submitBtn');
     if (!form) return;
 
-    /* ============================================
-       FORM SUBMIT — Konfirmasi
-       ============================================ */
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
+    const fields = ['nama_kategori', 'deskripsi'];
 
-        const namaInput = document.getElementById('nama_kategori');
+    function setFieldError(fieldId, message) {
+        const input   = document.getElementById(fieldId);
+        const errorEl = document.getElementById('error_' + fieldId);
+        const noteEl  = document.getElementById('note_' + fieldId);
 
-        if (!namaInput.value.trim()) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Data Belum Lengkap',
-                text: 'Nama kategori wajib diisi.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: SWAL_PRIMARY,
-            });
-            namaInput.focus();
-            return false;
+        if (input) {
+            input.classList.add('is-invalid');
         }
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.style.setProperty('display', 'block', 'important');
+        }
+        if (noteEl) {
+            noteEl.style.setProperty('display', 'none', 'important');
+        }
+    }
 
-        Swal.fire({
-            title: 'Simpan Kategori?',
-            text: 'Pastikan semua data yang diisi sudah benar.',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-save me-1"></i> Ya, Simpan!',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: SWAL_PRIMARY,
-            cancelButtonColor: SWAL_CANCEL,
-            reverseButtons: true,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Menyimpan...</span>';
-                HTMLFormElement.prototype.submit.call(form);
-            }
+    function clearFieldError(fieldId) {
+        const input   = document.getElementById(fieldId);
+        const errorEl = document.getElementById('error_' + fieldId);
+        const noteEl  = document.getElementById('note_' + fieldId);
+
+        if (input) {
+            input.classList.remove('is-invalid');
+        }
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.style.setProperty('display', 'none', 'important');
+        }
+        if (noteEl) {
+            noteEl.style.removeProperty('display');
+        }
+    }
+
+    // Real-time listener: bersihkan teks merah saat pengguna mengetik
+    fields.forEach(function (fieldId) {
+        const el = document.getElementById(fieldId);
+        if (!el) return;
+        el.addEventListener('input', function () {
+            clearFieldError(fieldId);
         });
     });
 
+    // Validasi Form saat Submit: Tampilkan teks merah di bawah field tanpa SweetAlert
+    form.addEventListener('submit', function (e) {
+        let isValid = true;
+        let firstInvalid = null;
+
+        fields.forEach(clearFieldError);
+
+        const namaEl = document.getElementById('nama_kategori');
+        const namaVal = namaEl ? namaEl.value.trim() : '';
+
+        // Validasi Nama Kategori
+        if (!namaVal) {
+            setFieldError('nama_kategori', 'Nama kategori wajib diisi.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = namaEl;
+        } else if (namaVal.length > 100) {
+            setFieldError('nama_kategori', 'Nama kategori maksimal 100 karakter.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = namaEl;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            if (firstInvalid) {
+                firstInvalid.focus();
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return false;
+        }
+
+        // Form valid
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> <span>Menyimpan...</span>';
+        }
+    });
+
+    // Fokuskan field pertama yang error jika ada error validasi dari server
+    const initialInvalid = document.querySelector('.is-invalid');
+    if (initialInvalid) {
+        initialInvalid.focus();
+        initialInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 })();
 </script>
 @endpush

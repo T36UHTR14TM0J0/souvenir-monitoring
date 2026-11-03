@@ -55,7 +55,7 @@ class TransaksiPenjualanController extends Controller
     public function create()
     {
         $kodeTransaksi = Transaksi::generateKodeTransaksi();
-        $produks       = Produk::with('kategori')
+        $produks       = Produk::with(['kategori', 'satuan'])
             ->where('stok', '>', 0)
             ->orderBy('nama_produk')
             ->get();
@@ -65,6 +65,7 @@ class TransaksiPenjualanController extends Controller
                 'id'         => $p->id,
                 'nama'       => $p->nama_produk,
                 'kode'       => $p->kode_produk,
+                'satuan'     => $p->satuan->singkatan ?? 'pcs',
                 'harga_jual' => (float) $p->harga_jual,
                 'stok'       => (int) $p->stok,
             ];
@@ -164,7 +165,7 @@ class TransaksiPenjualanController extends Controller
 
     public function show(Transaksi $transaksiPenjualan)
     {
-        $transaksiPenjualan->load(['details.produk', 'user']);
+        $transaksiPenjualan->load(['details.produk.satuan', 'user']);
 
         return view('transaksi-penjualan.show', [
             'transaksi' => $transaksiPenjualan,

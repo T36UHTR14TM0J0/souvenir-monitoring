@@ -536,13 +536,13 @@
 
                     @if(request('dari_tanggal'))
                         <span class="badge" style="background: rgba(38, 71, 111, 0.08); color: #26476f; border: 1px solid rgba(38, 71, 111, 0.15); font-weight: 500; font-size: 0.75rem; padding: 0.375rem 0.75rem; border-radius: 999px;">
-                            <i class="fas fa-calendar-alt me-1"></i>Dari: {{ \Carbon\Carbon::parse(request('dari_tanggal'))->format('d M Y') }}
+                            <i class="fas fa-calendar-alt me-1"></i>Dari: {{ \Carbon\Carbon::parse(request('dari_tanggal'))->translatedFormat('d M Y') }}
                         </span>
                     @endif
 
                     @if(request('sampai_tanggal'))
                         <span class="badge" style="background: rgba(38, 71, 111, 0.08); color: #26476f; border: 1px solid rgba(38, 71, 111, 0.15); font-weight: 500; font-size: 0.75rem; padding: 0.375rem 0.75rem; border-radius: 999px;">
-                            <i class="fas fa-calendar-alt me-1"></i>Sampai: {{ \Carbon\Carbon::parse(request('sampai_tanggal'))->format('d M Y') }}
+                            <i class="fas fa-calendar-alt me-1"></i>Sampai: {{ \Carbon\Carbon::parse(request('sampai_tanggal'))->translatedFormat('d M Y') }}
                         </span>
                     @endif
 
@@ -563,12 +563,12 @@
                     <thead>
                         <tr>
                             <th class="ps-4" style="width: 60px;">No</th>
-                            <th>Kode Transaksi</th>
-                            <th>Tanggal</th>
+                            <th style="width: 150px;">Kode Transaksi</th>
+                            <th style="width: 130px;">Tanggal</th>
                             <th>Pelanggan</th>
-                            <th>Items</th>
-                            <th class="text-end">Grand Total</th>
-                            <th class="pe-4 text-end" style="width: 100px;">Aksi</th>
+                            <th style="width: 100px;">Items</th>
+                            <th class="text-end text-nowrap col-nominal" style="width: 170px; min-width: 170px;">Grand Total</th>
+                            <th class="text-center col-aksi" style="width: 70px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -582,7 +582,7 @@
                             </td>
                             <td>
                                 <div style="font-size: 0.875rem; color: #374151;">
-                                    {{ $trx->tanggal->format('d M Y') }}
+                                    {{ $trx->tanggal->translatedFormat('d M Y') }}
                                 </div>
                                 <div style="font-size: 0.75rem; color: #9ca3af;">
                                     <i class="far fa-clock me-1"></i>{{ $trx->created_at->format('H:i') }} WIB
@@ -605,7 +605,7 @@
                                     <i class="fas fa-box"></i>{{ $trx->details->count() }} item
                                 </span>
                             </td>
-                            <td class="text-end">
+                            <td class="text-end text-nowrap col-nominal" style="width: 170px; min-width: 170px;">
                                 <div class="grand-total">Rp {{ number_format($trx->grand_total, 0, ',', '.') }}</div>
                                 @if($trx->total_diskon > 0)
                                     <div style="font-size: 0.7rem; color: #9ca3af;">
@@ -613,8 +613,8 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="pe-4 text-end">
-                                <div class="d-inline-flex gap-1">
+                            <td class="text-center col-aksi">
+                                <div class="d-inline-flex flex-column gap-1 align-items-center">
                                     <a href="{{ route('transaksi-penjualan.show', $trx) }}" class="btn-icon btn-view" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>

@@ -28,6 +28,9 @@ class RolePermissionSeeder extends Seeder
             // Master Kategori
             'kategori-list', 'kategori-create', 'kategori-edit', 'kategori-delete',
 
+            // Master Satuan
+            'satuan-list', 'satuan-create', 'satuan-edit', 'satuan-delete',
+
             // Transaksi Penjualan
             'penjualan-list', 'penjualan-create', 'penjualan-delete',
 
@@ -68,6 +71,7 @@ class RolePermissionSeeder extends Seeder
             'dashboard-view',
             'produk-list', 'produk-create', 'produk-edit', 'produk-delete',
             'kategori-list', 'kategori-create', 'kategori-edit', 'kategori-delete',
+            'satuan-list', 'satuan-create', 'satuan-edit', 'satuan-delete',
             'penjualan-list', 'pembelian-list', 'pengeluaran-list',
             'laporan-view', 'laporan-export',
             'user-list', 'user-create', 'user-edit', 'user-delete',
@@ -81,7 +85,7 @@ class RolePermissionSeeder extends Seeder
         $kasir = Role::firstOrCreate(['name' => 'Kasir']);
         $kasir->syncPermissions([
             'dashboard-view',
-            'produk-list', 'kategori-list',
+            'produk-list', 'kategori-list', 'satuan-list',
             'penjualan-list', 'penjualan-create',
             'pembelian-list',
             'pengeluaran-list',
@@ -121,10 +125,5 @@ class RolePermissionSeeder extends Seeder
         $kasirUser->syncRoles(['Kasir']);
 
         $this->command->info('✅ Role, Permission, dan User berhasil di-seed!');
-        $this->command->info('');
-        $this->command->info('Akun default:');
-        $this->command->info('  Pemilik : pemilik@gmail.com / Pemilik123!');
-        $this->command->info('  Admin   : admin@gmail.com / Admin123!');
-        $this->command->info('  Kasir   : kasir@gmail.com / Kasir123!');
     }
 }

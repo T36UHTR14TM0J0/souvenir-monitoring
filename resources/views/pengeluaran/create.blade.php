@@ -382,7 +382,9 @@
                                            class="form-control form-control-modern @error('karyawan_nama') is-invalid @enderror"
                                            value="{{ old('karyawan_nama') }}"
                                            placeholder="Contoh: Om Jaka, Om Ucing, Om Gawil">
-                                    @error('karyawan_nama')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    <div class="invalid-feedback" id="error_karyawan_nama" @if(!$errors->has('karyawan_nama')) style="display: none !important;" @endif>
+                                        @error('karyawan_nama'){{ $message }}@enderror
+                                    </div>
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label class="form-label-custom" for="status_kasbon">
@@ -487,7 +489,9 @@
                                        value="{{ old('keterangan') }}"
                                        placeholder="Contoh: Bensin antar pesanan, Lunch siang tim, Kasbon mingguan..."
                                        maxlength="255">
-                                @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <div class="invalid-feedback" id="error_keterangan" @if(!$errors->has('keterangan')) style="display: none !important;" @endif>
+                                    @error('keterangan'){{ $message }}@enderror
+                                </div>
                             </div>
 
                             <div class="col-12">
@@ -502,7 +506,9 @@
                                            min="1" step="500"
                                            placeholder="0">
                                 </div>
-                                @error('jumlah')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <div class="invalid-feedback" id="error_jumlah" @if(!$errors->has('jumlah')) style="display: none !important;" @endif>
+                                    @error('jumlah'){{ $message }}@enderror
+                                </div>
                             </div>
 
                             <div class="col-12">
@@ -552,13 +558,13 @@
                 </div>
 
                 <div class="form-actions">
-                    <a href="{{ route('pengeluaran.index') }}" class="btn-danger-custom">
+                    <a href="{{ route('pengeluaran.index') }}" class="btn btn-danger-custom">
                         <i class="fas fa-arrow-left"></i>
-                        <span>Batal</span>
+                        <span>Kembali</span>
                     </a>
-                    <button type="submit" class="btn-primary-custom" id="submitBtn">
+                    <button type="submit" class="btn btn-primary-custom" id="submitBtn">
                         <i class="fas fa-save"></i>
-                        <span>Simpan</span>
+                        <span>Simpan Pengeluaran</span>
                     </button>
                 </div>
             </div>
@@ -645,87 +651,90 @@
         document.getElementById('previewJumlah').textContent = formatRupiah(val);
     });
 
+    function setFieldError(fieldId, message) {
+        const input   = document.getElementById(fieldId);
+        const errorEl = document.getElementById('error_' + fieldId);
+
+        if (input) {
+            input.classList.add('is-invalid');
+        }
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.style.setProperty('display', 'block', 'important');
+        }
+    }
+
+    function clearFieldError(fieldId) {
+        const input   = document.getElementById(fieldId);
+        const errorEl = document.getElementById('error_' + fieldId);
+
+        if (input) {
+            input.classList.remove('is-invalid');
+        }
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.style.setProperty('display', 'none', 'important');
+        }
+    }
+
+    ['keterangan', 'jumlah', 'karyawan_nama'].forEach(function(fieldId) {
+        const el = document.getElementById(fieldId);
+        if (!el) return;
+        el.addEventListener('input', function() {
+            clearFieldError(fieldId);
+        });
+    });
+
     // FORM SUBMIT
     document.getElementById('pengeluaranForm').addEventListener('submit', function (e) {
-        e.preventDefault();
+        let isValid = true;
+        let firstInvalid = null;
+
+        ['keterangan', 'jumlah', 'karyawan_nama'].forEach(clearFieldError);
 
         const alokasi = document.getElementById('tipeAlokasiInput').value;
-        const jumlah = parseFloat(document.getElementById('jumlah').value) || 0;
+        const jumlahInput = document.getElementById('jumlah');
+        const jumlah = parseFloat(jumlahInput.value) || 0;
+
         if (jumlah < 1) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Jumlah Tidak Valid',
-                text: 'Jumlah pengeluaran minimal Rp 1.',
-                confirmButtonColor: SWAL_PRIMARY
-            });
-            document.getElementById('jumlah').focus();
-            return false;
+            setFieldError('jumlah', 'Jumlah pengeluaran minimal Rp 1.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = jumlahInput;
         }
 
         if (alokasi === 'kasbon') {
-            const nama = document.getElementById('karyawan_nama').value.trim();
+            const namaEl = document.getElementById('karyawan_nama');
+            const nama = namaEl ? namaEl.value.trim() : '';
             if (!nama) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Nama Peminjam Wajib Diisi',
-                    text: 'Untuk kasbon, silakan masukkan nama peminjam / anggota tim.',
-                    confirmButtonColor: SWAL_PRIMARY
-                });
-                document.getElementById('karyawan_nama').focus();
-                return false;
+                setFieldError('karyawan_nama', 'Nama peminjam / karyawan wajib diisi untuk kasbon.');
+                isValid = false;
+                if (!firstInvalid) firstInvalid = namaEl;
             }
         }
 
-        const keterangan = document.getElementById('keterangan').value.trim();
+        const ketEl = document.getElementById('keterangan');
+        const keterangan = ketEl ? ketEl.value.trim() : '';
         if (!keterangan) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Keterangan Kosong',
-                text: 'Keterangan pengeluaran wajib diisi.',
-                confirmButtonColor: SWAL_PRIMARY
-            });
-            document.getElementById('keterangan').focus();
+            setFieldError('keterangan', 'Keterangan pengeluaran wajib diisi.');
+            isValid = false;
+            if (!firstInvalid) firstInvalid = ketEl;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            if (firstInvalid) {
+                firstInvalid.focus();
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return false;
         }
 
-        const kategori = document.getElementById('kategoriInput').value;
-        const jumlahFormatted = formatRupiah(jumlah);
-        const kategoriLabel = KATEGORI_LABELS[kategori] || kategori;
-
-        Swal.fire({
-            title: 'Simpan Pengeluaran?',
-            html: `
-                <p style="color: #4b5563; margin-bottom: 0.5rem;">Pastikan data sudah benar.</p>
-                <div style="background: rgba(38, 71, 111, 0.06); padding: 0.75rem; border-radius: 8px; text-align: left;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.375rem;">
-                        <span style="color: #6b7280;">Alokasi:</span>
-                        <span style="font-weight: 700; color: #26476f;">${alokasi.toUpperCase()}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.375rem;">
-                        <span style="color: #6b7280;">Kategori:</span>
-                        <span style="font-weight: 600; color: #26476f;">${kategoriLabel}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-                        <span style="color: #6b7280;">Jumlah:</span>
-                        <span style="font-weight: 700; color: #dc2626; font-size: 1.1rem;">${jumlahFormatted}</span>
-                    </div>
-                </div>
-            `,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-save me-1"></i> Ya, Simpan!',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: SWAL_PRIMARY,
-            cancelButtonColor: SWAL_CANCEL,
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const btn = document.getElementById('submitBtn');
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Menyimpan...</span>';
-                HTMLFormElement.prototype.submit.call(document.getElementById('pengeluaranForm'));
-            }
-        });
+        // Form valid: submit langsung
+        const btn = document.getElementById('submitBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> <span>Menyimpan...</span>';
+        }
     });
 
     // INIT PREVIEW

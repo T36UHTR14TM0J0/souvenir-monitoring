@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\LaporanKeuanganController;
 use App\Http\Controllers\PengeluaranController;
 use App\Http\Controllers\KasMasukController;
@@ -94,6 +95,24 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     });
     Route::middleware('permission:kategori-delete')->group(function () {
         Route::delete('/kategori/{kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
+    });
+
+    // ============================================
+    // SATUAN PRODUK
+    // ============================================
+    Route::middleware('permission:satuan-list')->group(function () {
+        Route::get('/satuan', [SatuanController::class, 'index'])->name('satuan.index');
+    });
+    Route::middleware('permission:satuan-create')->group(function () {
+        Route::get('/satuan/create', [SatuanController::class, 'create'])->name('satuan.create');
+        Route::post('/satuan', [SatuanController::class, 'store'])->name('satuan.store');
+    });
+    Route::middleware('permission:satuan-edit')->group(function () {
+        Route::get('/satuan/{satuan}/edit', [SatuanController::class, 'edit'])->name('satuan.edit');
+        Route::put('/satuan/{satuan}', [SatuanController::class, 'update'])->name('satuan.update');
+    });
+    Route::middleware('permission:satuan-delete')->group(function () {
+        Route::delete('/satuan/{satuan}', [SatuanController::class, 'destroy'])->name('satuan.destroy');
     });
 
     // ============================================

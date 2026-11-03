@@ -69,11 +69,11 @@
             <thead>
                 <tr>
                     <th>Bulan</th>
-                    <th>Penjualan</th>
-                    <th>Pembelian</th>
-                    <th>Laba Kotor</th>
-                    <th>Pengeluaran</th>
-                    <th>Laba Bersih</th>
+                    <th style="min-width: 140px;">Penjualan</th>
+                    <th style="min-width: 140px;">Pembelian</th>
+                    <th style="min-width: 140px;">Laba Kotor</th>
+                    <th style="min-width: 140px;">Pengeluaran</th>
+                    <th style="min-width: 140px;">Laba Bersih</th>
                 </tr>
             </thead>
             <tbody>

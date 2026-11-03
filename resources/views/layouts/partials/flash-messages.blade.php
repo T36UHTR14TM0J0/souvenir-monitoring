@@ -34,33 +34,5 @@
                 background: '#ffffff',
             });
         @endif
-
-        @if($errors->any() && !session('swal'))
-            Swal.fire({
-                icon: 'error',
-                title: 'Validasi Gagal!',
-                html: `
-                    <div class="swal-error-list">
-                        <p>Silakan perbaiki kesalahan berikut:</p>
-                        <ul>
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                `,
-                confirmButtonText: '<i class="fas fa-check me-1"></i> OK, Saya Perbaiki',
-                background: '#ffffff',
-                width: '500px',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const firstInvalid = document.querySelector('.is-invalid');
-                    if (firstInvalid) {
-                        firstInvalid.focus();
-                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }
-            });
-        @endif
     });
 </script>

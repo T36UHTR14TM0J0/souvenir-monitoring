@@ -116,9 +116,9 @@
                 <tr>
                     <th>Kode</th>
                     <th>Tanggal</th>
-                    <th style="text-align: left;">Kategori</th>
-                    <th style="text-align: left;">Keterangan</th>
-                    <th>Jumlah</th>
+                    <th style="text-align: center;">Kategori</th>
+                    <th style="text-align: center;">Keterangan</th>
+                    <th style="width: 160px; min-width: 160px;">Jumlah</th>
                 </tr>
             </thead>
             <tbody>
@@ -127,7 +127,7 @@
                         <td style="font-family: monospace; color: #dc2626; font-weight: 600;">
                             {{ $pgl->kode_pengeluaran }}
                         </td>
-                        <td>{{ $pgl->tanggal->format('d M Y') }}</td>
+                        <td>{{ $pgl->tanggal->translatedFormat('d M Y') }}</td>
                         <td style="text-align: left;">
                             <span class="badge-soft warning">{{ $pgl->kategori_label }}</span>
                         </td>

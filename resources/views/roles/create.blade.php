@@ -2,16 +2,14 @@
 
 @section('title', 'Tambah Role')
 
- 
-
 @section('content')
 <div class="container-fluid px-0">
 
     {{-- HEADER --}}
     <x-page-header
-        icon="fas fa-user-tag"
+        icon="fas fa-user-shield"
         title="Tambah Role"
-        subtitle="Buat role baru dan tentukan permission yang dimilikinya."
+        subtitle="Buat role baru dan atur permission yang dimiliki."
     />
 
     {{-- FORM CARD --}}
@@ -41,14 +39,13 @@
                                    placeholder="Contoh: admin, operator, kasir"
                                    autofocus>
                         </div>
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @else
-                            <div class="required-note">
-                                <i class="fas fa-circle-info"></i>
-                                <span>Wajib diisi, gunakan huruf kecil tanpa spasi (contoh: admin)</span>
-                            </div>
-                        @enderror
+                        <div class="invalid-feedback" id="error_name" @if(!$errors->has('name')) style="display: none !important;" @endif>
+                            @error('name'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_name" @if($errors->has('name')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Wajib diisi, gunakan huruf kecil tanpa spasi (contoh: admin)</span>
+                        </div>
                     </div>
                 </div>
 
@@ -58,65 +55,47 @@
                     Permissions
                 </div>
 
-                <div class="perm-actions">
-                    <button type="button" class="perm-action-btn" onclick="selectAllPerms()">
-                        <i class="fas fa-check-double"></i>
-                        <span>Pilih Semua</span>
-                    </button>
-                    <button type="button" class="perm-action-btn" onclick="clearAllPerms()">
-                        <i class="fas fa-times-circle"></i>
-                        <span>Hapus Semua</span>
-                    </button>
-                </div>
-
-                @php
-                    $totalPermissions = collect($permissions)->flatten()->count();
-                @endphp
-
-                <div class="perm-header mb-3">
-                    <div class="perm-header-title">
-                        <span class="perm-header-icon">
-                            <i class="fas fa-key"></i>
-                        </span>
-                        <span>Daftar Permission</span>
-                    </div>
-                    <span class="perm-header-counter" id="selectedCounter">
-                        <i class="fas fa-check"></i>
-                        <span><b id="selectedCount">0</b> / {{ $totalPermissions }} dipilih</span>
+                {{-- BAR: PILIH SEMUA --}}
+                <div class="perm-select-all-bar">
+                    <label class="perm-checkbox-label">
+                        <input type="checkbox"
+                               class="perm-checkbox"
+                               id="selectAllGlobal">
+                        <span class="perm-checkbox-custom"></span>
+                        <span class="perm-group-title">Pilih Semua Permission</span>
+                    </label>
+                    <span class="perm-counter" id="permCounter">
+                        0 dari {{ $permissions->flatten()->count() }} dipilih
                     </span>
                 </div>
 
-                {{-- PERMISSION GROUPS --}}
+                {{-- GRUP PERMISSIONS --}}
                 @foreach($permissions as $group => $perms)
-                <div class="perm-group" data-group="{{ $group }}">
+                <div class="perm-group-card">
                     <div class="perm-group-header">
-                        <div class="perm-group-left">
+                        <label class="perm-checkbox-label">
                             <input type="checkbox"
-                                   class="perm-checkbox check-all"
-                                   id="group-{{ $group }}"
-                                   data-group="{{ $group }}">
-                            <label class="perm-group-name" for="group-{{ $group }}">
-                                {{ strtoupper(str_replace('_', ' ', $group)) }}
-                            </label>
-                        </div>
-                        <span class="perm-group-count" data-count-group="{{ $group }}">
-                            <i class="fas fa-key"></i>
-                            <span class="group-count-value">0</span>
-                            <span>/ {{ count($perms) }}</span>
+                                   class="perm-checkbox perm-select-all-group"
+                                   data-group="{{ Str::slug($group) }}">
+                            <span class="perm-checkbox-custom"></span>
+                            <span class="perm-group-title">{{ $group }}</span>
+                        </label>
+                        <span class="badge badge-modern badge-perm-count group-counter-badge"
+                              id="counter-{{ Str::slug($group) }}">
+                            0 / {{ $perms->count() }}
                         </span>
                     </div>
 
-                    <div class="perm-items">
+                    <div class="perm-items-grid">
                         @foreach($perms as $perm)
-                        <label class="perm-item perm-item-{{ $group }} {{ in_array($perm->name, old('permissions', [])) ? 'is-checked' : '' }}"
-                               for="perm-{{ $perm->id }}">
+                        <label class="perm-item-label-wrap">
                             <input type="checkbox"
                                    name="permissions[]"
                                    value="{{ $perm->name }}"
-                                   class="perm-checkbox perm-checkbox-item perm-{{ $group }}"
-                                   id="perm-{{ $perm->id }}"
-                                   data-group="{{ $group }}"
+                                   class="perm-checkbox perm-checkbox-item group-{{ Str::slug($group) }}"
+                                   data-group="{{ Str::slug($group) }}"
                                    {{ in_array($perm->name, old('permissions', [])) ? 'checked' : '' }}>
+                            <span class="perm-checkbox-custom"></span>
                             <span class="perm-item-label">{{ $perm->name }}</span>
                         </label>
                         @endforeach
@@ -154,62 +133,116 @@
 (function () {
     'use strict';
 
-    const SWAL_PRIMARY = '#26476f';
-    const SWAL_CANCEL  = '#a8a29e';
-
-    const form        = document.getElementById('roleForm');
-    const submitBtn   = document.getElementById('submitBtn');
+    const form           = document.getElementById('roleForm');
+    const submitBtn      = document.getElementById('submitBtn');
+    const nameInput      = document.getElementById('name');
+    const errorName      = document.getElementById('error_name');
+    const noteName       = document.getElementById('note_name');
+    const selectAllGlob  = document.getElementById('selectAllGlobal');
+    const groupCheckboxes= document.querySelectorAll('.perm-select-all-group');
     const itemCheckboxes = document.querySelectorAll('.perm-checkbox-item');
 
     if (!form) return;
 
-    /* ---------- FORM SUBMIT ---------- */
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const nameInput = document.getElementById('name');
-        if (!nameInput.value.trim()) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Nama Role Kosong',
-                text: 'Nama role wajib diisi.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: SWAL_PRIMARY,
-            });
-            nameInput.focus();
-            return false;
+    function setFieldError(message) {
+        if (nameInput) {
+            nameInput.classList.add('is-invalid');
         }
+        if (errorName) {
+            errorName.textContent = message;
+            errorName.style.setProperty('display', 'block', 'important');
+        }
+        if (noteName) {
+            noteName.style.setProperty('display', 'none', 'important');
+        }
+    }
 
+    function clearFieldError() {
+        if (nameInput) {
+            nameInput.classList.remove('is-invalid');
+        }
+        if (errorName) {
+            errorName.textContent = '';
+            errorName.style.setProperty('display', 'none', 'important');
+        }
+        if (noteName) {
+            noteName.style.removeProperty('display');
+        }
+    }
+
+    if (nameInput) {
+        nameInput.addEventListener('input', clearFieldError);
+    }
+
+    /* ---------- UPDATE COUNTER & STATE ---------- */
+    function updateCounters() {
         const total   = itemCheckboxes.length;
         const checked = Array.from(itemCheckboxes).filter(cb => cb.checked).length;
-        const permText = checked === 0
-            ? '<span style="color: #dc2626;"><i class="fas fa-exclamation-triangle"></i> Tidak ada permission yang dipilih</span>'
-            : `<span style="color: #10b981;"><i class="fas fa-check-circle"></i> ${checked} dari ${total} permission dipilih</span>`;
 
-        Swal.fire({
-            title: 'Simpan Role?',
-            html: `
-                <p style="margin-bottom: 0.5rem;">Pastikan data role sudah benar.</p>
-                <p style="font-size: 0.8rem; margin: 0.5rem 0 0 0;">
-                    ${permText}
-                </p>
-            `,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-save me-1"></i> Ya, Simpan!',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: SWAL_PRIMARY,
-            cancelButtonColor: SWAL_CANCEL,
-            reverseButtons: true,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Menyimpan...</span>';
-                HTMLFormElement.prototype.submit.call(form);
-            }
+        document.getElementById('permCounter').textContent = `${checked} dari ${total} dipilih`;
+
+        if (selectAllGlob) {
+            selectAllGlob.checked       = checked === total && total > 0;
+            selectAllGlob.indeterminate = checked > 0 && checked < total;
+        }
+
+        groupCheckboxes.forEach(gcb => {
+            const group   = gcb.dataset.group;
+            const items   = document.querySelectorAll(`.perm-checkbox-item.group-${group}`);
+            const gTotal  = items.length;
+            const gCheck  = Array.from(items).filter(cb => cb.checked).length;
+            const badge   = document.getElementById(`counter-${group}`);
+
+            if (badge) badge.textContent = `${gCheck} / ${gTotal}`;
+
+            gcb.checked       = gCheck === gTotal && gTotal > 0;
+            gcb.indeterminate = gCheck > 0 && gCheck < gTotal;
+        });
+    }
+
+    if (selectAllGlob) {
+        selectAllGlob.addEventListener('change', function () {
+            itemCheckboxes.forEach(cb => cb.checked = this.checked);
+            updateCounters();
+        });
+    }
+
+    groupCheckboxes.forEach(gcb => {
+        gcb.addEventListener('change', function () {
+            const group = this.dataset.group;
+            document.querySelectorAll(`.perm-checkbox-item.group-${group}`)
+                .forEach(cb => cb.checked = this.checked);
+            updateCounters();
         });
     });
 
+    itemCheckboxes.forEach(cb => cb.addEventListener('change', updateCounters));
+    updateCounters();
+
+    /* ---------- FORM SUBMIT TANPA SWEETALERT ---------- */
+    form.addEventListener('submit', function (e) {
+        clearFieldError();
+
+        const nameVal = nameInput ? nameInput.value.trim() : '';
+        if (!nameVal) {
+            e.preventDefault();
+            setFieldError('Nama role wajib diisi.');
+            nameInput.focus();
+            nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> <span>Menyimpan...</span>';
+        }
+    });
+
+    const initialInvalid = document.querySelector('.is-invalid');
+    if (initialInvalid) {
+        initialInvalid.focus();
+        initialInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 })();
 </script>
 @endpush

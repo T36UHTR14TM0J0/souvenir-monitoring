@@ -127,7 +127,8 @@
             background-color: #26476f;
             color: #ffffff;
             padding: 6px 8px;
-            text-align: right;
+            text-align: center;
+            white-space: nowrap;
             font-size: 8px;
             font-weight: bold;
             text-transform: uppercase;
@@ -135,13 +136,15 @@
             border: 1px solid #1a304d;
             white-space: nowrap;
         }
-        table.data-table thead th:first-child { text-align: left; }
+        table.data-table thead th:first-child { text-align: center; }
         table.data-table thead th.text-center { text-align: center; }
 
         table.data-table tbody td {
             padding: 5px 8px;
             border-bottom: 1px solid #e5e7eb;
             text-align: right;
+            white-space: nowrap;
+            white-space: nowrap;
             color: #374151;
             vertical-align: middle;
         }
@@ -162,6 +165,7 @@
             font-weight: bold;
             font-size: 9px;
             text-align: right;
+            white-space: nowrap;
             color: #111827;
         }
         table.data-table tfoot td:first-child {
@@ -401,7 +405,7 @@
                 @forelse($rows as $trx)
                     <tr>
                         <td style="font-family: 'Courier New', monospace;">{{ $trx->kode_transaksi }}</td>
-                        <td>{{ $trx->tanggal->format('d M Y') }}</td>
+                        <td>{{ $trx->tanggal->translatedFormat('d M Y') }}</td>
                         <td style="text-align: left;">{{ $trx->nama_pelanggan ?? '-' }}</td>
                         <td class="text-center">{{ $trx->details->count() }}</td>
                         <td class="text-amber">
@@ -470,7 +474,7 @@
                 @forelse($rows as $pbl)
                     <tr>
                         <td style="font-family: 'Courier New', monospace;">{{ $pbl->kode_pembelian }}</td>
-                        <td>{{ $pbl->tanggal->format('d M Y') }}</td>
+                        <td>{{ $pbl->tanggal->translatedFormat('d M Y') }}</td>
                         <td style="text-align: left;">{{ $pbl->supplier ?? '-' }}</td>
                         <td class="text-center">{{ $pbl->details->count() }}</td>
                         <td class="text-amber">
@@ -568,7 +572,7 @@
                 @forelse($rows as $pgl)
                     <tr>
                         <td style="font-family: 'Courier New', monospace;">{{ $pgl->kode_pengeluaran }}</td>
-                        <td>{{ $pgl->tanggal->format('d M Y') }}</td>
+                        <td>{{ $pgl->tanggal->translatedFormat('d M Y') }}</td>
                         <td style="text-align: left;">
                             <span class="badge">{{ $pgl->kategori_label }}</span>
                         </td>
@@ -635,7 +639,7 @@
                 @forelse($rows as $prb)
                     <tr>
                         <td style="font-family: 'Courier New', monospace;">{{ $prb->kode_pengeluaran }}</td>
-                        <td>{{ $prb->tanggal->format('d M Y') }}</td>
+                        <td>{{ $prb->tanggal->translatedFormat('d M Y') }}</td>
                         <td style="text-align: left;">
                             <span class="badge">{{ $prb->kategori_label }}</span>
                         </td>
@@ -795,7 +799,7 @@
                 @forelse($rows as $kb)
                     <tr>
                         <td style="font-family: 'Courier New', monospace;">{{ $kb->kode_pengeluaran }}</td>
-                        <td>{{ $kb->tanggal->format('d M Y') }}</td>
+                        <td>{{ $kb->tanggal->translatedFormat('d M Y') }}</td>
                         <td style="font-weight: bold;">{{ $kb->karyawan_nama ?? '-' }}</td>
                         <td>{{ $kb->keterangan }}</td>
                         <td class="text-navy">Rp {{ number_format($kb->jumlah, 0, ',', '.') }}</td>
