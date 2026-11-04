@@ -127,10 +127,11 @@
     @php
         $satuanNama    = $produk->satuan->nama_satuan ?? 'Pieces';
         $satuanSingkat = $produk->satuan->singkatan ?? 'pcs';
-        $marginPerPcs  = $produk->harga_jual - $produk->harga_beli;
+        $hargaFinal    = $produk->harga_setelah_diskon;
+        $marginPerPcs  = $hargaFinal - $produk->harga_beli;
         $marginPersen  = $produk->harga_beli > 0 ? ($marginPerPcs / $produk->harga_beli) * 100 : 0;
         $nilaiAset     = $produk->stok * $produk->harga_beli;
-        $potensiOmset  = $produk->stok * $produk->harga_jual;
+        $potensiOmset  = $produk->stok * $hargaFinal;
     @endphp
 
     <div class="row g-3 mb-4">
@@ -158,9 +159,23 @@
                         <i class="fas fa-tag"></i>
                     </div>
                     <div>
-                        <div class="kpi-detail-label">Harga Jual Toko</div>
-                        <div class="kpi-detail-value text-primary">Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}</div>
-                        <div class="kpi-detail-sub">Harga Konsumen</div>
+                        <div class="kpi-detail-label">
+                            Harga Jual Toko
+                            @if($produk->has_diskon)
+                                <span class="badge bg-danger-subtle text-danger ms-1" style="font-size: 0.7rem; padding: 2px 5px;">-{{ $produk->label_diskon }}</span>
+                            @endif
+                        </div>
+                        <div class="kpi-detail-value text-primary">
+                            Rp {{ number_format($produk->harga_setelah_diskon, 0, ',', '.') }}
+                        </div>
+                        <div class="kpi-detail-sub">
+                            @if($produk->has_diskon)
+                                <span class="text-decoration-line-through text-muted">Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}</span>
+                                <span class="text-success fw-medium ms-1">Promo</span>
+                            @else
+                                Harga Konsumen
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>

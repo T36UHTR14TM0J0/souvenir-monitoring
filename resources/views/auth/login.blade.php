@@ -511,6 +511,27 @@
             margin: 0 auto 16px !important;
         }
 
+        /* Pastikan select option bawaan & container Select2 TIDAK PERNAH muncul di SweetAlert2 */
+        .swal2-container select,
+        .swal2-popup select,
+        .swal2-select,
+        #swal2-select,
+        .swal2-container .select2,
+        .swal2-container .select2-container,
+        .swal2-popup .select2,
+        .swal2-popup .select2-container {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+        }
+
         @media (max-width: 960px) {
             .login-card { grid-template-columns: 44% 56%; max-height: 600px; }
             .login-brand { padding: 36px 30px; }
@@ -689,6 +710,25 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        (function () {
+            function cleanSwalSelects() {
+                var els = document.querySelectorAll('.swal2-container select, .swal2-popup select, .swal2-select, #swal2-select');
+                for (var i = 0; i < els.length; i++) {
+                    els[i].style.setProperty('display', 'none', 'important');
+                    els[i].setAttribute('hidden', 'hidden');
+                }
+                var select2Els = document.querySelectorAll('.swal2-container .select2, .swal2-container .select2-container, .swal2-popup .select2-container');
+                for (var j = 0; j < select2Els.length; j++) {
+                    select2Els[j].remove();
+                }
+            }
+            if (window.MutationObserver) {
+                new MutationObserver(cleanSwalSelects).observe(document.documentElement, { childList: true, subtree: true });
+            }
+            document.addEventListener('DOMContentLoaded', cleanSwalSelects);
+        })();
+    </script>
 
     <script>
         document.getElementById('togglePassword')?.addEventListener('click', function () {

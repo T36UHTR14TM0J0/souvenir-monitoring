@@ -105,6 +105,14 @@ html, body {
     margin: 0 auto 16px !important;
 }
 
+/* Sembunyikan select option default & container Select2 di SweetAlert2 */
+.swal2-select,
+.swal2-popup select,
+.swal2-container .select2,
+.swal2-container .select2-container {
+    display: none !important;
+}
+
 /* SWEETALERT2 BUTTONS */
 .swal2-actions {
     display: flex !important;

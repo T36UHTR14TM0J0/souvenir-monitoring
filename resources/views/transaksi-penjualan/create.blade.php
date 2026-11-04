@@ -357,7 +357,12 @@
                             @forelse($produks as $p)
                             <tr onclick="addToCart({{ $p->id }})" style="cursor: pointer; {{ $p->stok <= 0 ? 'opacity: 0.5;' : '' }}">
                                 <td><span style="font-size: 0.85rem; color: var(--gray-500);">{{ $p->kode_produk }}</span></td>
-                                <td style="font-weight: 500; color: var(--gray-800);">{{ $p->nama_produk }}</td>
+                                <td style="font-weight: 500; color: var(--gray-800);">
+                                    {{ $p->nama_produk }}
+                                    @if($p->has_diskon)
+                                        <span class="badge bg-danger-subtle text-danger ms-1" style="font-size: 0.7rem; padding: 2px 5px;">-{{ $p->label_diskon }}</span>
+                                    @endif
+                                </td>
                                 <td class="text-center">
                                     @if($p->stok > 0)
                                         <span class="badge-stock bg-success-custom">{{ $p->stok }} {{ $p->satuan->singkatan ?? 'Pcs' }}</span>
@@ -365,7 +370,14 @@
                                         <span class="badge-stock bg-danger-custom">Habis</span>
                                     @endif
                                 </td>
-                                <td class="text-end text-nowrap col-nominal" style="color: #26476f; font-weight: 600; width: 140px; min-width: 140px; white-space: nowrap;">Rp {{ number_format($p->harga_jual, 0, ',', '.') }}</td>
+                                <td class="text-end text-nowrap col-nominal" style="color: #26476f; font-weight: 600; width: 140px; min-width: 140px; white-space: nowrap;">
+                                    @if($p->has_diskon)
+                                        <div style="font-weight: 700; color: #166534;">Rp {{ number_format($p->harga_setelah_diskon, 0, ',', '.') }}</div>
+                                        <div style="font-size: 0.75rem; text-decoration: line-through; color: var(--gray-500);">Rp {{ number_format($p->harga_jual, 0, ',', '.') }}</div>
+                                    @else
+                                        Rp {{ number_format($p->harga_jual, 0, ',', '.') }}
+                                    @endif
+                                </td>
                             </tr>
                             @empty
                             <tr>
@@ -531,13 +543,20 @@
         tr.id = rowId;
         tr.innerHTML = `
             <td>
-                <div style="font-weight: 600; color: var(--gray-800);">${p.nama}</div>
-                <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 2px;">Tersedia: ${p.stok} ${p.satuan || 'pcs'}</div>
+                <div style="font-weight: 600; color: var(--gray-800);">
+                    ${p.nama}
+                    ${p.has_diskon ? `<span class="badge bg-danger-subtle text-danger ms-1" style="font-size: 0.7rem; padding: 2px 5px;">-${p.label_diskon}</span>` : ''}
+                </div>
+                <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 2px;">
+                    Tersedia: ${p.stok} ${p.satuan || 'pcs'}
+                    ${p.has_diskon ? ` &bull; <span style="text-decoration: line-through;">${formatRupiah(p.harga_normal)}</span>` : ''}
+                </div>
                 <input type="hidden" name="items[${rowCounter}][produk_id]" value="${p.id}">
             </td>
             <td>
                 <input type="number" name="items[${rowCounter}][harga_satuan]" class="form-control form-control-modern harga-input" 
                        min="0" step="500" value="${p.harga_jual}" required onchange="onHargaChange(this)" oninput="onHargaChange(this)">
+                ${p.has_diskon ? `<div style="font-size: 0.7rem; color: #166534; margin-top: 2px; font-weight: 500;"><i class="fas fa-tag me-1"></i>Harga Promo</div>` : ''}
             </td>
             <td>
                 <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">

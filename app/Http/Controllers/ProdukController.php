@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kategori;
-use App\Models\Satuan;
 use App\Models\Pembelian;
 use App\Models\PembelianDetail;
 use App\Models\Produk;
+use App\Models\Satuan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -27,8 +27,8 @@ class ProdukController extends Controller
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('nama_produk', 'like', '%' . $request->search . '%')
-                  ->orWhere('kode_produk', 'like', '%' . $request->search . '%');
+                $q->where('nama_produk', 'like', '%'.$request->search.'%')
+                    ->orWhere('kode_produk', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -44,9 +44,9 @@ class ProdukController extends Controller
             $query->stokMenipis();
         }
 
-        $produks   = $query->latest()->paginate(10)->withQueryString();
+        $produks = $query->latest()->paginate(10)->withQueryString();
         $kategoris = Kategori::orderBy('nama_kategori')->get();
-        $satuans   = Satuan::orderBy('nama_satuan')->get();
+        $satuans = Satuan::orderBy('nama_satuan')->get();
 
         return view('produk.index', compact('produks', 'kategoris', 'satuans'));
     }
@@ -56,8 +56,8 @@ class ProdukController extends Controller
      */
     public function create()
     {
-        $kategoris  = Kategori::orderBy('nama_kategori')->get();
-        $satuans    = Satuan::orderBy('nama_satuan')->get();
+        $kategoris = Kategori::orderBy('nama_kategori')->get();
+        $satuans = Satuan::orderBy('nama_satuan')->get();
         $kodeProduk = Produk::generateKodeProduk();
 
         return view('produk.create', compact('kategoris', 'satuans', 'kodeProduk'));
@@ -104,6 +104,15 @@ class ProdukController extends Controller
                 'min:0',
                 'gte:harga_beli',   // ← harga jual >= harga beli
             ],
+            'tipe_diskon' => [
+                'required',
+                'in:none,persen,nominal',
+            ],
+            'diskon' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
             'stok' => [
                 'required',
                 'integer',
@@ -122,8 +131,22 @@ class ProdukController extends Controller
         ], $this->validationMessages(), $this->validationAttributes());
 
         // Normalisasi input
-        $validated['kode_produk']  = strtoupper(trim($validated['kode_produk']));
-        $validated['nama_produk']  = $this->normalizeNama($validated['nama_produk']);
+        $validated['kode_produk'] = strtoupper(trim($validated['kode_produk']));
+        $validated['nama_produk'] = $this->normalizeNama($validated['nama_produk']);
+
+        $tipeDiskon = $validated['tipe_diskon'] ?? 'none';
+        $diskon = (float) ($validated['diskon'] ?? 0);
+
+        if ($tipeDiskon === 'none') {
+            $diskon = 0;
+        } elseif ($tipeDiskon === 'persen' && $diskon > 100) {
+            return back()->withInput()->with('error', 'Diskon persen tidak boleh lebih dari 100%.');
+        } elseif ($tipeDiskon === 'nominal' && $diskon > (float) $validated['harga_jual']) {
+            return back()->withInput()->with('error', 'Diskon nominal tidak boleh melebihi harga jual.');
+        }
+
+        $validated['tipe_diskon'] = $tipeDiskon;
+        $validated['diskon'] = $diskon;
 
         DB::beginTransaction();
         try {
@@ -136,29 +159,29 @@ class ProdukController extends Controller
 
                 $pembelian = Pembelian::create([
                     'kode_pembelian' => Pembelian::generateKodePembelian(),
-                    'tanggal'        => now()->format('Y-m-d'),
-                    'supplier'       => 'Stok Awal Produk Baru',
-                    'total_harga'    => $subtotal,
-                    'total_diskon'   => 0,
-                    'grand_total'    => $subtotal,
-                    'catatan'        => "Pengadaan stok awal untuk produk baru: {$produk->nama_produk} ({$produk->kode_produk})",
-                    'user_id'        => auth()->id() ?? 1,
+                    'tanggal' => now()->format('Y-m-d'),
+                    'supplier' => 'Stok Awal Produk Baru',
+                    'total_harga' => $subtotal,
+                    'total_diskon' => 0,
+                    'grand_total' => $subtotal,
+                    'catatan' => "Pengadaan stok awal untuk produk baru: {$produk->nama_produk} ({$produk->kode_produk})",
+                    'user_id' => auth()->id() ?? 1,
                 ]);
 
                 PembelianDetail::create([
                     'pembelian_id' => $pembelian->id,
-                    'produk_id'    => $produk->id,
-                    'nama_produk'  => $produk->nama_produk,
-                    'harga_beli'   => $produk->harga_beli,
-                    'qty'          => $validated['stok'],
-                    'subtotal'     => $subtotal,
+                    'produk_id' => $produk->id,
+                    'nama_produk' => $produk->nama_produk,
+                    'harga_beli' => $produk->harga_beli,
+                    'qty' => $validated['stok'],
+                    'subtotal' => $subtotal,
                 ]);
             }
 
             DB::commit();
 
             $pesan = (int) $validated['stok'] > 0
-                ? "Produk \"{$validated['nama_produk']}\" berhasil ditambahkan dan modal stok awal (Rp " . number_format((int)$validated['stok'] * (float)$validated['harga_beli'], 0, ',', '.') . ") telah dicatat ke Laporan Keuangan."
+                ? "Produk \"{$validated['nama_produk']}\" berhasil ditambahkan dan modal stok awal (Rp ".number_format((int) $validated['stok'] * (float) $validated['harga_beli'], 0, ',', '.').') telah dicatat ke Laporan Keuangan.'
                 : "Produk \"{$validated['nama_produk']}\" berhasil ditambahkan.";
 
             return redirect()
@@ -170,7 +193,7 @@ class ProdukController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat menyimpan produk: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat menyimpan produk: '.$e->getMessage());
         }
     }
 
@@ -182,7 +205,7 @@ class ProdukController extends Controller
         $produk->load(['kategori', 'satuan']);
 
         $totalTerjual = $produk->transaksiDetails()->sum('qty');
-        $totalDibeli  = $produk->pembelianDetails()->sum('qty');
+        $totalDibeli = $produk->pembelianDetails()->sum('qty');
 
         $riwayatPenjualan = $produk->transaksiDetails()
             ->with('transaksi.user')
@@ -205,7 +228,8 @@ class ProdukController extends Controller
     public function edit(Produk $produk)
     {
         $kategoris = Kategori::orderBy('nama_kategori')->get();
-        $satuans   = Satuan::orderBy('nama_satuan')->get();
+        $satuans = Satuan::orderBy('nama_satuan')->get();
+
         return view('produk.edit', compact('produk', 'kategoris', 'satuans'));
     }
 
@@ -250,6 +274,15 @@ class ProdukController extends Controller
                 'min:0',
                 'gte:harga_beli',
             ],
+            'tipe_diskon' => [
+                'required',
+                'in:none,persen,nominal',
+            ],
+            'diskon' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
             'stok' => [
                 'nullable',
                 'integer',
@@ -269,6 +302,20 @@ class ProdukController extends Controller
 
         $validated['kode_produk'] = strtoupper(trim($validated['kode_produk']));
         $validated['nama_produk'] = $this->normalizeNama($validated['nama_produk']);
+
+        $tipeDiskon = $validated['tipe_diskon'] ?? 'none';
+        $diskon = (float) ($validated['diskon'] ?? 0);
+
+        if ($tipeDiskon === 'none') {
+            $diskon = 0;
+        } elseif ($tipeDiskon === 'persen' && $diskon > 100) {
+            return back()->withInput()->with('error', 'Diskon persen tidak boleh lebih dari 100%.');
+        } elseif ($tipeDiskon === 'nominal' && $diskon > (float) $validated['harga_jual']) {
+            return back()->withInput()->with('error', 'Diskon nominal tidak boleh melebihi harga jual.');
+        }
+
+        $validated['tipe_diskon'] = $tipeDiskon;
+        $validated['diskon'] = $diskon;
 
         // Proteksi: kode produk default tidak boleh diubah
         $isProtected = in_array($produk->kode_produk, self::PROTECTED_KODE_PRODUK, true);
@@ -341,48 +388,54 @@ class ProdukController extends Controller
         return [
             // Kategori
             'kategori_id.required' => 'Kategori wajib dipilih.',
-            'kategori_id.integer'  => 'Kategori tidak valid.',
-            'kategori_id.exists'   => 'Kategori yang dipilih tidak ditemukan.',
+            'kategori_id.integer' => 'Kategori tidak valid.',
+            'kategori_id.exists' => 'Kategori yang dipilih tidak ditemukan.',
 
             // Satuan
-            'satuan_id.required'   => 'Satuan wajib dipilih.',
-            'satuan_id.integer'    => 'Satuan tidak valid.',
-            'satuan_id.exists'     => 'Satuan yang dipilih tidak ditemukan.',
+            'satuan_id.required' => 'Satuan wajib dipilih.',
+            'satuan_id.integer' => 'Satuan tidak valid.',
+            'satuan_id.exists' => 'Satuan yang dipilih tidak ditemukan.',
 
             // Kode Produk
             'kode_produk.required' => 'Kode produk wajib diisi.',
-            'kode_produk.string'   => 'Kode produk harus berupa teks.',
-            'kode_produk.max'      => 'Kode produk maksimal 50 karakter.',
-            'kode_produk.unique'   => 'Kode produk sudah digunakan, gunakan kode lain.',
-            'kode_produk.regex'    => 'Kode produk hanya boleh berisi huruf kapital, angka, dan tanda hubung (-).',
+            'kode_produk.string' => 'Kode produk harus berupa teks.',
+            'kode_produk.max' => 'Kode produk maksimal 50 karakter.',
+            'kode_produk.unique' => 'Kode produk sudah digunakan, gunakan kode lain.',
+            'kode_produk.regex' => 'Kode produk hanya boleh berisi huruf kapital, angka, dan tanda hubung (-).',
 
             // Nama Produk
             'nama_produk.required' => 'Nama produk wajib diisi.',
-            'nama_produk.string'   => 'Nama produk harus berupa teks.',
-            'nama_produk.max'      => 'Nama produk maksimal 150 karakter.',
+            'nama_produk.string' => 'Nama produk harus berupa teks.',
+            'nama_produk.max' => 'Nama produk maksimal 150 karakter.',
 
             // Harga
             'harga_beli.required' => 'Harga beli wajib diisi.',
-            'harga_beli.numeric'  => 'Harga beli harus berupa angka.',
-            'harga_beli.min'      => 'Harga beli tidak boleh negatif.',
+            'harga_beli.numeric' => 'Harga beli harus berupa angka.',
+            'harga_beli.min' => 'Harga beli tidak boleh negatif.',
 
             'harga_jual.required' => 'Harga jual wajib diisi.',
-            'harga_jual.numeric'  => 'Harga jual harus berupa angka.',
-            'harga_jual.min'      => 'Harga jual tidak boleh negatif.',
-            'harga_jual.gte'      => 'Harga jual tidak boleh lebih kecil dari harga beli.',
+            'harga_jual.numeric' => 'Harga jual harus berupa angka.',
+            'harga_jual.min' => 'Harga jual tidak boleh negatif.',
+            'harga_jual.gte' => 'Harga jual tidak boleh lebih kecil dari harga beli.',
+
+            // Diskon
+            'tipe_diskon.required' => 'Pilih jenis diskon produk.',
+            'tipe_diskon.in' => 'Jenis diskon harus berupa Tidak Ada, Persen, atau Nominal.',
+            'diskon.numeric' => 'Nilai diskon harus berupa angka.',
+            'diskon.min' => 'Nilai diskon tidak boleh negatif.',
 
             // Stok
-            'stok.required'         => 'Stok wajib diisi.',
-            'stok.integer'          => 'Stok harus berupa angka bulat.',
-            'stok.min'              => 'Stok tidak boleh negatif.',
+            'stok.required' => 'Stok wajib diisi.',
+            'stok.integer' => 'Stok harus berupa angka bulat.',
+            'stok.min' => 'Stok tidak boleh negatif.',
 
             'stok_minimal.required' => 'Stok minimal wajib diisi.',
-            'stok_minimal.integer'  => 'Stok minimal harus berupa angka bulat.',
-            'stok_minimal.min'      => 'Stok minimal tidak boleh negatif.',
+            'stok_minimal.integer' => 'Stok minimal harus berupa angka bulat.',
+            'stok_minimal.min' => 'Stok minimal tidak boleh negatif.',
 
             // Deskripsi
             'deskripsi.string' => 'Deskripsi harus berupa teks.',
-            'deskripsi.max'    => 'Deskripsi maksimal 500 karakter.',
+            'deskripsi.max' => 'Deskripsi maksimal 500 karakter.',
         ];
     }
 
@@ -392,15 +445,17 @@ class ProdukController extends Controller
     private function validationAttributes(): array
     {
         return [
-            'kategori_id'  => 'Kategori',
-            'satuan_id'    => 'Satuan',
-            'kode_produk'  => 'Kode Produk',
-            'nama_produk'  => 'Nama Produk',
-            'harga_beli'   => 'Harga Beli',
-            'harga_jual'   => 'Harga Jual',
-            'stok'         => 'Stok',
+            'kategori_id' => 'Kategori',
+            'satuan_id' => 'Satuan',
+            'kode_produk' => 'Kode Produk',
+            'nama_produk' => 'Nama Produk',
+            'harga_beli' => 'Harga Beli',
+            'harga_jual' => 'Harga Jual',
+            'tipe_diskon' => 'Jenis Diskon',
+            'diskon' => 'Nilai Diskon',
+            'stok' => 'Stok',
             'stok_minimal' => 'Stok Minimal',
-            'deskripsi'    => 'Deskripsi',
+            'deskripsi' => 'Deskripsi',
         ];
     }
 
@@ -418,7 +473,21 @@ class ProdukController extends Controller
             $cleanHj = preg_replace('/\D/', '', (string) $request->harga_jual);
             $merges['harga_jual'] = $cleanHj !== '' ? (int) $cleanHj : null;
         }
-        if (!empty($merges)) {
+        if ($request->has('diskon') && $request->diskon !== null) {
+            $tipeDiskon = $request->input('tipe_diskon', 'none');
+            if ($tipeDiskon === 'nominal') {
+                $cleanDisc = preg_replace('/\D/', '', (string) $request->diskon);
+                $merges['diskon'] = $cleanDisc !== '' ? (float) $cleanDisc : 0;
+            } elseif ($tipeDiskon === 'persen') {
+                $cleanDisc = str_replace(',', '.', (string) $request->diskon);
+                $merges['diskon'] = is_numeric($cleanDisc) ? (float) $cleanDisc : 0;
+            } else {
+                $merges['diskon'] = 0;
+            }
+        } else {
+            $merges['diskon'] = 0;
+        }
+        if (! empty($merges)) {
             $request->merge($merges);
         }
     }

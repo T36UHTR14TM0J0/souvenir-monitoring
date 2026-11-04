@@ -180,6 +180,69 @@
                                 <span>Harus &ge; harga beli (contoh: 2.500.000)</span>
                             </div>
                         </div>
+
+                        {{-- Tipe Diskon --}}
+                        <div class="col-12 col-md-6">
+                            <label class="form-label-custom" for="tipe_diskon">
+                                Jenis Diskon
+                            </label>
+                            <select name="tipe_diskon" id="tipe_diskon" class="form-select form-select-modern @error('tipe_diskon') is-invalid @enderror">
+                                <option value="none" {{ old('tipe_diskon', $produk->tipe_diskon ?? 'none') === 'none' ? 'selected' : '' }}>Tanpa Diskon</option>
+                                <option value="persen" {{ old('tipe_diskon', $produk->tipe_diskon ?? 'none') === 'persen' ? 'selected' : '' }}>Persentase (%)</option>
+                                <option value="nominal" {{ old('tipe_diskon', $produk->tipe_diskon ?? 'none') === 'nominal' ? 'selected' : '' }}>Nominal (Rp)</option>
+                            </select>
+                            <div class="invalid-feedback" id="error_tipe_diskon" @if(!$errors->has('tipe_diskon')) style="display: none !important;" @endif>
+                                @error('tipe_diskon'){{ $message }}@enderror
+                            </div>
+                            <div class="required-note" id="note_tipe_diskon">
+                                <i class="fas fa-circle-info"></i>
+                                <span>Pilih jika produk sedang ada promo diskon</span>
+                            </div>
+                        </div>
+
+                        {{-- Nilai Diskon --}}
+                        <div class="col-12 col-md-6" id="diskon_wrapper" style="{{ old('tipe_diskon', $produk->tipe_diskon ?? 'none') === 'none' ? 'display: none;' : '' }}">
+                            <label class="form-label-custom" for="diskon" id="diskon_label">
+                                Nilai Diskon
+                            </label>
+                            <div style="display: flex; align-items: stretch;">
+                                <span id="diskon_prefix" style="display: none; padding: 0.5rem 0.875rem; background: #f8fafc; border: 1px solid var(--gray-200); border-right: none; border-radius: 0.5rem 0 0 0.5rem; font-weight: 600; color: var(--gray-600); font-size: 0.875rem; align-items: center;">Rp</span>
+                                <input type="text"
+                                       name="diskon"
+                                       id="diskon"
+                                       class="form-control form-control-modern @error('diskon') is-invalid @enderror"
+                                       value="{{ old('diskon', floor($produk->diskon) == $produk->diskon ? (int) $produk->diskon : $produk->diskon) }}"
+                                       placeholder="0"
+                                       style="border-radius: 0.5rem;">
+                                <span id="diskon_suffix" style="display: none; padding: 0.5rem 0.875rem; background: #f8fafc; border: 1px solid var(--gray-200); border-left: none; border-radius: 0 0.5rem 0.5rem 0; font-weight: 600; color: var(--gray-600); font-size: 0.875rem; align-items: center;">%</span>
+                            </div>
+                            <div class="invalid-feedback" id="error_diskon" @if(!$errors->has('diskon')) style="display: none !important;" @endif>
+                                @error('diskon'){{ $message }}@enderror
+                            </div>
+                            <div class="required-note" id="note_diskon">
+                                <i class="fas fa-circle-info"></i>
+                                <span id="diskon_hint">Masukkan nilai diskon</span>
+                            </div>
+                        </div>
+
+                        {{-- Preview Harga Setelah Diskon --}}
+                        <div class="col-12" id="preview_diskon_box" style="{{ old('tipe_diskon', $produk->tipe_diskon ?? 'none') === 'none' ? 'display: none;' : '' }}">
+                            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #22c55e; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                                        <i class="fas fa-tag"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.75rem; color: #166534; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Harga Jual Akhir (Setelah Promo)</div>
+                                        <div style="font-size: 0.85rem; color: #15803d;" id="preview_detail_diskon">Hemat Rp 0</div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 0.8rem; color: #15803d; text-decoration: line-through; opacity: 0.7;" id="preview_harga_asli">Rp 0</div>
+                                    <div style="font-size: 1.25rem; font-weight: 700; color: #166534;" id="preview_harga_akhir">Rp 0</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -288,7 +351,7 @@
     const submitBtn = document.getElementById('submitBtn');
     if (!form) return;
 
-    const fields = ['kode_produk', 'kategori_id', 'satuan_id', 'nama_produk', 'harga_beli', 'harga_jual', 'stok_minimal', 'deskripsi'];
+    const fields = ['kode_produk', 'kategori_id', 'satuan_id', 'nama_produk', 'harga_beli', 'harga_jual', 'tipe_diskon', 'diskon', 'stok_minimal', 'deskripsi'];
 
     // Format angka dengan titik ribuan (contoh: 2.000.000)
     function formatRupiahInput(input) {
@@ -384,8 +447,106 @@
                     clearFieldError('harga_jual');
                 }
             }
+            updateDiscountUI();
         });
     });
+
+    // ============================================
+    // LOGIKA PERHITUNGAN DISKON PRODUK
+    // ============================================
+    const tipeDiskonEl      = document.getElementById('tipe_diskon');
+    const diskonEl          = document.getElementById('diskon');
+    const diskonWrapper     = document.getElementById('diskon_wrapper');
+    const diskonPrefix      = document.getElementById('diskon_prefix');
+    const diskonSuffix      = document.getElementById('diskon_suffix');
+    const diskonHint        = document.getElementById('diskon_hint');
+    const previewBox        = document.getElementById('preview_diskon_box');
+    const previewHargaAsli  = document.getElementById('preview_harga_asli');
+    const previewHargaAkhir = document.getElementById('preview_harga_akhir');
+    const previewDetail     = document.getElementById('preview_detail_diskon');
+
+    function updateDiscountUI() {
+        if (!tipeDiskonEl) return;
+        const tipe  = tipeDiskonEl.value;
+        const hjRaw = document.getElementById('harga_jual').value.replace(/\D/g, '');
+        const hj    = hjRaw ? parseInt(hjRaw, 10) : 0;
+
+        if (tipe === 'none') {
+            if (diskonWrapper) diskonWrapper.style.display = 'none';
+            if (previewBox) previewBox.style.display = 'none';
+            if (diskonEl) diskonEl.value = '0';
+            return;
+        }
+
+        if (diskonWrapper) diskonWrapper.style.display = 'block';
+
+        let diskonVal = 0;
+        if (tipe === 'persen') {
+            if (diskonPrefix) diskonPrefix.style.display = 'none';
+            if (diskonSuffix) diskonSuffix.style.display = 'flex';
+            if (diskonEl) {
+                diskonEl.style.borderRadius = '0.5rem 0 0 0.5rem';
+                diskonEl.placeholder = 'Contoh: 10';
+            }
+            if (diskonHint) diskonHint.textContent = 'Maksimal 100%';
+
+            diskonVal = parseFloat(diskonEl.value.replace(',', '.')) || 0;
+        } else if (tipe === 'nominal') {
+            if (diskonPrefix) diskonPrefix.style.display = 'flex';
+            if (diskonSuffix) diskonSuffix.style.display = 'none';
+            if (diskonEl) {
+                diskonEl.style.borderRadius = '0 0.5rem 0.5rem 0';
+                diskonEl.placeholder = 'Contoh: 5.000';
+                formatRupiahInput(diskonEl);
+            }
+            if (diskonHint) diskonHint.textContent = 'Maksimal sama dengan harga jual';
+
+            diskonVal = parseInt(diskonEl.value.replace(/\D/g, ''), 10) || 0;
+        }
+
+        if (hj > 0 && diskonVal > 0) {
+            let potongan = 0;
+            if (tipe === 'persen') {
+                potongan = Math.round(hj * (diskonVal / 100));
+            } else {
+                potongan = diskonVal;
+            }
+            const hargaAkhir = Math.max(0, hj - potongan);
+
+            if (previewBox) previewBox.style.display = 'block';
+            if (previewHargaAsli) previewHargaAsli.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(hj);
+            if (previewHargaAkhir) previewHargaAkhir.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(hargaAkhir);
+            if (previewDetail) {
+                previewDetail.textContent = 'Hemat Rp ' + new Intl.NumberFormat('id-ID').format(potongan) + (tipe === 'persen' ? ' (' + diskonVal + '%)' : '');
+            }
+        } else {
+            if (previewBox) previewBox.style.display = 'none';
+        }
+    }
+
+    if (tipeDiskonEl) {
+        tipeDiskonEl.addEventListener('change', function () {
+            clearFieldError('tipe_diskon');
+            clearFieldError('diskon');
+            if (this.value === 'none') {
+                if (diskonEl) diskonEl.value = '0';
+            }
+            updateDiscountUI();
+        });
+    }
+
+    if (diskonEl) {
+        diskonEl.addEventListener('input', function () {
+            clearFieldError('diskon');
+            if (tipeDiskonEl && tipeDiskonEl.value === 'nominal') {
+                formatRupiahInput(this);
+            }
+            updateDiscountUI();
+        });
+    }
+
+    // Panggil saat pertama load
+    updateDiscountUI();
 
     // Real-time listener: bersihkan text merah saat pengguna mengetik/memilih field lain
     fields.forEach(function (fieldId) {
@@ -488,7 +649,29 @@
             if (!firstInvalid) firstInvalid = hjEl;
         }
 
-        // 6. Validasi Stok Minimal
+        // 6. Validasi Diskon
+        const tipeVal = tipeDiskonEl ? tipeDiskonEl.value : 'none';
+        if (tipeVal === 'persen') {
+            const diskonVal = parseFloat(diskonEl.value.replace(',', '.')) || 0;
+            if (diskonVal < 0 || diskonVal > 100) {
+                setFieldError('diskon', 'Diskon persen harus antara 0% s.d. 100%.');
+                isValid = false;
+                if (!firstInvalid) firstInvalid = diskonEl;
+            }
+        } else if (tipeVal === 'nominal') {
+            const diskonVal = parseInt(diskonEl.value.replace(/\D/g, ''), 10) || 0;
+            if (diskonVal < 0) {
+                setFieldError('diskon', 'Diskon nominal tidak boleh negatif.');
+                isValid = false;
+                if (!firstInvalid) firstInvalid = diskonEl;
+            } else if (!isNaN(hj) && diskonVal > hj) {
+                setFieldError('diskon', 'Diskon nominal tidak boleh melebihi harga jual.');
+                isValid = false;
+                if (!firstInvalid) firstInvalid = diskonEl;
+            }
+        }
+
+        // 7. Validasi Stok Minimal
         const stokMinVal = stokMinEl ? stokMinEl.value.trim() : '';
         const stokMin    = Number(stokMinVal);
         if (stokMinVal === '' || isNaN(stokMin)) {
@@ -522,6 +705,11 @@
         // Sebelum submit, hilangkan format titik agar server menerima angka murni
         if (hbEl) hbEl.value = hbRaw;
         if (hjEl) hjEl.value = hjRaw;
+        if (tipeVal === 'nominal' && diskonEl) {
+            diskonEl.value = diskonEl.value.replace(/\D/g, '') || '0';
+        } else if (tipeVal === 'none' && diskonEl) {
+            diskonEl.value = '0';
+        }
 
         // Data valid: submit langsung
         if (submitBtn) {

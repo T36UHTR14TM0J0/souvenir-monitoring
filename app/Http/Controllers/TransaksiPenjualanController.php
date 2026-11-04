@@ -16,8 +16,8 @@ class TransaksiPenjualanController extends Controller
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('kode_transaksi', 'like', '%' . $request->search . '%')
-                  ->orWhere('nama_pelanggan', 'like', '%' . $request->search . '%');
+                $q->where('kode_transaksi', 'like', '%'.$request->search.'%')
+                    ->orWhere('nama_pelanggan', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -34,7 +34,7 @@ class TransaksiPenjualanController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $totalBulanIni  = Transaksi::whereMonth('tanggal', now()->month)
+        $totalBulanIni = Transaksi::whereMonth('tanggal', now()->month)
             ->whereYear('tanggal', now()->year)
             ->sum('grand_total');
 
@@ -42,7 +42,7 @@ class TransaksiPenjualanController extends Controller
             ->whereYear('tanggal', now()->year)
             ->count();
 
-        $totalHariIni   = Transaksi::whereDate('tanggal', today())->sum('grand_total');
+        $totalHariIni = Transaksi::whereDate('tanggal', today())->sum('grand_total');
 
         return view('transaksi-penjualan.index', compact(
             'transaksis',
@@ -55,19 +55,25 @@ class TransaksiPenjualanController extends Controller
     public function create()
     {
         $kodeTransaksi = Transaksi::generateKodeTransaksi();
-        $produks       = Produk::with(['kategori', 'satuan'])
+        $produks = Produk::with(['kategori', 'satuan'])
             ->where('stok', '>', 0)
             ->orderBy('nama_produk')
             ->get();
 
         $produksJson = $produks->map(function ($p) {
             return [
-                'id'         => $p->id,
-                'nama'       => $p->nama_produk,
-                'kode'       => $p->kode_produk,
-                'satuan'     => $p->satuan->singkatan ?? 'pcs',
-                'harga_jual' => (float) $p->harga_jual,
-                'stok'       => (int) $p->stok,
+                'id' => $p->id,
+                'nama' => $p->nama_produk,
+                'kode' => $p->kode_produk,
+                'satuan' => $p->satuan->singkatan ?? 'pcs',
+                'harga_jual' => (float) $p->harga_setelah_diskon,
+                'harga_normal' => (float) $p->harga_jual,
+                'tipe_diskon' => $p->tipe_diskon,
+                'diskon' => (float) $p->diskon,
+                'has_diskon' => (bool) $p->has_diskon,
+                'label_diskon' => $p->label_diskon,
+                'nilai_potongan' => (float) $p->nilai_potongan,
+                'stok' => (int) $p->stok,
             ];
         })->values()->toArray();
 
@@ -81,16 +87,16 @@ class TransaksiPenjualanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'tanggal'              => ['required', 'date'],
-            'nama_pelanggan'       => ['nullable', 'string', 'max:100'],
-            'catatan'              => ['nullable', 'string', 'max:500'],
+            'tanggal' => ['required', 'date'],
+            'nama_pelanggan' => ['nullable', 'string', 'max:100'],
+            'catatan' => ['nullable', 'string', 'max:500'],
 
-            'items'                => ['required', 'array', 'min:1'],
-            'items.*.produk_id'    => ['required', 'integer', 'exists:produks,id'],
-            'items.*.qty'          => ['required', 'integer', 'min:1'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.produk_id' => ['required', 'integer', 'exists:produks,id'],
+            'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.harga_satuan' => ['required', 'numeric', 'min:0'],
 
-            'total_diskon'         => ['nullable', 'numeric', 'min:0'],
+            'total_diskon' => ['nullable', 'numeric', 'min:0'],
         ], $this->validationMessages(), $this->validationAttributes());
 
         $errors = [];
@@ -98,8 +104,9 @@ class TransaksiPenjualanController extends Controller
         foreach ($validated['items'] as $index => $item) {
             $produk = Produk::find($item['produk_id']);
 
-            if (!$produk) {
-                $errors[] = "Produk pada baris " . ($index + 1) . " tidak ditemukan.";
+            if (! $produk) {
+                $errors[] = 'Produk pada baris '.($index + 1).' tidak ditemukan.';
+
                 continue;
             }
 
@@ -108,7 +115,7 @@ class TransaksiPenjualanController extends Controller
             }
         }
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             return back()->withInput()->with('error', implode(' ', $errors));
         }
 
@@ -118,33 +125,33 @@ class TransaksiPenjualanController extends Controller
         }
 
         $totalDiskon = $validated['total_diskon'] ?? 0;
-        $grandTotal  = max(0, $totalHarga - $totalDiskon);
+        $grandTotal = max(0, $totalHarga - $totalDiskon);
 
         DB::beginTransaction();
         try {
             $transaksi = Transaksi::create([
                 'kode_transaksi' => Transaksi::generateKodeTransaksi(),
-                'tanggal'        => $validated['tanggal'],
+                'tanggal' => $validated['tanggal'],
                 'nama_pelanggan' => $validated['nama_pelanggan'] ?? null,
-                'total_harga'    => $totalHarga,
-                'total_diskon'   => $totalDiskon,
-                'grand_total'    => $grandTotal,
-                'metode_bayar'   => 'tunai',
-                'catatan'        => $validated['catatan'] ?? null,
-                'user_id'        => auth()->id(),
+                'total_harga' => $totalHarga,
+                'total_diskon' => $totalDiskon,
+                'grand_total' => $grandTotal,
+                'metode_bayar' => 'tunai',
+                'catatan' => $validated['catatan'] ?? null,
+                'user_id' => auth()->id(),
             ]);
 
             foreach ($validated['items'] as $item) {
-                $produk   = Produk::find($item['produk_id']);
+                $produk = Produk::find($item['produk_id']);
                 $subtotal = $item['qty'] * $item['harga_satuan'];
 
                 TransaksiDetail::create([
                     'transaksi_id' => $transaksi->id,
-                    'produk_id'    => $produk->id,
-                    'nama_produk'  => $produk->nama_produk,
+                    'produk_id' => $produk->id,
+                    'nama_produk' => $produk->nama_produk,
                     'harga_satuan' => $item['harga_satuan'],
-                    'qty'          => $item['qty'],
-                    'subtotal'     => $subtotal,
+                    'qty' => $item['qty'],
+                    'subtotal' => $subtotal,
                 ]);
 
                 $produk->decrement('stok', $item['qty']);
@@ -159,7 +166,7 @@ class TransaksiPenjualanController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->withInput()->with('error', 'Gagal menyimpan transaksi: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Gagal menyimpan transaksi: '.$e->getMessage());
         }
     }
 
@@ -174,7 +181,7 @@ class TransaksiPenjualanController extends Controller
 
     public function destroy(Transaksi $transaksiPenjualan)
     {
-        if (!$transaksiPenjualan->tanggal->isToday()) {
+        if (! $transaksiPenjualan->tanggal->isToday()) {
             return back()->with('error', 'Transaksi hanya bisa dihapus di hari yang sama.');
         }
 
@@ -199,45 +206,45 @@ class TransaksiPenjualanController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', 'Gagal menghapus transaksi: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus transaksi: '.$e->getMessage());
         }
     }
 
     private function validationMessages(): array
     {
         return [
-            'tanggal.required'              => 'Tanggal transaksi wajib diisi.',
-            'tanggal.date'                  => 'Format tanggal tidak valid.',
+            'tanggal.required' => 'Tanggal transaksi wajib diisi.',
+            'tanggal.date' => 'Format tanggal tidak valid.',
 
-            'items.required'                => 'Minimal harus ada 1 produk.',
-            'items.array'                   => 'Format produk tidak valid.',
-            'items.min'                     => 'Minimal harus ada 1 produk.',
+            'items.required' => 'Minimal harus ada 1 produk.',
+            'items.array' => 'Format produk tidak valid.',
+            'items.min' => 'Minimal harus ada 1 produk.',
 
-            'items.*.produk_id.required'    => 'Produk wajib dipilih.',
-            'items.*.produk_id.exists'      => 'Produk tidak ditemukan.',
-            'items.*.qty.required'          => 'Jumlah (qty) wajib diisi.',
-            'items.*.qty.integer'           => 'Jumlah (qty) harus angka.',
-            'items.*.qty.min'               => 'Jumlah (qty) minimal 1.',
+            'items.*.produk_id.required' => 'Produk wajib dipilih.',
+            'items.*.produk_id.exists' => 'Produk tidak ditemukan.',
+            'items.*.qty.required' => 'Jumlah (qty) wajib diisi.',
+            'items.*.qty.integer' => 'Jumlah (qty) harus angka.',
+            'items.*.qty.min' => 'Jumlah (qty) minimal 1.',
             'items.*.harga_satuan.required' => 'Harga satuan wajib diisi.',
-            'items.*.harga_satuan.numeric'  => 'Harga satuan harus angka.',
-            'items.*.harga_satuan.min'      => 'Harga satuan tidak boleh negatif.',
+            'items.*.harga_satuan.numeric' => 'Harga satuan harus angka.',
+            'items.*.harga_satuan.min' => 'Harga satuan tidak boleh negatif.',
 
-            'total_diskon.numeric'          => 'Diskon harus angka.',
-            'total_diskon.min'              => 'Diskon tidak boleh negatif.',
+            'total_diskon.numeric' => 'Diskon harus angka.',
+            'total_diskon.min' => 'Diskon tidak boleh negatif.',
         ];
     }
 
     private function validationAttributes(): array
     {
         return [
-            'tanggal'              => 'Tanggal',
-            'nama_pelanggan'       => 'Nama Pelanggan',
-            'catatan'              => 'Catatan',
-            'items'                => 'Produk',
-            'items.*.produk_id'    => 'Produk',
-            'items.*.qty'          => 'Jumlah',
+            'tanggal' => 'Tanggal',
+            'nama_pelanggan' => 'Nama Pelanggan',
+            'catatan' => 'Catatan',
+            'items' => 'Produk',
+            'items.*.produk_id' => 'Produk',
+            'items.*.qty' => 'Jumlah',
             'items.*.harga_satuan' => 'Harga Satuan',
-            'total_diskon'         => 'Diskon',
+            'total_diskon' => 'Diskon',
         ];
     }
 }

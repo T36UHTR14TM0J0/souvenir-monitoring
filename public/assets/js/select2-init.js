@@ -9,7 +9,14 @@
 
     function initSelect2(context) {
         var $root = context ? $(context) : $(document);
-        var $selects = $root.find('select:not(.no-select2)');
+        // Exclude SweetAlert2 select elements and any selects inside Swal containers
+        var $selects = $root.find('select:not(.no-select2):not(.swal2-select):not([class*="swal2-"])')
+                           .filter(function () {
+                               return !$(this).closest('.swal2-container, .swal2-popup').length;
+                           });
+
+        // Bersihkan jika ada container Select2 yang sempat terpasang di dalam SweetAlert2
+        $('.swal2-container .select2-container, .swal2-popup .select2-container').remove();
 
         $selects.each(function () {
             var $select = $(this);

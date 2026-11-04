@@ -135,10 +135,20 @@
                                 </span>
                             </td>
                             <td class="text-end text-nowrap col-nominal" style="width: 170px; min-width: 170px;">
-                                <div class="harga-jual text-nowrap">
-                                    Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}
-                                </div>
-                                <div class="harga-beli text-nowrap">
+                                @if($produk->has_diskon)
+                                    <div class="harga-jual text-nowrap text-success fw-bold">
+                                        Rp {{ number_format($produk->harga_setelah_diskon, 0, ',', '.') }}
+                                    </div>
+                                    <div class="text-nowrap" style="font-size: 0.75rem;">
+                                        <span class="text-decoration-line-through text-muted">Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}</span>
+                                        <span class="badge bg-danger-subtle text-danger ms-1" style="font-size: 0.7rem; padding: 2px 5px;">-{{ $produk->label_diskon }}</span>
+                                    </div>
+                                @else
+                                    <div class="harga-jual text-nowrap">
+                                        Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}
+                                    </div>
+                                @endif
+                                <div class="harga-beli text-nowrap" style="margin-top: 2px;">
                                     Beli: Rp {{ number_format($produk->harga_beli, 0, ',', '.') }}
                                 </div>
                             </td>

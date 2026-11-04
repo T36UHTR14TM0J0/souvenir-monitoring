@@ -18,6 +18,8 @@ class Produk extends Model
         'nama_produk',
         'harga_beli',
         'harga_jual',
+        'tipe_diskon',
+        'diskon',
         'stok',
         'stok_minimal',
         'deskripsi',
@@ -26,7 +28,56 @@ class Produk extends Model
     protected $casts = [
         'harga_beli' => 'decimal:2',
         'harga_jual' => 'decimal:2',
+        'diskon' => 'decimal:2',
     ];
+
+    protected $appends = [
+        'harga_setelah_diskon',
+        'nilai_potongan',
+        'has_diskon',
+        'label_diskon',
+    ];
+
+    public function getHargaSetelahDiskonAttribute(): float
+    {
+        $hargaJual = (float) $this->harga_jual;
+        $diskon = (float) $this->diskon;
+
+        if ($this->tipe_diskon === 'persen' && $diskon > 0) {
+            return max(0, round($hargaJual - ($hargaJual * ($diskon / 100)), 2));
+        }
+
+        if ($this->tipe_diskon === 'nominal' && $diskon > 0) {
+            return max(0, round($hargaJual - $diskon, 2));
+        }
+
+        return $hargaJual;
+    }
+
+    public function getNilaiPotonganAttribute(): float
+    {
+        return max(0, round((float) $this->harga_jual - $this->harga_setelah_diskon, 2));
+    }
+
+    public function getHasDiskonAttribute(): bool
+    {
+        return in_array($this->tipe_diskon, ['persen', 'nominal'], true) && (float) $this->diskon > 0;
+    }
+
+    public function getLabelDiskonAttribute(): string
+    {
+        if ($this->tipe_diskon === 'persen' && (float) $this->diskon > 0) {
+            $val = (float) $this->diskon;
+
+            return (floor($val) == $val ? (int) $val : number_format($val, 2, ',', '.')).'%';
+        }
+
+        if ($this->tipe_diskon === 'nominal' && (float) $this->diskon > 0) {
+            return 'Rp '.number_format((float) $this->diskon, 0, ',', '.');
+        }
+
+        return '-';
+    }
 
     public function kategori()
     {
@@ -51,12 +102,12 @@ class Produk extends Model
 
         if ($last) {
             $numOnly = preg_replace('/\D/', '', $last->kode_produk);
-            $number  = ((int) $numOnly) + 1;
+            $number = ((int) $numOnly) + 1;
         } else {
             $number = 1;
         }
 
-        return 'PRD' . str_pad($number, 5, '0', STR_PAD_LEFT);
+        return 'PRD'.str_pad($number, 5, '0', STR_PAD_LEFT);
     }
 
     public function transaksiDetails()
