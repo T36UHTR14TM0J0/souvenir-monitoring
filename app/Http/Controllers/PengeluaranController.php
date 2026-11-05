@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pengeluaran;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -36,6 +37,14 @@ class PengeluaranController extends Controller
             $query->whereDate('tanggal', '<=', $request->sampai_tanggal);
         }
 
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal', $request->bulan);
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal', $request->tahun);
+        }
+
         if ($request->filled('status_kasbon')) {
             $query->where('status_kasbon', $request->status_kasbon);
         }
@@ -50,47 +59,73 @@ class PengeluaranController extends Controller
 
         $pengeluarans = $query->paginate(10)->withQueryString();
 
-        $bulanSekarang = now()->month;
-        $tahunSekarang = now()->year;
+        $hasDateFilter = $request->filled('dari_tanggal') || $request->filled('sampai_tanggal') || $request->filled('bulan') || $request->filled('tahun');
 
-        $totalBulanIni = Pengeluaran::whereMonth('tanggal', $bulanSekarang)
-            ->whereYear('tanggal', $tahunSekarang)
-            ->sum('jumlah');
+        $statsQuery = Pengeluaran::query();
 
-        $totalBisnisBulanIni = Pengeluaran::bisnis()
-            ->whereMonth('tanggal', $bulanSekarang)
-            ->whereYear('tanggal', $tahunSekarang)
-            ->sum('jumlah');
+        if ($hasDateFilter) {
+            if ($request->filled('dari_tanggal')) {
+                $statsQuery->whereDate('tanggal', '>=', $request->dari_tanggal);
+            }
+            if ($request->filled('sampai_tanggal')) {
+                $statsQuery->whereDate('tanggal', '<=', $request->sampai_tanggal);
+            }
+            if ($request->filled('bulan')) {
+                $statsQuery->whereMonth('tanggal', $request->bulan);
+            }
+            if ($request->filled('tahun')) {
+                $statsQuery->whereYear('tanggal', $request->tahun);
+            }
 
-        $totalModalBahanBulanIni = Pengeluaran::modalBahan()
-            ->whereMonth('tanggal', $bulanSekarang)
-            ->whereYear('tanggal', $tahunSekarang)
-            ->sum('jumlah');
+            if ($request->filled('dari_tanggal') && $request->filled('sampai_tanggal')) {
+                $periodeLabel = Carbon::parse($request->dari_tanggal)->translatedFormat('d M Y').' - '.Carbon::parse($request->sampai_tanggal)->translatedFormat('d M Y');
+            } elseif ($request->filled('dari_tanggal')) {
+                $periodeLabel = 'Mulai '.Carbon::parse($request->dari_tanggal)->translatedFormat('d M Y');
+            } elseif ($request->filled('sampai_tanggal')) {
+                $periodeLabel = 's/d '.Carbon::parse($request->sampai_tanggal)->translatedFormat('d M Y');
+            } elseif ($request->filled('bulan') && $request->filled('tahun')) {
+                $periodeLabel = Carbon::createFromDate($request->tahun, $request->bulan, 1)->translatedFormat('F Y');
+            } elseif ($request->filled('bulan')) {
+                $periodeLabel = Carbon::createFromDate(now()->year, $request->bulan, 1)->translatedFormat('F');
+            } else {
+                $periodeLabel = 'Tahun '.$request->tahun;
+            }
+        } else {
+            // Anchor cerdas: jika bulan saat ini belum memiliki data (misal seeder selesai Okt 2026),
+            // otomatis gunakan bulan transaksi terakhir yang tersedia agar card statistik terisi data aktual
+            $hasCurrentMonthData = Pengeluaran::whereYear('tanggal', now()->year)
+                ->whereMonth('tanggal', now()->month)
+                ->exists();
 
-        $totalOperasionalBulanIni = Pengeluaran::operasionalMurni()
-            ->whereMonth('tanggal', $bulanSekarang)
-            ->whereYear('tanggal', $tahunSekarang)
-            ->sum('jumlah');
+            if ($hasCurrentMonthData) {
+                $anchorDate = now();
+            } else {
+                $latestDate = Pengeluaran::max('tanggal');
+                $anchorDate = $latestDate ? Carbon::parse($latestDate) : now();
+            }
 
-        $totalPribadiBulanIni = Pengeluaran::pribadi()
-            ->whereMonth('tanggal', $bulanSekarang)
-            ->whereYear('tanggal', $tahunSekarang)
-            ->sum('jumlah');
+            $periodeLabel = $anchorDate->translatedFormat('F Y');
+            $statsQuery->whereMonth('tanggal', $anchorDate->month)
+                ->whereYear('tanggal', $anchorDate->year);
+        }
 
-        $totalKasbonBulanIni = Pengeluaran::kasbon()
-            ->whereMonth('tanggal', $bulanSekarang)
-            ->whereYear('tanggal', $tahunSekarang)
-            ->sum('jumlah');
+        $totalBulanIni = (float) (clone $statsQuery)->sum('jumlah');
+        $totalBisnisBulanIni = (float) (clone $statsQuery)->bisnis()->sum('jumlah');
+        $totalModalBahanBulanIni = (float) (clone $statsQuery)->modalBahan()->sum('jumlah');
+        $totalOperasionalBulanIni = (float) (clone $statsQuery)->operasionalMurni()->sum('jumlah');
+        $totalPribadiBulanIni = (float) (clone $statsQuery)->pribadi()->sum('jumlah');
+        $totalKasbonBulanIni = (float) (clone $statsQuery)->kasbon()->sum('jumlah');
+        $totalTransaksi = (int) (clone $statsQuery)->count();
 
-        $totalTransaksi = Pengeluaran::whereMonth('tanggal', $bulanSekarang)
-            ->whereYear('tanggal', $tahunSekarang)
-            ->count();
+        $totalAkumulasiPengeluaran = (float) Pengeluaran::sum('jumlah');
+        $totalTransaksiSemua = (int) Pengeluaran::count();
 
         $kategoris = Pengeluaran::KATEGORI;
         $tipeAlokasis = Pengeluaran::TIPE_ALOKASI;
 
         return view('pengeluaran.index', compact(
             'pengeluarans',
+            'periodeLabel',
             'totalBulanIni',
             'totalBisnisBulanIni',
             'totalModalBahanBulanIni',
@@ -98,6 +133,8 @@ class PengeluaranController extends Controller
             'totalPribadiBulanIni',
             'totalKasbonBulanIni',
             'totalTransaksi',
+            'totalAkumulasiPengeluaran',
+            'totalTransaksiSemua',
             'kategoris',
             'tipeAlokasis'
         ));

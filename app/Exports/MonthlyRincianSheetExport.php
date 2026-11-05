@@ -5,19 +5,18 @@ namespace App\Exports;
 use App\Models\KasMasuk;
 use App\Models\Pengeluaran;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Concerns\Export;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class MonthlyRincianSheetExport implements FromArray, WithColumnWidths, WithEvents, WithHeadings, WithStyles, WithTitle
+class MonthlyRincianSheetExport implements Export, FromArray, WithColumnWidths, WithCustomStartCell, WithEvents, WithTitle
 {
     protected array $rows = [];
 
@@ -54,7 +53,7 @@ class MonthlyRincianSheetExport implements FromArray, WithColumnWidths, WithEven
                 'tanggal' => $km->tanggal,
                 'id' => $km->id,
                 'nominal' => (float) $km->jumlah,
-                'keterangan' => $km->keterangan ?: 'Penerimaan Modal / Kas Masuk',
+                'keterangan' => $km->keterangan ?: 'PENERIMAAN SALDO / MODAL',
                 'is_modal' => false,
             ]);
         }
@@ -64,10 +63,14 @@ class MonthlyRincianSheetExport implements FromArray, WithColumnWidths, WithEven
 
             $ket = $pg->keterangan;
             if ($pg->tipe_alokasi === 'kasbon') {
-                $nama = $pg->karyawan_nama ? strtoupper($pg->karyawan_nama).' [KASBON]' : 'KASBON KARYAWAN';
-                $ket = $nama.($ket ? ' - '.$ket : '');
+                $nama = $pg->karyawan_nama ? strtoupper($pg->karyawan_nama).' [ KASBON ]' : 'KASBON KARYAWAN';
+                if ($ket && ! str_contains(strtoupper($ket), strtoupper($pg->karyawan_nama ?? 'KASBON'))) {
+                    $ket = $nama.' - '.$ket;
+                } else {
+                    $ket = $nama;
+                }
             } elseif ($pg->tipe_alokasi === 'pribadi') {
-                $ket = '[PRIVE] '.($ket ?: $pg->kategori_label);
+                $ket = str_starts_with(strtoupper($ket ?: ''), '[ PRIVE ]') ? $ket : '[ PRIVE ] '.($ket ?: $pg->kategori_label);
             }
 
             $combined->push([
@@ -94,50 +97,76 @@ class MonthlyRincianSheetExport implements FromArray, WithColumnWidths, WithEven
         $runningSaldo = 0.0;
         $no = 1;
 
-        foreach ($sorted as $item) {
-            $operasional = null;
-            $modal = null;
-            $penerimaan = null;
-
-            $tglStr = $item['tanggal'] instanceof Carbon ? $item['tanggal']->format('d/m/Y') : date('d/m/Y', strtotime((string) $item['tanggal']));
-
-            if ($item['type'] === 'kas_masuk') {
-                $penerimaan = $item['nominal'];
-                $runningSaldo += $penerimaan;
-                $this->totalPenerimaan += $penerimaan;
-            } else {
-                if ($item['is_modal']) {
-                    $modal = $item['nominal'];
-                    $this->totalModal += $modal;
-                } else {
-                    $operasional = $item['nominal'];
-                    $this->totalOperasional += $operasional;
-                }
-                $runningSaldo -= $item['nominal'];
-            }
-
+        if ($sorted->isEmpty()) {
             $this->rows[] = [
-                $no++,
-                $tglStr,
-                $operasional,
-                $modal,
-                $penerimaan,
-                $item['keterangan'],
-                $runningSaldo,
+                1,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                'TIDAK ADA PENGELUARAN / PENERIMAAN PADA BULAN INI',
+                null,
+                null,
+                null,
+                null,
             ];
+        } else {
+            foreach ($sorted as $item) {
+                $operasional = null;
+                $modal = null;
+                $penerimaan = null;
+
+                if ($item['type'] === 'kas_masuk') {
+                    $penerimaan = $item['nominal'];
+                    $runningSaldo += $penerimaan;
+                    $this->totalPenerimaan += $penerimaan;
+                } else {
+                    if ($item['is_modal']) {
+                        $modal = $item['nominal'];
+                        $this->totalModal += $modal;
+                    } else {
+                        $operasional = $item['nominal'];
+                        $this->totalOperasional += $operasional;
+                    }
+                    $runningSaldo -= $item['nominal'];
+                }
+
+                // Baris data dengan 12 kolom (A sampai L) sesuai struktur Excel asli klien
+                $this->rows[] = [
+                    $no++,
+                    $operasional,
+                    null, // Col C (di-merge dengan B)
+                    $modal, // Col D (MODAL)
+                    $penerimaan, // Col E (PENERIMAAN DEBIT)
+                    null, // Col F (di-merge dengan E)
+                    null, // Col G (di-merge dengan E)
+                    $item['keterangan'], // Col H (KETERANGAN)
+                    null, // Col I (di-merge dengan H)
+                    null, // Col J (di-merge dengan H)
+                    $runningSaldo, // Col K (SALDO TOTAL/HARI)
+                    null, // Col L (di-merge dengan K)
+                ];
+            }
         }
 
         $this->saldoAkhir = $runningSaldo;
 
-        // Baris Ringkasan Total
+        // Baris TOTAL di bagian akhir tabel
         $this->rows[] = [
-            '',
             'TOTAL',
             $this->totalOperasional,
+            null,
             $this->totalModal,
             $this->totalPenerimaan,
+            null,
+            null,
             'TOTAL BELANJA (MODAL + OPERASIONAL): Rp '.number_format($this->totalOperasional + $this->totalModal, 0, ',', '.'),
+            null,
+            null,
             $this->saldoAkhir,
+            null,
         ];
     }
 
@@ -146,58 +175,32 @@ class MonthlyRincianSheetExport implements FromArray, WithColumnWidths, WithEven
         return $this->rows;
     }
 
+    public function startCell(): string
+    {
+        return 'A4';
+    }
+
     public function title(): string
     {
         return Carbon::create(null, $this->bulan, 1)->translatedFormat('F');
     }
 
-    public function headings(): array
-    {
-        return [
-            'NO',
-            'TANGGAL',
-            'OPERASIONAL',
-            'MODAL',
-            'PENERIMAAN DEBIT',
-            'KETERANGAN',
-            'SALDO TOTAL / HARI',
-        ];
-    }
-
     public function columnWidths(): array
     {
         return [
-            'A' => 6,
-            'B' => 14,
-            'C' => 20,
-            'D' => 20,
-            'E' => 22,
-            'F' => 45,
-            'G' => 22,
+            'A' => 7.5,
+            'B' => 17.0,
+            'C' => 1.5,
+            'D' => 18.0,
+            'E' => 18.0,
+            'F' => 3.5,
+            'G' => 3.5,
+            'H' => 32.0,
+            'I' => 3.5,
+            'J' => 3.5,
+            'K' => 18.0,
+            'L' => 3.5,
         ];
-    }
-
-    public function styles(Worksheet $sheet): ?array
-    {
-        // Sisipkan 3 baris di awal untuk Header Judul File Klien
-        $sheet->insertNewRowBefore(1, 3);
-
-        $namaBulan = strtoupper(Carbon::create(null, $this->bulan, 1)->translatedFormat('F'));
-        $sheet->mergeCells('A1:G1');
-        $sheet->setCellValue('A1', "RINCIAN PEMBELANJAAN BULAN {$namaBulan} {$this->tahun}");
-        $sheet->getStyle('A1')->applyFromArray([
-            'font' => ['bold' => true, 'size' => 14, 'color' => ['rgb' => '1A304D']],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-        ]);
-
-        $sheet->mergeCells('A2:G2');
-        $sheet->setCellValue('A2', 'Buku Kas Rincian Toko Souvenir — Format Rincian Belanja & Penerimaan Kas');
-        $sheet->getStyle('A2')->applyFromArray([
-            'font' => ['italic' => true, 'size' => 9.5, 'color' => ['rgb' => '64748B']],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-        ]);
-
-        return [];
     }
 
     public function registerEvents(): array
@@ -206,59 +209,139 @@ class MonthlyRincianSheetExport implements FromArray, WithColumnWidths, WithEven
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $highestRow = $sheet->getHighestRow();
-                $headerRow = 4;
 
-                // Style Table Headings
-                $sheet->getStyle("A{$headerRow}:G{$headerRow}")->applyFromArray([
-                    'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1A304D']],
+                // -------------------------------------------------------------
+                // 1. BARIS 1: JUDUL UTAMA (Colspan A1:L1)
+                // -------------------------------------------------------------
+                $namaBulan = strtoupper(Carbon::create(null, $this->bulan, 1)->translatedFormat('F'));
+                $sheet->setCellValue('A1', "RINCIAN PEMBELANJAAN BULAN {$namaBulan}");
+                $sheet->mergeCells('A1:L1');
+                $sheet->getStyle('A1:L1')->applyFromArray([
+                    'font' => ['name' => 'Calibri', 'size' => 11, 'bold' => true, 'color' => ['rgb' => '000000']],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '8EA9DB']],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
                         'vertical' => Alignment::VERTICAL_CENTER,
                     ],
                 ]);
-                $sheet->getRowDimension($headerRow)->setRowHeight(26);
+                $sheet->getRowDimension(1)->setRowHeight(25);
 
-                // Format Angka & Penjajaran Data Baris
-                if ($highestRow > $headerRow) {
-                    $dataStart = $headerRow + 1;
-                    $dataEnd = $highestRow - 1; // Baris sebelum baris TOTAL
+                // -------------------------------------------------------------
+                // 2. BARIS 2 & 3: HEADINGS DENGAN EXACT COLSPAN & ROWSPAN ASLI KLIEN
+                // -------------------------------------------------------------
+                // A2:A3 -> NO (Rowspan 2 baris)
+                $sheet->setCellValue('A2', 'NO');
+                $sheet->mergeCells('A2:A3');
+                $sheet->getStyle('A2:A3')->applyFromArray([
+                    'font' => ['name' => 'Calibri', 'size' => 11, 'bold' => true, 'color' => ['rgb' => '000000']],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'BDD7EE']],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                ]);
 
-                    if ($dataEnd >= $dataStart) {
-                        $sheet->getStyle("A{$dataStart}:A{$dataEnd}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                        $sheet->getStyle("B{$dataStart}:B{$dataEnd}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                        $sheet->getStyle("C{$dataStart}:E{$dataEnd}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-                        $sheet->getStyle("F{$dataStart}:F{$dataEnd}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-                        $sheet->getStyle("G{$dataStart}:G{$dataEnd}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                // B2:D2 -> PENGELUARAN (Colspan 3 kolom)
+                $sheet->setCellValue('B2', 'PENGELUARAN');
+                $sheet->mergeCells('B2:D2');
+                $sheet->getStyle('B2:D2')->applyFromArray([
+                    'font' => ['name' => 'Calibri', 'size' => 11, 'bold' => true, 'color' => ['rgb' => '000000']],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D6DCE4']],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                ]);
 
-                        // Number format untuk kolom nominal Rupiah
-                        $sheet->getStyle("C{$dataStart}:E{$dataEnd}")->getNumberFormat()->setFormatCode('#,##0');
-                        $sheet->getStyle("G{$dataStart}:G{$dataEnd}")->getNumberFormat()->setFormatCode('#,##0');
+                // B3:C3 -> OPERASIONAL (Colspan 2 kolom)
+                $sheet->setCellValue('B3', 'OPERASIONAL');
+                $sheet->mergeCells('B3:C3');
+                $sheet->getStyle('B3:C3')->applyFromArray([
+                    'font' => ['name' => 'Calibri', 'size' => 11, 'bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                ]);
 
-                        // Border tipis seluruh isi data
-                        $sheet->getStyle("A{$dataStart}:G{$dataEnd}")->applyFromArray([
-                            'borders' => [
-                                'allBorders' => [
-                                    'borderStyle' => Border::BORDER_THIN,
-                                    'color' => ['rgb' => 'E2E8F0'],
-                                ],
-                            ],
-                        ]);
-                    }
+                // D3 -> MODAL
+                $sheet->setCellValue('D3', 'MODAL');
+                $sheet->getStyle('D3')->applyFromArray([
+                    'font' => ['name' => 'Calibri', 'size' => 11, 'bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                ]);
 
-                    // Style Baris TOTAL Terakhir
-                    $sheet->getStyle("A{$highestRow}:G{$highestRow}")->applyFromArray([
-                        'font' => ['bold' => true, 'color' => ['rgb' => '0F172A'], 'size' => 10],
-                        'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E0F2FE']],
+                // E2:G3 -> PENERIMAAN DEBIT (Colspan 3 kolom & Rowspan 2 baris)
+                $sheet->setCellValue('E2', 'PENERIMAAN DEBIT');
+                $sheet->mergeCells('E2:G3');
+                $sheet->getStyle('E2:G3')->applyFromArray([
+                    'font' => ['name' => 'Calibri', 'size' => 11, 'bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                ]);
+
+                // H2:J3 -> KETERANGAN (Colspan 3 kolom & Rowspan 2 baris)
+                $sheet->setCellValue('H2', 'KETERANGAN');
+                $sheet->mergeCells('H2:J3');
+                $sheet->getStyle('H2:J3')->applyFromArray([
+                    'font' => ['name' => 'Calibri', 'size' => 11, 'bold' => true, 'color' => ['rgb' => '000000']],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'BDD7EE']],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                ]);
+
+                // K2:L3 -> SALDO TOTAL/HARI (Colspan 2 kolom & Rowspan 2 baris)
+                $sheet->setCellValue('K2', 'SALDO TOTAL/HARI');
+                $sheet->mergeCells('K2:L3');
+                $sheet->getStyle('K2:L3')->applyFromArray([
+                    'font' => ['name' => 'Calibri', 'size' => 11, 'bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                ]);
+
+                $sheet->getRowDimension(2)->setRowHeight(20);
+                $sheet->getRowDimension(3)->setRowHeight(20);
+
+                // -------------------------------------------------------------
+                // 3. MERGE CELLS PADA SETIAP BARIS DATA (Row 4 s.d. HighestRow)
+                // -------------------------------------------------------------
+                for ($r = 4; $r <= $highestRow; $r++) {
+                    $sheet->mergeCells("B{$r}:C{$r}");
+                    $sheet->mergeCells("E{$r}:G{$r}");
+                    $sheet->mergeCells("H{$r}:J{$r}");
+                    $sheet->mergeCells("K{$r}:L{$r}");
+
+                    $sheet->getRowDimension($r)->setRowHeight(20);
+                }
+
+                // -------------------------------------------------------------
+                // 4. FORMAT ANGKA & PENJAJARAN SELURUH DATA
+                // -------------------------------------------------------------
+                if ($highestRow >= 4) {
+                    $sheet->getStyle("A4:A{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("B4:C{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                    $sheet->getStyle("D4:D{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                    $sheet->getStyle("E4:G{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                    $sheet->getStyle("H4:J{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                    $sheet->getStyle("K4:L{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+                    // Number format Rupiah Excel
+                    $sheet->getStyle("B4:D{$highestRow}")->getNumberFormat()->setFormatCode('#,##0');
+                    $sheet->getStyle("E4:G{$highestRow}")->getNumberFormat()->setFormatCode('#,##0');
+                    $sheet->getStyle("K4:L{$highestRow}")->getNumberFormat()->setFormatCode('#,##0');
+
+                    // Border seluruh tabel dari A1 sampai L{highestRow}
+                    $sheet->getStyle("A1:L{$highestRow}")->applyFromArray([
                         'borders' => [
-                            'top' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '0284C7']],
-                            'bottom' => ['borderStyle' => Border::BORDER_DOUBLE, 'color' => ['rgb' => '0284C7']],
+                            'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN,
+                                'color' => ['rgb' => 'A6B9D0'],
+                            ],
                         ],
                     ]);
-                    $sheet->getStyle("C{$highestRow}:E{$highestRow}")->getNumberFormat()->setFormatCode('#,##0');
-                    $sheet->getStyle("G{$highestRow}")->getNumberFormat()->setFormatCode('#,##0');
-                    $sheet->getStyle("B{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    $sheet->getRowDimension($highestRow)->setRowHeight(24);
+
+                    // Style khusus baris TOTAL terakhir
+                    $sheet->getStyle("A{$highestRow}:L{$highestRow}")->applyFromArray([
+                        'font' => ['name' => 'Calibri', 'size' => 11, 'bold' => true, 'color' => ['rgb' => '000000']],
+                        'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'BDD7EE']],
+                        'borders' => [
+                            'top' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '4472C4']],
+                            'bottom' => ['borderStyle' => Border::BORDER_DOUBLE, 'color' => ['rgb' => '4472C4']],
+                        ],
+                    ]);
+                    $sheet->getStyle("A{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 }
             },
         ];

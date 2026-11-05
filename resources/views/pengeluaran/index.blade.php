@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Biaya Operasional & Ads')
+@section('title', 'Pengeluaran Toko & Bahan')
 
 @push('styles')
 <style>
@@ -379,14 +379,14 @@
 
     {{-- HEADER (SAMA PERSIS KONSEP KATALOG SOUVENIR) --}}
     <x-page-header
-        icon="fas fa-credit-card"
-        title="Biaya Operasional & Ads"
-        subtitle="Kelola pengeluaran operasional workshop, biaya iklan marketplace (Ads), prive pemilik, dan kasbon tim."
+        icon="fas fa-wallet"
+        title="Pengeluaran Toko & Bahan"
+        subtitle="Kelola pembelian bahan baku souvenir, operasional workshop, biaya iklan marketplace (Ads), dan kasbon/prive."
     />
 
     {{-- KPI STATS SUMMARY (4 CARDS SESUAI BUKU KEUANGAN) --}}
     <div class="row g-3 mb-3">
-        {{-- 1. Modal Bahan Baku & Produksi (Bulan Ini) --}}
+        {{-- 1. Modal Bahan Baku & Produksi --}}
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="kpi-card-modern kpi-accent-indigo">
                 <div class="d-flex align-items-center gap-3">
@@ -394,7 +394,7 @@
                         <i class="fas fa-boxes-stacked"></i>
                     </div>
                     <div>
-                        <div class="kpi-label">Modal Bahan &amp; Material</div>
+                        <div class="kpi-label">Modal Bahan ({{ $periodeLabel }})</div>
                         <div class="kpi-value text-dark">
                             Rp {{ number_format($totalModalBahanBulanIni ?? 0, 0, ',', '.') }}
                         </div>
@@ -404,7 +404,7 @@
             </div>
         </div>
 
-        {{-- 2. Operasional & Ads Toko (Bulan Ini) --}}
+        {{-- 2. Operasional & Ads Toko --}}
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="kpi-card-modern kpi-accent-success">
                 <div class="d-flex align-items-center gap-3">
@@ -412,7 +412,7 @@
                         <i class="fas fa-briefcase"></i>
                     </div>
                     <div>
-                        <div class="kpi-label" style="color: #047857;">Operasional &amp; Iklan Toko</div>
+                        <div class="kpi-label" style="color: #047857;">Operasional &amp; Ads ({{ $periodeLabel }})</div>
                         <div class="kpi-value" style="color: #047857;">
                             Rp {{ number_format($totalOperasionalBulanIni ?? 0, 0, ',', '.') }}
                         </div>
@@ -422,7 +422,7 @@
             </div>
         </div>
 
-        {{-- 3. Kasbon & Prive (Bulan Ini) --}}
+        {{-- 3. Kasbon & Prive --}}
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="kpi-card-modern kpi-accent-warning">
                 <div class="d-flex align-items-center gap-3">
@@ -430,7 +430,7 @@
                         <i class="fas fa-hand-holding-dollar"></i>
                     </div>
                     <div>
-                        <div class="kpi-label" style="color: #d97706;">Kasbon &amp; Prive Owner</div>
+                        <div class="kpi-label" style="color: #d97706;">Kasbon &amp; Prive ({{ $periodeLabel }})</div>
                         <div class="kpi-value" style="color: #d97706;">
                             Rp {{ number_format(($totalKasbonBulanIni ?? 0) + ($totalPribadiBulanIni ?? 0), 0, ',', '.') }}
                         </div>
@@ -448,11 +448,11 @@
                         <i class="fas fa-wallet"></i>
                     </div>
                     <div>
-                        <div class="kpi-label">Total Pengeluaran Bulan Ini</div>
+                        <div class="kpi-label">Total Pengeluaran ({{ $periodeLabel }})</div>
                         <div class="kpi-value text-primary">
                             Rp {{ number_format($totalBulanIni ?? 0, 0, ',', '.') }}
                         </div>
-                        <div class="kpi-subtext">{{ number_format($totalTransaksi ?? $pengeluarans->total()) }} transaksi tercatat</div>
+                        <div class="kpi-subtext">{{ number_format($totalTransaksi ?? $pengeluarans->total()) }} transaksi | Akumulasi: Rp {{ number_format($totalAkumulasiPengeluaran ?? 0, 0, ',', '.') }}</div>
                     </div>
                 </div>
             </div>
@@ -467,6 +467,8 @@
         if (request()->filled('status_kasbon')) $activeFilterCount++;
         if (request()->filled('dari_tanggal')) $activeFilterCount++;
         if (request()->filled('sampai_tanggal')) $activeFilterCount++;
+        if (request()->filled('bulan')) $activeFilterCount++;
+        if (request()->filled('tahun')) $activeFilterCount++;
         if (request()->filled('sort') && request('sort') !== 'latest') $activeFilterCount++;
     @endphp
 
@@ -481,6 +483,8 @@
                         @if(request('status_kasbon')) <input type="hidden" name="status_kasbon" value="{{ request('status_kasbon') }}"> @endif
                         @if(request('dari_tanggal')) <input type="hidden" name="dari_tanggal" value="{{ request('dari_tanggal') }}"> @endif
                         @if(request('sampai_tanggal')) <input type="hidden" name="sampai_tanggal" value="{{ request('sampai_tanggal') }}"> @endif
+                        @if(request('bulan')) <input type="hidden" name="bulan" value="{{ request('bulan') }}"> @endif
+                        @if(request('tahun')) <input type="hidden" name="tahun" value="{{ request('tahun') }}"> @endif
                         @if(request('sort')) <input type="hidden" name="sort" value="{{ request('sort') }}"> @endif
 
                         <div class="input-group search-input-group shadow-none">
@@ -511,7 +515,7 @@
                         @endif
                     </button>
 
-                    @if(request()->anyFilled(['search', 'tipe_alokasi', 'kategori', 'status_kasbon', 'dari_tanggal', 'sampai_tanggal', 'sort']))
+                    @if(request()->anyFilled(['search', 'tipe_alokasi', 'kategori', 'status_kasbon', 'dari_tanggal', 'sampai_tanggal', 'bulan', 'tahun', 'sort']))
                         <a href="{{ route('pengeluaran.index') }}" class="btn btn-reset-custom" title="Hapus Semua Filter">
                             <i class="fas fa-redo"></i>
                             <span class="d-none d-sm-inline">Reset</span>
@@ -565,6 +569,14 @@
                             <i class="fas fa-calendar me-1 text-primary"></i>
                             {{ request('dari_tanggal') ?: '...' }} s/d {{ request('sampai_tanggal') ?: '...' }}
                             <a href="{{ route('pengeluaran.index', request()->except(['dari_tanggal', 'sampai_tanggal'])) }}"><i class="fas fa-times"></i></a>
+                        </span>
+                    @endif
+
+                    @if(request('bulan') || request('tahun'))
+                        <span class="filter-chip">
+                            <i class="fas fa-calendar-check me-1 text-primary"></i>
+                            Periode: {{ request('bulan') ? \Carbon\Carbon::createFromDate(request('tahun', now()->year), request('bulan'), 1)->translatedFormat('F') : '' }} {{ request('tahun') }}
+                            <a href="{{ route('pengeluaran.index', request()->except(['bulan', 'tahun'])) }}"><i class="fas fa-times"></i></a>
                         </span>
                     @endif
 
@@ -756,7 +768,7 @@
             <div class="modal-header border-bottom py-3 px-4" style="background: linear-gradient(135deg, #26476f 0%, #1f3a5c 100%); color: #ffffff;">
                 <div class="d-flex align-items-center gap-2">
                     <i class="fas fa-filter fa-lg"></i>
-                    <h5 class="modal-title fw-bold fs-6 mb-0 text-white" id="modalFilterPengeluaranLabel">Filter Biaya Operasional &amp; Ads</h5>
+                    <h5 class="modal-title fw-bold fs-6 mb-0 text-white" id="modalFilterPengeluaranLabel">Filter Pengeluaran Toko &amp; Bahan</h5>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -802,6 +814,27 @@
                         <div class="col-12 col-md-6">
                             <label class="form-label" for="modal_sampai_tanggal">Sampai Tanggal</label>
                             <input type="date" name="sampai_tanggal" id="modal_sampai_tanggal" class="form-control" value="{{ request('sampai_tanggal') }}">
+                        </div>
+
+                        {{-- 4. Pilihan Bulan & Tahun Cepat --}}
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="modal_pgl_bulan">Atau Pilih Bulan</label>
+                            <select name="bulan" id="modal_pgl_bulan" class="form-select">
+                                <option value="">Semua Bulan</option>
+                                @foreach([1=>'Januari', 2=>'Februari', 3=>'Maret', 4=>'April', 5=>'Mei', 6=>'Juni', 7=>'Juli', 8=>'Agustus', 9=>'September', 10=>'Oktober', 11=>'November', 12=>'Desember'] as $mNum => $mName)
+                                    <option value="{{ $mNum }}" {{ request('bulan') == $mNum ? 'selected' : '' }}>{{ $mName }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="modal_pgl_tahun">Tahun</label>
+                            <select name="tahun" id="modal_pgl_tahun" class="form-select">
+                                <option value="">Semua Tahun</option>
+                                @for($y = (int) now()->year; $y >= 2024; $y--)
+                                    <option value="{{ $y }}" {{ request('tahun') == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                @endfor
+                            </select>
                         </div>
 
                         {{-- 4. Status Kasbon --}}

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KasMasuk;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -36,6 +37,14 @@ class KasMasukController extends Controller
             $query->whereDate('tanggal', '<=', $request->sampai_tanggal);
         }
 
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal', $request->bulan);
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal', $request->tahun);
+        }
+
         $sort = $request->input('sort', 'latest');
         match ($sort) {
             'oldest' => $query->oldest('tanggal')->oldest('id'),
@@ -46,39 +55,78 @@ class KasMasukController extends Controller
 
         $kasMasuks = $query->paginate(10)->withQueryString();
 
-        $bulanSekarang = now()->month;
-        $tahunSekarang = now()->year;
+        $hasDateFilter = $request->filled('dari_tanggal') || $request->filled('sampai_tanggal') || $request->filled('bulan') || $request->filled('tahun');
 
-        $totalBulanIni = KasMasuk::whereMonth('tanggal', $bulanSekarang)
-            ->whereYear('tanggal', $tahunSekarang)
-            ->sum('jumlah');
+        $statsQuery = KasMasuk::query();
 
-        $totalModalDisetorBulanIni = KasMasuk::where('tipe', 'modal_pemilik')
-            ->whereMonth('tanggal', $bulanSekarang)
-            ->whereYear('tanggal', $tahunSekarang)
-            ->sum('jumlah');
+        if ($hasDateFilter) {
+            if ($request->filled('dari_tanggal')) {
+                $statsQuery->whereDate('tanggal', '>=', $request->dari_tanggal);
+            }
+            if ($request->filled('sampai_tanggal')) {
+                $statsQuery->whereDate('tanggal', '<=', $request->sampai_tanggal);
+            }
+            if ($request->filled('bulan')) {
+                $statsQuery->whereMonth('tanggal', $request->bulan);
+            }
+            if ($request->filled('tahun')) {
+                $statsQuery->whereYear('tanggal', $request->tahun);
+            }
 
-        $totalPendapatanLainBulanIni = KasMasuk::where('tipe', 'pendapatan_lain')
-            ->whereMonth('tanggal', $bulanSekarang)
-            ->whereYear('tanggal', $tahunSekarang)
-            ->sum('jumlah');
+            if ($request->filled('dari_tanggal') && $request->filled('sampai_tanggal')) {
+                $periodeLabel = Carbon::parse($request->dari_tanggal)->translatedFormat('d M Y').' - '.Carbon::parse($request->sampai_tanggal)->translatedFormat('d M Y');
+            } elseif ($request->filled('dari_tanggal')) {
+                $periodeLabel = 'Mulai '.Carbon::parse($request->dari_tanggal)->translatedFormat('d M Y');
+            } elseif ($request->filled('sampai_tanggal')) {
+                $periodeLabel = 's/d '.Carbon::parse($request->sampai_tanggal)->translatedFormat('d M Y');
+            } elseif ($request->filled('bulan') && $request->filled('tahun')) {
+                $periodeLabel = Carbon::createFromDate($request->tahun, $request->bulan, 1)->translatedFormat('F Y');
+            } elseif ($request->filled('bulan')) {
+                $periodeLabel = Carbon::createFromDate(now()->year, $request->bulan, 1)->translatedFormat('F');
+            } else {
+                $periodeLabel = 'Tahun '.$request->tahun;
+            }
+        } else {
+            // Anchor cerdas: jika bulan saat ini belum memiliki transaksi (misal seeder selesai Okt 2026),
+            // otomatis gunakan bulan transaksi terakhir yang tersedia agar card statistik terisi data aktual
+            $hasCurrentMonthData = KasMasuk::whereYear('tanggal', now()->year)
+                ->whereMonth('tanggal', now()->month)
+                ->exists();
 
-        $totalTransaksiBulanIni = KasMasuk::whereMonth('tanggal', $bulanSekarang)
-            ->whereYear('tanggal', $tahunSekarang)
-            ->count();
+            if ($hasCurrentMonthData) {
+                $anchorDate = now();
+            } else {
+                $latestDate = KasMasuk::max('tanggal');
+                $anchorDate = $latestDate ? Carbon::parse($latestDate) : now();
+            }
 
-        $totalHariIni = KasMasuk::whereDate('tanggal', today())->sum('jumlah');
+            $periodeLabel = $anchorDate->translatedFormat('F Y');
+            $statsQuery->whereMonth('tanggal', $anchorDate->month)
+                ->whereYear('tanggal', $anchorDate->year);
+        }
+
+        $totalBulanIni = (float) (clone $statsQuery)->sum('jumlah');
+        $totalModalDisetorBulanIni = (float) (clone $statsQuery)->where('tipe', 'modal_pemilik')->sum('jumlah');
+        $totalPendapatanLainBulanIni = (float) (clone $statsQuery)->where('tipe', 'pendapatan_lain')->sum('jumlah');
+        $totalTransaksiBulanIni = (int) (clone $statsQuery)->count();
+
+        $totalHariIni = (float) KasMasuk::whereDate('tanggal', today())->sum('jumlah');
+        $totalAkumulasi = (float) KasMasuk::sum('jumlah');
+        $totalTransaksiSemua = (int) KasMasuk::count();
 
         $tipes = KasMasuk::TIPE;
         $sumbers = KasMasuk::SUMBER;
 
         return view('kas-masuk.index', compact(
             'kasMasuks',
+            'periodeLabel',
             'totalBulanIni',
             'totalModalDisetorBulanIni',
             'totalPendapatanLainBulanIni',
             'totalTransaksiBulanIni',
             'totalHariIni',
+            'totalAkumulasi',
+            'totalTransaksiSemua',
             'tipes',
             'sumbers'
         ));
