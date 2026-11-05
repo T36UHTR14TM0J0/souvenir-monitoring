@@ -17,7 +17,8 @@
     {{-- Core CSS --}}
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/style-custom.css') }}?v={{ filemtime(public_path('assets/css/style-custom.css')) }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/components.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/components.css') }}?v={{ filemtime(public_path('assets/css/components.css')) }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/modal.css') }}?v={{ filemtime(public_path('assets/css/modal.css')) }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     {{-- Vendor CSS --}}
@@ -46,6 +47,17 @@
             margin: 0 !important;
             padding: 0 !important;
             border: none !important;
+        }
+
+        /* Pastikan icon pada .input-group-modern tidak pernah menimpa teks pada select maupun Select2 */
+        .input-group-modern .form-select,
+        .input-group-modern .form-select-modern,
+        .input-group-modern .select2-container--bootstrap-5 .select2-selection,
+        .input-group-modern .select2-container--bootstrap-5 .select2-selection--single {
+            padding-left: 2.5rem !important;
+        }
+        .input-group-modern .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+            padding-left: 0 !important;
         }
     </style>
 
@@ -109,6 +121,72 @@
 
     {{-- Global Flash Messages --}}
     @include('layouts.partials.flash-messages')
+
+    {{-- Modal Global Pratinjau Bukti Transaksi --}}
+    <div class="modal fade" id="modalBuktiTransaksi" tabindex="-1" aria-labelledby="modalBuktiTransaksiTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);">
+                <div class="modal-header bg-light py-2 px-3 border-bottom">
+                    <h6 class="modal-title font-weight-bold mb-0 text-dark" id="modalBuktiTransaksiTitle">
+                        <i class="fas fa-file-invoice text-primary me-2"></i>Bukti Transaksi
+                    </h6>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="#" target="_blank" id="modalBuktiOpenTab" class="btn btn-sm btn-outline-secondary" title="Buka di tab baru">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-0 text-center bg-dark bg-opacity-10" style="min-height: 280px; display: flex; align-items: center; justify-content: center; position: relative;">
+                    <div id="modalBuktiLoading" class="p-4 text-muted">
+                        <div class="spinner-border spinner-border-sm text-primary me-1" role="status"></div> Memuat file bukti...
+                    </div>
+                    <img id="modalBuktiImage" src="" alt="Bukti Transaksi" class="img-fluid d-none" style="max-height: 80vh; max-width: 100%; object-fit: contain; margin: 0 auto; padding: 8px;">
+                    <iframe id="modalBuktiPdf" src="" class="w-100 d-none" style="height: 75vh; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showBuktiModal(url, title = 'Bukti Transaksi') {
+            const modalEl = document.getElementById('modalBuktiTransaksi');
+            if (!modalEl) return;
+
+            document.getElementById('modalBuktiTransaksiTitle').innerHTML = '<i class="fas fa-file-invoice text-primary me-2"></i>' + title;
+            document.getElementById('modalBuktiOpenTab').href = url;
+
+            const imgEl = document.getElementById('modalBuktiImage');
+            const pdfEl = document.getElementById('modalBuktiPdf');
+            const loadingEl = document.getElementById('modalBuktiLoading');
+
+            imgEl.classList.add('d-none');
+            pdfEl.classList.add('d-none');
+            loadingEl.classList.remove('d-none');
+            loadingEl.innerHTML = '<div class="spinner-border spinner-border-sm text-primary me-1" role="status"></div> Memuat file bukti...';
+
+            const cleanUrl = url.split('?')[0].toLowerCase();
+            const isPdf = cleanUrl.endsWith('.pdf');
+
+            if (isPdf) {
+                pdfEl.src = url;
+                loadingEl.classList.add('d-none');
+                pdfEl.classList.remove('d-none');
+            } else {
+                imgEl.onload = function() {
+                    loadingEl.classList.add('d-none');
+                    imgEl.classList.remove('d-none');
+                };
+                imgEl.onerror = function() {
+                    loadingEl.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> Gagal memuat gambar bukti</span>';
+                };
+                imgEl.src = url;
+            }
+
+            const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            bsModal.show();
+        }
+    </script>
 
     @stack('scripts')
 </body>

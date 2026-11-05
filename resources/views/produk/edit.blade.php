@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Produk')
+@section('title', 'Edit Produk Souvenir - ' . $produk->nama_produk)
 
 @section('content')
 <div class="container-fluid px-0">
 
     {{-- HEADER (variant primary untuk edit) --}}
     <x-page-header
-        icon="fas fa-edit"
-        title="Edit Produk"
-        subtitle="Perbarui informasi produk <strong>{{ $produk->nama_produk }}</strong>."
+        icon="fas fa-gift"
+        title="Edit Produk Souvenir"
+        subtitle="Perbarui spesifikasi, harga jual, dan diskon promo <strong>{{ $produk->nama_produk }}</strong>."
         iconVariant="primary"
     />
 

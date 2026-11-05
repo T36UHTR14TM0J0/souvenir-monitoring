@@ -14,26 +14,34 @@ class PembelianSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::first();
-        if (!$user) {
-            $this->command->warn('⚠️ Tidak ada user untuk PembelianSeeder.');
+        $user = User::where('email', 'bendahara@gmail.com')->first() ?? User::first();
+        if (! $user) {
+            $this->command->warn('Tidak ada user untuk PembelianSeeder.');
+
             return;
         }
 
-        $produks = Produk::all();
-        if ($produks->isEmpty()) {
-            $this->command->warn('⚠️ Tidak ada produk untuk PembelianSeeder.');
-            return;
+        $bahanBakuProduks = Produk::where('jenis', 'bahan_baku')->get();
+        if ($bahanBakuProduks->isEmpty()) {
+            $bahanBakuProduks = Produk::all();
         }
 
-        $suppliers = [
-            'PT Merchindo Souvenir Utama',
-            'CV Anime Kreasi Nusantara',
-            'Distributor Figure Import Jakarta',
-            'UD Bandung Apparel & Sablon',
-            'Pabrik Akrilik & Tumbler Jaya',
-            'Grosir Souvenir Yogyakarta',
-            'CV Cetak Grafika Bandung',
+        $onlineSuppliers = [
+            ['nama' => 'PT Keramik Sublimasi Official Store', 'platform' => 'shopee'],
+            ['nama' => 'CV Akrilik Nusantara Gemilang Store', 'platform' => 'tokopedia'],
+            ['nama' => 'Distributor Kemasan & Box Bandung Official', 'platform' => 'shopee'],
+            ['nama' => 'Aneka Logam & Ring Keychain Grosir', 'platform' => 'tokopedia'],
+            ['nama' => 'Pabrik Botol Termal & Tumbler Indonesia', 'platform' => 'tiktok'],
+            ['nama' => 'Toko Tinta Grafika Sublimasi Murah', 'platform' => 'lazada'],
+            ['nama' => 'Grosir Bahan Souvenir Pasar Pagi', 'platform' => 'offline'],
+        ];
+
+        $kurirKargoList = [
+            'J&T Cargo',
+            'SiCepat Cargo (GOKIL)',
+            'JNE Trucking (JTR)',
+            'Sentral Cargo',
+            'Indah Logistik Cargo',
         ];
 
         // 22 Bulan: Jan 2025 s.d. Des 2025 (12 bulan) & Jan 2026 s.d. Okt 2026 (10 bulan)
@@ -48,74 +56,98 @@ class PembelianSeeder extends Seeder
         $orderCounter = 1;
 
         foreach ($periods as $p) {
-            $year  = $p['year'];
+            $year = $p['year'];
             $month = $p['month'];
 
-            // 2 s.d. 3 pembelian per bulan
-            $trxCount = rand(2, 3);
+            // 2 s.d. 4 pembelian bahan baku per bulan
+            $trxCount = rand(2, 4);
 
             for ($t = 0; $t < $trxCount; $t++) {
                 $day = rand(2, 26);
                 $tanggal = Carbon::create($year, $month, $day, rand(9, 16), rand(0, 59));
 
-                $kodePembelian = 'PBL-' . $tanggal->format('Ymd') . '-' . str_pad($orderCounter++, 4, '0', STR_PAD_LEFT);
+                $sup = $onlineSuppliers[array_rand($onlineSuppliers)];
+                $isOffline = $sup['platform'] === 'offline';
+                $kurir = $isOffline ? null : $kurirKargoList[array_rand($kurirKargoList)];
+                $ongkir = $isOffline ? 0 : [25000, 35000, 45000, 50000, 75000, 90000][rand(0, 5)];
+                $diskon = [0, 0, 10000, 15000, 25000][rand(0, 4)];
+
+                // Transaksi di bulan terakhir (Okt 2026) variasikan status agar ada dipesan, dikirim, diterima
+                $statusPembelian = 'diterima';
+                if ($year === 2026 && $month === 10) {
+                    if ($day >= 23) {
+                        $statusPembelian = 'dipesan';
+                    } elseif ($day >= 17) {
+                        $statusPembelian = 'dikirim';
+                    }
+                }
+
+                $prefixInv = strtoupper(substr($sup['platform'], 0, 3));
+                $noInvoice = 'INV/'.$tanggal->format('Ymd').'/'.$prefixInv.'/'.rand(100000, 999999);
+                $noResi = $isOffline ? null : strtoupper(substr($kurir, 0, 3)).$tanggal->format('ymd').rand(10000, 99999);
+
+                $kodePembelian = 'PBL-'.$tanggal->format('Ymd').'-'.str_pad($orderCounter++, 4, '0', STR_PAD_LEFT);
 
                 DB::beginTransaction();
                 try {
                     $pembelian = Pembelian::create([
                         'kode_pembelian' => $kodePembelian,
-                        'tanggal'        => $tanggal->format('Y-m-d'),
-                        'supplier'       => $suppliers[array_rand($suppliers)],
-                        'total_harga'    => 0,
-                        'total_diskon'   => 0,
-                        'grand_total'    => 0,
-                        'catatan'        => 'Restock batch produk ' . $tanggal->translatedFormat('F Y'),
-                        'user_id'        => $user->id,
+                        'tanggal' => $tanggal->format('Y-m-d'),
+                        'platform' => $sup['platform'],
+                        'supplier' => $sup['nama'],
+                        'no_invoice_online' => $noInvoice,
+                        'ongkir' => $ongkir,
+                        'status_pembelian' => $statusPembelian,
+                        'kurir_kargo' => $kurir,
+                        'no_resi_kargo' => $noResi,
+                        'total_harga' => 0,
+                        'total_diskon' => $diskon,
+                        'grand_total' => 0,
+                        'catatan' => $isOffline
+                            ? 'Belanja langsung bahan baku & kemasan ke toko fisik'
+                            : 'Restock bahan baku online via '.ucfirst($sup['platform']).' kargo '.$kurir,
+                        'user_id' => $user->id,
+                        'created_at' => $tanggal,
+                        'updated_at' => $tanggal,
                     ]);
 
                     $totalHarga = 0;
-                    // Pilih 2 - 5 produk acak
-                    $itemCount = rand(2, 5);
-                    $selectedProduks = $produks->random($itemCount);
+                    $itemCount = min(rand(2, 4), $bahanBakuProduks->count());
+                    $selectedProduks = $bahanBakuProduks->random($itemCount);
 
                     foreach ($selectedProduks as $produk) {
-                        $qty = rand(10, 35);
+                        $qty = rand(25, 65);
                         $hargaBeli = (float) $produk->harga_beli;
                         $subtotal = $qty * $hargaBeli;
 
                         PembelianDetail::create([
                             'pembelian_id' => $pembelian->id,
-                            'produk_id'    => $produk->id,
-                            'nama_produk'  => $produk->nama_produk,
-                            'harga_beli'   => $hargaBeli,
-                            'qty'          => $qty,
-                            'subtotal'     => $subtotal,
-                            'created_at'   => $tanggal,
-                            'updated_at'   => $tanggal,
+                            'produk_id' => $produk->id,
+                            'nama_produk' => $produk->nama_produk,
+                            'harga_beli' => $hargaBeli,
+                            'qty' => $qty,
+                            'subtotal' => $subtotal,
+                            'created_at' => $tanggal,
+                            'updated_at' => $tanggal,
                         ]);
 
                         $totalHarga += $subtotal;
                     }
 
-                    // Diskon supplier berkala pada beberapa pembelian
-                    $diskon = (rand(1, 100) <= 30) ? (rand(1, 5) * 25000) : 0;
-                    if ($diskon > $totalHarga) $diskon = 0;
+                    $grandTotal = max(0, ($totalHarga + $ongkir) - $diskon);
 
                     $pembelian->update([
-                        'total_harga'  => $totalHarga,
-                        'total_diskon' => $diskon,
-                        'grand_total'  => $totalHarga - $diskon,
-                        'created_at'   => $tanggal,
-                        'updated_at'   => $tanggal,
+                        'total_harga' => $totalHarga,
+                        'grand_total' => $grandTotal,
                     ]);
 
                     DB::commit();
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     DB::rollBack();
                 }
             }
         }
 
-        $this->command->info('✅ PembelianSeeder: ' . ($orderCounter - 1) . ' Transaksi Pembelian (2025-2026) berhasil dibuat.');
+        $this->command->info('PembelianSeeder: Data pembelian bahan baku (Jan 2025 - Des 2025 & Jan 2026 - Okt 2026) berhasil di-seed.');
     }
 }

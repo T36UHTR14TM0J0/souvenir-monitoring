@@ -2,212 +2,290 @@
 
 @section('title', 'Edit User')
 
+@push('styles')
+<style>
+    .card-modern {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+    }
+    .card-header-gradient {
+        background: linear-gradient(135deg, #26476f 0%, #1f3a5c 50%, #1a304d 100%);
+        color: #ffffff;
+        padding: 1rem 1.25rem;
+    }
+    .form-label-custom {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #334155;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        margin-bottom: 0.35rem;
+        display: block;
+    }
+    .form-label-custom .required {
+        color: #ef4444;
+    }
+    .input-group-custom .input-group-text {
+        background-color: #f8fafc;
+        border-color: #cbd5e1;
+        color: #64748b;
+        font-size: 0.85rem;
+        width: 40px;
+        justify-content: center;
+    }
+    .input-group-custom .form-control,
+    .input-group-custom .form-select {
+        height: 40px;
+        border-color: #cbd5e1;
+        font-size: 0.825rem;
+        color: #0f172a;
+    }
+    .input-group-custom .form-control:focus,
+    .input-group-custom .form-select:focus {
+        border-color: #26476f;
+        box-shadow: 0 0 0 3px rgba(38, 71, 111, 0.12);
+    }
+    .btn-primary-custom,
+    .btn-secondary-custom {
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        padding: 0 1.15rem;
+        border-radius: 0.5rem;
+        white-space: nowrap;
+        text-decoration: none;
+        transition: all 0.15s ease;
+        border: 1px solid transparent;
+    }
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #26476f 0%, #1a304d 100%);
+        border-color: #1a304d;
+        color: #ffffff !important;
+        box-shadow: 0 2px 4px rgba(38, 71, 111, 0.25);
+    }
+    .btn-primary-custom:hover {
+        background: linear-gradient(135deg, #1f3a5c 0%, #14243b 100%);
+        transform: translateY(-1px);
+    }
+    .btn-secondary-custom {
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        border-color: #475569;
+        color: #ffffff !important;
+    }
+    .btn-secondary-custom:hover {
+        background: linear-gradient(135deg, #475569 0%, #334155 100%);
+        transform: translateY(-1px);
+    }
+    .role-guide-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.65rem;
+        padding: 0.85rem 1rem;
+        background: #f8fafc;
+        transition: all 0.15s ease;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid px-0">
 
     {{-- HEADER --}}
     <x-page-header
         icon="fas fa-user-edit"
-        title="Edit User"
-        subtitle="Perbarui data akun pengguna dan hak aksesnya."
+        title="Edit User: {{ $user->name }}"
+        subtitle="Perbarui informasi akun pengguna, password, dan hak akses role."
     />
 
-    {{-- FORM CARD --}}
-    <div class="card card-modern">
-        <div class="card-body p-4 p-md-5">
-            <form action="{{ route('users.update', $user) }}" method="POST" id="userForm" novalidate>
-                @csrf
-                @method('PUT')
-
-                {{-- ============ SECTION: INFORMASI AKUN ============ --}}
-                <div class="form-section-title">
-                    <i class="fas fa-user-circle"></i>
-                    Informasi Akun
+    <div class="row g-3">
+        {{-- FORM INPUT KIRI --}}
+        <div class="col-12 col-lg-8">
+            <div class="card card-modern">
+                <div class="card-header-gradient d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-user-pen"></i>
+                        <h6 class="mb-0 fw-bold text-white" style="font-size: 0.9rem;">Perbarui Data &amp; Role Pengguna</h6>
+                    </div>
+                    <span class="badge bg-white text-dark fw-semibold" style="font-size: 0.7rem;">ID #{{ $user->id }}</span>
                 </div>
 
-                <div class="row g-3">
-                    {{-- Nama --}}
-                    <div class="col-12 col-md-6">
-                        <label class="form-label-custom" for="name">
-                            Nama <span class="required">*</span>
-                        </label>
-                        <div class="input-group-modern">
-                            <i class="fas fa-user input-icon"></i>
-                            <input type="text"
-                                   name="name"
-                                   id="name"
-                                   class="form-control form-control-modern @error('name') is-invalid @enderror"
-                                   value="{{ old('name', $user->name) }}"
-                                   placeholder="Masukkan nama lengkap"
-                                   autofocus>
-                        </div>
-                        <div class="invalid-feedback" id="error_name" @if(!$errors->has('name')) style="display: none !important;" @endif>
-                            @error('name'){{ $message }}@enderror
-                        </div>
-                        <div class="required-note" id="note_name" @if($errors->has('name')) style="display: none !important;" @endif>
-                            <i class="fas fa-circle-info"></i>
-                            <span>Wajib diisi</span>
-                        </div>
-                    </div>
+                <div class="card-body p-4">
+                    <form action="{{ route('users.update', $user) }}" method="POST" id="userForm" novalidate>
+                        @csrf
+                        @method('PUT')
 
-                    {{-- Email --}}
-                    <div class="col-12 col-md-6">
-                        <label class="form-label-custom" for="email">
-                            Email <span class="required">*</span>
-                        </label>
-                        <div class="input-group-modern">
-                            <i class="fas fa-envelope input-icon"></i>
-                            <input type="email"
-                                   name="email"
-                                   id="email"
-                                   class="form-control form-control-modern @error('email') is-invalid @enderror"
-                                   value="{{ old('email', $user->email) }}"
-                                   placeholder="nama@email.com">
-                        </div>
-                        <div class="invalid-feedback" id="error_email" @if(!$errors->has('email')) style="display: none !important;" @endif>
-                            @error('email'){{ $message }}@enderror
-                        </div>
-                        <div class="required-note" id="note_email" @if($errors->has('email')) style="display: none !important;" @endif>
-                            <i class="fas fa-circle-info"></i>
-                            <span>Wajib diisi dengan email valid</span>
-                        </div>
-                    </div>
+                        <div class="row g-3">
+                            {{-- Nama --}}
+                            <div class="col-12 col-md-6">
+                                <label class="form-label-custom" for="name">
+                                    Nama Lengkap <span class="required">*</span>
+                                </label>
+                                <div class="input-group input-group-custom">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text"
+                                           name="name"
+                                           id="name"
+                                           class="form-control @error('name') is-invalid @enderror"
+                                           value="{{ old('name', $user->name) }}"
+                                           placeholder="Masukkan nama lengkap">
+                                </div>
+                                @error('name')
+                                    <div class="text-danger small mt-1"><i class="fas fa-circle-exclamation me-1"></i>{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                    {{-- Role --}}
-                    <div class="col-12">
-                        <label class="form-label-custom" for="role">
-                            Role <span class="required">*</span>
-                        </label>
-                        <select name="role"
-                                id="role"
-                                class="form-select form-select-modern @error('role') is-invalid @enderror">
-                            <option value="">-- Pilih Role --</option>
-                            @foreach($roles as $role)
-                                <option value="{{ $role->name }}"
-                                    {{ old('role', $user->getRoleNames()->first()) == $role->name ? 'selected' : '' }}>
-                                    {{ ucfirst($role->name) }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="invalid-feedback" id="error_role" @if(!$errors->has('role')) style="display: none !important;" @endif>
-                            @error('role'){{ $message }}@enderror
+                            {{-- Email --}}
+                            <div class="col-12 col-md-6">
+                                <label class="form-label-custom" for="email">
+                                    Alamat Email <span class="required">*</span>
+                                </label>
+                                <div class="input-group input-group-custom">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email"
+                                           name="email"
+                                           id="email"
+                                           class="form-control @error('email') is-invalid @enderror"
+                                           value="{{ old('email', $user->email) }}"
+                                           placeholder="nama@email.com">
+                                </div>
+                                @error('email')
+                                    <div class="text-danger small mt-1"><i class="fas fa-circle-exclamation me-1"></i>{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Role --}}
+                            <div class="col-12">
+                                <label class="form-label-custom" for="role">
+                                    Peranan / Role Pengguna <span class="required">*</span>
+                                </label>
+                                <select name="role"
+                                        id="role"
+                                        class="form-select @error('role') is-invalid @enderror">
+                                    <option value="">-- Pilih Role Pengguna --</option>
+                                    @foreach($roles as $role)
+                                        @php
+                                            $meta = \App\Http\Controllers\RoleController::ROLE_META[$role->name] ?? null;
+                                        @endphp
+                                        <option value="{{ $role->name }}"
+                                            {{ old('role', $user->getRoleNames()->first()) === $role->name ? 'selected' : '' }}>
+                                            {{ $role->name }}{{ $meta ? ' — ' . $meta['label'] : '' }} ({{ $role->permissions->count() }} Permission)
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('role')
+                                    <div class="text-danger small mt-1"><i class="fas fa-circle-exclamation me-1"></i>{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Info Password Opsional --}}
+                            <div class="col-12 mt-3">
+                                <div class="p-2.5 px-3 rounded-3" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; font-size: 0.78rem;">
+                                    <i class="fas fa-circle-info me-1"></i>
+                                    <strong>Password bersifat opsional:</strong> Kosongkan kedua kolom password di bawah ini jika Anda tidak ingin mengubah password pengguna.
+                                </div>
+                            </div>
+
+                            {{-- Password Baru --}}
+                            <div class="col-12 col-md-6">
+                                <label class="form-label-custom" for="password">
+                                    Password Baru (Opsional)
+                                </label>
+                                <div class="input-group input-group-custom">
+                                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                    <input type="password"
+                                           name="password"
+                                           id="password"
+                                           class="form-control @error('password') is-invalid @enderror"
+                                           placeholder="Kosongkan jika tidak diubah">
+                                    <button type="button" class="btn btn-outline-secondary border-start-0" style="border-color: #cbd5e1;" onclick="togglePassword('password', this)" tabindex="-1">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                @error('password')
+                                    <div class="text-danger small mt-1"><i class="fas fa-circle-exclamation me-1"></i>{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Konfirmasi Password Baru --}}
+                            <div class="col-12 col-md-6">
+                                <label class="form-label-custom" for="password_confirmation">
+                                    Konfirmasi Password Baru
+                                </label>
+                                <div class="input-group input-group-custom">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password"
+                                           name="password_confirmation"
+                                           id="password_confirmation"
+                                           class="form-control"
+                                           placeholder="Ulangi password baru">
+                                    <button type="button" class="btn btn-outline-secondary border-start-0" style="border-color: #cbd5e1;" onclick="togglePassword('password_confirmation', this)" tabindex="-1">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Status Aktif --}}
+                            <div class="col-12 mt-3">
+                                <div class="p-3 rounded-3 border bg-light d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="fw-bold text-dark" style="font-size: 0.85rem;">Status Aktif Akun</div>
+                                        <div class="small text-muted">Jika dinonaktifkan, pengguna tidak dapat login ke dalam aplikasi.</div>
+                                    </div>
+                                    <div class="form-check form-switch m-0">
+                                        <input class="form-check-input" type="checkbox" role="switch" name="is_active" id="is_active" value="1" {{ old('is_active', $user->is_active) ? 'checked' : '' }} style="width: 2.6rem; height: 1.35rem; cursor: pointer;">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="required-note" id="note_role" @if($errors->has('role')) style="display: none !important;" @endif>
-                            <i class="fas fa-circle-info"></i>
-                            <span>Wajib dipilih</span>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ route('users.index') }}" class="btn btn-secondary-custom">
+                                <i class="fas fa-arrow-left"></i>
+                                <span>Kembali</span>
+                            </a>
+                            <button type="submit" class="btn btn-primary-custom" id="submitBtn">
+                                <i class="fas fa-save"></i>
+                                <span>Simpan Perubahan</span>
+                            </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
+            </div>
+        </div>
 
-                {{-- ============ SECTION: KEAMANAN AKUN ============ --}}
-                <div class="form-section mt-4">
-                    <div class="form-section-title">
-                        <i class="fas fa-lock"></i>
-                        Keamanan Akun
-                    </div>
-
-                    {{-- Info Box --}}
-                    <div class="info-box">
-                        <i class="fas fa-info-circle"></i>
-                        <div>
-                            <strong>Password bersifat opsional.</strong>
-                            Kosongkan kedua field password jika tidak ingin mengubah password user ini.
-                        </div>
-                    </div>
-
-                    <div class="row g-3">
-                        {{-- Password Baru --}}
-                        <div class="col-12 col-md-6">
-                            <label class="form-label-custom" for="password">
-                                Password Baru
-                            </label>
-                            <div class="input-group-modern">
-                                <i class="fas fa-key input-icon"></i>
-                                <input type="password"
-                                       name="password"
-                                       id="password"
-                                       class="form-control form-control-modern @error('password') is-invalid @enderror"
-                                       placeholder="Kosongkan jika tidak diubah">
-                                <button type="button"
-                                        class="password-toggle"
-                                        onclick="togglePassword('password', this)"
-                                        tabindex="-1">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                            <div class="invalid-feedback" id="error_password" @if(!$errors->has('password')) style="display: none !important;" @endif>
-                                @error('password'){{ $message }}@enderror
-                            </div>
-                            <div class="required-note" id="note_password" @if($errors->has('password')) style="display: none !important;" @endif>
-                                <i class="fas fa-circle-info"></i>
-                                <span>Minimal 8 karakter (opsional)</span>
-                            </div>
-                            <div class="password-strength" id="passwordStrength">
-                                <div class="password-strength-bar"></div>
-                                <div class="password-strength-bar"></div>
-                                <div class="password-strength-bar"></div>
-                                <div class="password-strength-bar"></div>
-                            </div>
-                            <div class="password-strength-text" id="passwordStrengthText"></div>
-                        </div>
-
-                        {{-- Konfirmasi Password --}}
-                        <div class="col-12 col-md-6">
-                            <label class="form-label-custom" for="password_confirmation">
-                                Konfirmasi Password Baru
-                            </label>
-                            <div class="input-group-modern">
-                                <i class="fas fa-key input-icon"></i>
-                                <input type="password"
-                                       name="password_confirmation"
-                                       id="password_confirmation"
-                                       class="form-control form-control-modern"
-                                       placeholder="Ulangi password baru">
-                                <button type="button"
-                                        class="password-toggle"
-                                        onclick="togglePassword('password_confirmation', this)"
-                                        tabindex="-1">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                            <div class="invalid-feedback" id="error_password_confirmation" style="display: none !important;"></div>
-                            <div class="required-note" id="note_password_confirmation">
-                                <i class="fas fa-circle-info"></i>
-                                <span>Harus sama dengan password baru jika diisi</span>
-                            </div>
-                            <div class="password-strength-text" id="passwordMatchText"></div>
-                        </div>
-                    </div>
+        {{-- PANDUAN MAPPING ROLE KANAN --}}
+        <div class="col-12 col-lg-4">
+            <div class="card card-modern">
+                <div class="card-header bg-white py-3 px-3 border-bottom d-flex align-items-center gap-2">
+                    <span class="d-inline-flex align-items-center justify-content-center rounded-2" style="width: 30px; height: 30px; background: #eef2ff; color: #26476f;">
+                        <i class="fas fa-shield-halved"></i>
+                    </span>
+                    <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.88rem;">Panduan Mapping Hak Akses Role</h6>
                 </div>
-
-                {{-- ============ SECTION: STATUS ============ --}}
-                <div class="form-check-modern">
-                    <input type="checkbox"
-                           name="is_active"
-                           value="1"
-                           class="form-check-input form-check-input-modern"
-                           id="is_active"
-                           {{ old('is_active', $user->is_active) ? 'checked' : '' }}>
-                    <label class="form-check-label form-check-label-modern" for="is_active">
-                        Aktifkan Akun
-                        <small>User dapat login ke sistem. Jika tidak dicentang, user tidak bisa login.</small>
-                    </label>
+                <div class="card-body p-3 d-flex flex-column gap-2.5">
+                    @foreach(\App\Http\Controllers\RoleController::ROLE_META as $roleName => $meta)
+                        <div class="role-guide-card">
+                            <div class="d-flex align-items-center justify-content-between mb-1.5">
+                                <span class="badge px-2.5 py-1 fw-bold" style="background: {{ $meta['badge_bg'] }}; color: {{ $meta['badge_color'] }}; border: 1px solid {{ $meta['badge_border'] }};">
+                                    <i class="{{ $meta['icon'] }} me-1"></i>{{ $roleName }}
+                                </span>
+                                <small class="fw-bold text-secondary" style="font-size: 0.7rem;">{{ $meta['label'] }}</small>
+                            </div>
+                            <p class="mb-0 text-muted" style="font-size: 0.76rem; line-height: 1.45;">
+                                {{ $meta['desc'] }}
+                            </p>
+                        </div>
+                    @endforeach
                 </div>
-
-                <hr class="form-divider">
-
-                {{-- ============ ACTIONS ============ --}}
-                <div class="form-actions">
-                    <a href="{{ route('users.index') }}" class="btn btn-danger-custom">
-                        <i class="fas fa-arrow-left"></i>
-                        <span>Kembali</span>
-                    </a>
-                    <button type="submit" class="btn btn-primary-custom" id="submitBtn">
-                        <i class="fas fa-save"></i>
-                        <span>Simpan Perubahan</span>
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
@@ -215,207 +293,6 @@
 
 @push('scripts')
 <script>
-(function () {
-    'use strict';
-
-    const form          = document.getElementById('userForm');
-    const submitBtn     = document.getElementById('submitBtn');
-    const passwordInput = document.getElementById('password');
-    const confirmInput  = document.getElementById('password_confirmation');
-
-    if (!form) return;
-
-    const fields = ['name', 'email', 'role', 'password', 'password_confirmation'];
-
-    function setFieldError(fieldId, message) {
-        const input   = document.getElementById(fieldId);
-        const errorEl = document.getElementById('error_' + fieldId);
-        const noteEl  = document.getElementById('note_' + fieldId);
-
-        if (input) {
-            input.classList.add('is-invalid');
-            const select2 = input.nextElementSibling;
-            if (select2 && select2.classList.contains('select2-container')) {
-                select2.classList.add('is-invalid');
-            }
-        }
-        if (errorEl) {
-            errorEl.textContent = message;
-            errorEl.style.setProperty('display', 'block', 'important');
-        }
-        if (noteEl) {
-            noteEl.style.setProperty('display', 'none', 'important');
-        }
-    }
-
-    function clearFieldError(fieldId) {
-        const input   = document.getElementById(fieldId);
-        const errorEl = document.getElementById('error_' + fieldId);
-        const noteEl  = document.getElementById('note_' + fieldId);
-
-        if (input) {
-            input.classList.remove('is-invalid');
-            const select2 = input.nextElementSibling;
-            if (select2 && select2.classList.contains('select2-container')) {
-                select2.classList.remove('is-invalid');
-            }
-        }
-        if (errorEl) {
-            errorEl.textContent = '';
-            errorEl.style.setProperty('display', 'none', 'important');
-        }
-        if (noteEl) {
-            noteEl.style.removeProperty('display');
-        }
-    }
-
-    fields.forEach(function (fieldId) {
-        const el = document.getElementById(fieldId);
-        if (!el) return;
-        const evt = el.tagName === 'SELECT' ? 'change' : 'input';
-        el.addEventListener(evt, function () {
-            clearFieldError(fieldId);
-        });
-    });
-
-    if (window.jQuery) {
-        $('#role').on('change', function () {
-            clearFieldError('role');
-        });
-    }
-
-    /* ---------- PASSWORD STRENGTH ---------- */
-    passwordInput.addEventListener('input', function () {
-        const val = this.value;
-        const bars = document.querySelectorAll('.password-strength-bar');
-        const text = document.getElementById('passwordStrengthText');
-
-        if (!val.length) {
-            bars.forEach(b => b.className = 'password-strength-bar');
-            text.textContent = '';
-            return;
-        }
-
-        let strength = 0;
-        if (val.length >= 8) strength++;
-        if (/[A-Z]/.test(val)) strength++;
-        if (/[0-9]/.test(val)) strength++;
-        if (/[^A-Za-z0-9]/.test(val)) strength++;
-
-        bars.forEach((bar, idx) => {
-            bar.className = 'password-strength-bar';
-            if (idx < strength) {
-                if (strength <= 1) bar.classList.add('weak');
-                else if (strength <= 2) bar.classList.add('medium');
-                else bar.classList.add('strong');
-            }
-        });
-
-        const labels = ['', 'Lemah', 'Sedang', 'Kuat', 'Sangat Kuat'];
-        text.textContent = `Kekuatan: ${labels[strength]}`;
-        text.className = 'password-strength-text ' + (strength <= 1 ? 'text-danger' : strength <= 2 ? 'text-warning' : 'text-success');
-
-        checkPasswordMatch();
-    });
-
-    confirmInput.addEventListener('input', checkPasswordMatch);
-
-    function checkPasswordMatch() {
-        const matchText = document.getElementById('passwordMatchText');
-        if (!confirmInput.value.length) {
-            matchText.textContent = '';
-            return;
-        }
-        if (passwordInput.value === confirmInput.value) {
-            matchText.textContent = '✓ Password cocok';
-            matchText.className = 'password-strength-text text-success';
-            clearFieldError('password_confirmation');
-        } else {
-            matchText.textContent = '✗ Password tidak cocok';
-            matchText.className = 'password-strength-text text-danger';
-        }
-    }
-
-    /* ---------- FORM SUBMIT TANPA SWEETALERT ---------- */
-    form.addEventListener('submit', function (e) {
-        let isValid = true;
-        let firstInvalid = null;
-
-        fields.forEach(clearFieldError);
-
-        const nameEl = document.getElementById('name');
-        const emailEl = document.getElementById('email');
-        const roleEl = document.getElementById('role');
-
-        const nameVal = nameEl ? nameEl.value.trim() : '';
-        if (!nameVal) {
-            setFieldError('name', 'Nama lengkap wajib diisi.');
-            isValid = false;
-            if (!firstInvalid) firstInvalid = nameEl;
-        }
-
-        const emailVal = emailEl ? emailEl.value.trim() : '';
-        if (!emailVal) {
-            setFieldError('email', 'Email wajib diisi.');
-            isValid = false;
-            if (!firstInvalid) firstInvalid = emailEl;
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
-            setFieldError('email', 'Format email tidak valid.');
-            isValid = false;
-            if (!firstInvalid) firstInvalid = emailEl;
-        }
-
-        if (!roleEl || !roleEl.value) {
-            setFieldError('role', 'Role pengguna wajib dipilih.');
-            isValid = false;
-            if (!firstInvalid) firstInvalid = roleEl;
-        }
-
-        const passVal = passwordInput ? passwordInput.value : '';
-        const confirmVal = confirmInput ? confirmInput.value : '';
-
-        // Pada Edit: password opsional, jika salah satu diisi, maka keduanya harus valid
-        if (passVal.length > 0 || confirmVal.length > 0) {
-            if (passVal.length < 8) {
-                setFieldError('password', 'Password baru minimal harus 8 karakter.');
-                isValid = false;
-                if (!firstInvalid) firstInvalid = passwordInput;
-            }
-
-            if (passVal !== confirmVal) {
-                setFieldError('password_confirmation', 'Konfirmasi password tidak cocok dengan password baru.');
-                isValid = false;
-                if (!firstInvalid) firstInvalid = confirmInput;
-            }
-        }
-
-        if (!isValid) {
-            e.preventDefault();
-            if (firstInvalid) {
-                if (window.jQuery && $(firstInvalid).data('select2')) {
-                    $(firstInvalid).select2('open');
-                } else {
-                    firstInvalid.focus();
-                }
-                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            return false;
-        }
-
-        // Form valid
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> <span>Menyimpan...</span>';
-        }
-    });
-
-    const initialInvalid = document.querySelector('.is-invalid');
-    if (initialInvalid) {
-        initialInvalid.focus();
-        initialInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-})();
-
 function togglePassword(inputId, btn) {
     const input = document.getElementById(inputId);
     const icon  = btn.querySelector('i');

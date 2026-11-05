@@ -22,7 +22,7 @@ class TransaksiDetail extends Model
 
     protected $casts = [
         'harga_satuan' => 'decimal:2',
-        'subtotal'     => 'decimal:2',
+        'subtotal' => 'decimal:2',
     ];
 
     public function transaksi()

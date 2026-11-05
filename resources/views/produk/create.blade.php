@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Produk')
+@section('title', 'Tambah Produk Souvenir')
 
 @section('content')
 <div class="container-fluid px-0">
 
     {{-- HEADER --}}
     <x-page-header
-        icon="fas fa-box-open"
-        title="Tambah Produk"
-        subtitle="Tambahkan produk souvenir baru ke dalam sistem."
+        icon="fas fa-gift"
+        title="Tambah Produk Souvenir"
+        subtitle="Tambahkan item souvenir baru ke dalam katalog etalase siap jual."
     />
 
     {{-- FORM CARD --}}

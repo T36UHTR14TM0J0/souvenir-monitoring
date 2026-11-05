@@ -22,7 +22,7 @@ class PembelianDetail extends Model
 
     protected $casts = [
         'harga_beli' => 'decimal:2',
-        'subtotal'   => 'decimal:2',
+        'subtotal' => 'decimal:2',
     ];
 
     public function pembelian()

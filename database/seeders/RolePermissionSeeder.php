@@ -2,97 +2,229 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Reset cache
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        // Reset cached roles and permissions
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // ============================================
-        // 1. DAFTAR PERMISSION (dikelompokkan per modul)
+        // 1. DAFTAR PERMISSION 1-TO-1 SESUAI MENU SIDEBAR APLIKASI
         // ============================================
         $permissions = [
-            // Dashboard
+            // [Menu Utama] 1. Dashboard
             'dashboard-view',
 
-            // Master Produk
-            'produk-list', 'produk-create', 'produk-edit', 'produk-delete',
+            // [Pesanan & Produk] 2. Pesanan Marketplace
+            'penjualan-list',
+            'penjualan-create',
+            'penjualan-edit',
+            'penjualan-delete',
 
-            // Master Kategori
-            'kategori-list', 'kategori-create', 'kategori-edit', 'kategori-delete',
+            // [Pesanan & Produk] 3. Katalog Souvenir
+            'produk-list',
+            'produk-create',
+            'produk-edit',
+            'produk-delete',
 
-            // Master Satuan
-            'satuan-list', 'satuan-create', 'satuan-edit', 'satuan-delete',
+            // [Pesanan & Produk] 4. Hasil Produksi Masuk (QC)
+            'penerimaan-produk-list',
+            'penerimaan-produk-create',
+            'penerimaan-produk-delete',
 
-            // Transaksi Penjualan
-            'penjualan-list', 'penjualan-create', 'penjualan-delete',
+            // [Gudang & Bahan Baku] 5. Stok Bahan Baku
+            'bahan-baku-list',
+            'bahan-baku-create',
+            'bahan-baku-edit',
+            'bahan-baku-delete',
 
-            // Transaksi Pembelian
-            'pembelian-list', 'pembelian-create', 'pembelian-delete',
+            // [Gudang & Bahan Baku] 6. Pemakaian Bahan Baku
+            'pemakaian-bahan-list',
+            'pemakaian-bahan-create',
+            'pemakaian-bahan-delete',
 
-            // Pengeluaran
-            'pengeluaran-list', 'pengeluaran-create', 'pengeluaran-edit', 'pengeluaran-delete',
+            // [Gudang & Bahan Baku] 7. Pembelian Bahan Baku
+            'pembelian-list',
+            'pembelian-create',
+            'pembelian-edit',
+            'pembelian-delete',
 
-            // Laporan
-            'laporan-view', 'laporan-export',
+            // [Master Data] 8. Kategori
+            'kategori-list',
+            'kategori-create',
+            'kategori-edit',
+            'kategori-delete',
 
-            // User Management
-            'user-list', 'user-create', 'user-edit', 'user-delete',
+            // [Master Data] 9. Satuan
+            'satuan-list',
+            'satuan-create',
+            'satuan-edit',
+            'satuan-delete',
 
-            // Role Management
-            'role-list', 'role-create', 'role-edit', 'role-delete',
+            // [Keuangan & Kas] 10. Pencairan Saldo & Modal
+            'kas-masuk-list',
+            'kas-masuk-create',
+            'kas-masuk-edit',
+            'kas-masuk-delete',
 
-            // Permission Management
-            'permission-list', 'permission-create', 'permission-edit', 'permission-delete',
+            // [Keuangan & Kas] 11. Biaya Operasional & Ads
+            'pengeluaran-list',
+            'pengeluaran-create',
+            'pengeluaran-edit',
+            'pengeluaran-delete',
+
+            // [Laporan & Analitik] 12. 8 Menu Laporan & Export
+            'laporan-view',
+            'laporan-laba-rugi',
+            'laporan-penjualan',
+            'laporan-pembelian',
+            'laporan-pengeluaran',
+            'laporan-produksi',
+            'laporan-pribadi',
+            'laporan-rekonsiliasi',
+            'laporan-kasbon',
+            'laporan-export',
+
+            // [Pengaturan Akses] 13. Manajemen User
+            'user-list',
+            'user-create',
+            'user-edit',
+            'user-delete',
+
+            // [Pengaturan Akses] 14. Role
+            'role-list',
+            'role-create',
+            'role-edit',
+            'role-delete',
+
+            // [Pengaturan Akses] 15. Permission
+            'permission-list',
+            'permission-create',
+            'permission-edit',
+            'permission-delete',
         ];
 
+        // Bersihkan permission lama yang sudah tidak sesuai dengan menu aplikasi (misal: spk-*, packing-slip-*)
+        Permission::whereNotIn('name', $permissions)->delete();
+
         foreach ($permissions as $perm) {
-            Permission::firstOrCreate(['name' => $perm]);
+            Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
         }
 
         // ============================================
-        // 2. ROLE: PEMILIK (full akses)
+        // 2. ROLE: PEMILIK (Owner / Super Admin — Akses Penuh 100% Semua Menu)
         // ============================================
-        $pemilik = Role::firstOrCreate(['name' => 'Pemilik']);
+        $pemilik = Role::firstOrCreate(['name' => 'Pemilik', 'guard_name' => 'web']);
         $pemilik->syncPermissions(Permission::all());
 
         // ============================================
-        // 3. ROLE: ADMIN (master data + user)
+        // 3. ROLE: BENDAHARA (Keuangan, Kas, Pengadaan Bahan, Audit Stok & Laporan Keuangan)
         // ============================================
-        $admin = Role::firstOrCreate(['name' => 'Admin']);
-        $admin->syncPermissions([
+        $bendahara = Role::firstOrCreate(['name' => 'Bendahara', 'guard_name' => 'web']);
+        $bendahara->syncPermissions([
+            // Menu Utama: Dashboard
             'dashboard-view',
-            'produk-list', 'produk-create', 'produk-edit', 'produk-delete',
-            'kategori-list', 'kategori-create', 'kategori-edit', 'kategori-delete',
-            'satuan-list', 'satuan-create', 'satuan-edit', 'satuan-delete',
-            'penjualan-list', 'pembelian-list', 'pengeluaran-list',
-            'laporan-view', 'laporan-export',
-            'user-list', 'user-create', 'user-edit', 'user-delete',
-            'role-list',
-            'permission-list',
-        ]);
 
-        // ============================================
-        // 4. ROLE: KASIR (transaksi saja)
-        // ============================================
-        $kasir = Role::firstOrCreate(['name' => 'Kasir']);
-        $kasir->syncPermissions([
-            'dashboard-view',
-            'produk-list', 'kategori-list', 'satuan-list',
-            'penjualan-list', 'penjualan-create',
+            // Pesanan & Produk (Read-Only untuk Audit Omzet, Potongan Admin MP & HPP)
+            'penjualan-list',
+            'produk-list',
+            'penerimaan-produk-list',
+
+            // Gudang & Bahan Baku (Audit Stok + Full CRUD Pembelian Bahan Baku)
+            'bahan-baku-list',
+            'pemakaian-bahan-list',
             'pembelian-list',
+            'pembelian-create',
+            'pembelian-edit',
+            'pembelian-delete',
+
+            // Master Data (Read-Only)
+            'kategori-list',
+            'satuan-list',
+
+            // Keuangan & Kas (Full CRUD Pencairan Saldo & Modal + Biaya Operasional & Ads)
+            'kas-masuk-list',
+            'kas-masuk-create',
+            'kas-masuk-edit',
+            'kas-masuk-delete',
             'pengeluaran-list',
+            'pengeluaran-create',
+            'pengeluaran-edit',
+            'pengeluaran-delete',
+
+            // Laporan & Analitik (Akses Penuh ke-8 Menu Laporan + Export PDF & Excel)
+            'laporan-view',
+            'laporan-laba-rugi',
+            'laporan-penjualan',
+            'laporan-pembelian',
+            'laporan-pengeluaran',
+            'laporan-produksi',
+            'laporan-pribadi',
+            'laporan-rekonsiliasi',
+            'laporan-kasbon',
+            'laporan-export',
         ]);
 
         // ============================================
-        // 5. USER DEFAULT
+        // 4. ROLE: ADMIN (Operasional Marketplace, Katalog, Produksi QC, Gudang & Laporan Operasional)
+        // ============================================
+        $admin = Role::firstOrCreate(['name' => 'Admin', 'guard_name' => 'web']);
+        $admin->syncPermissions([
+            // Menu Utama: Dashboard
+            'dashboard-view',
+
+            // Pesanan & Produk (Full CRUD Pesanan Marketplace, Katalog Souvenir & Hasil Produksi Masuk)
+            'penjualan-list',
+            'penjualan-create',
+            'penjualan-edit',
+            'penjualan-delete',
+            'produk-list',
+            'produk-create',
+            'produk-edit',
+            'produk-delete',
+            'penerimaan-produk-list',
+            'penerimaan-produk-create',
+            'penerimaan-produk-delete',
+
+            // Gudang & Bahan Baku (Full CRUD Stok & Pemakaian Bahan + Input & Konfirmasi Pembelian)
+            'bahan-baku-list',
+            'bahan-baku-create',
+            'bahan-baku-edit',
+            'bahan-baku-delete',
+            'pemakaian-bahan-list',
+            'pemakaian-bahan-create',
+            'pemakaian-bahan-delete',
+            'pembelian-list',
+            'pembelian-create',
+            'pembelian-edit',
+
+            // Master Data (Full CRUD Kategori & Satuan)
+            'kategori-list',
+            'kategori-create',
+            'kategori-edit',
+            'kategori-delete',
+            'satuan-list',
+            'satuan-create',
+            'satuan-edit',
+            'satuan-delete',
+
+            // Laporan & Analitik (Khusus Laporan Operasional: Penjualan MP, Pembelian Bahan, Produksi & QC)
+            'laporan-view',
+            'laporan-penjualan',
+            'laporan-pembelian',
+            'laporan-produksi',
+        ]);
+
+        // ============================================
+        // 5. USER DEFAULT (3 Pengguna Utama)
         // ============================================
         $owner = User::firstOrCreate(
             ['email' => 'pemilik@gmail.com'],
@@ -114,16 +246,20 @@ class RolePermissionSeeder extends Seeder
         );
         $adminUser->syncRoles(['Admin']);
 
-        $kasirUser = User::firstOrCreate(
-            ['email' => 'kasir@gmail.com'],
+        $bendaharaUser = User::firstOrCreate(
+            ['email' => 'bendahara@gmail.com'],
             [
-                'name' => 'Kasir 1',
-                'password' => Hash::make('Kasir123!'),
+                'name' => 'Bendahara Keuangan',
+                'password' => Hash::make('Bendahara123!'),
                 'is_active' => true,
             ]
         );
-        $kasirUser->syncRoles(['Kasir']);
+        $bendaharaUser->syncRoles(['Bendahara']);
 
-        $this->command->info('✅ Role, Permission, dan User berhasil di-seed!');
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        if ($this->command) {
+            $this->command->info('Role (Pemilik, Bendahara, Admin), Permission 1-to-1 Menu Sidebar, dan User berhasil di-seed!');
+        }
     }
 }

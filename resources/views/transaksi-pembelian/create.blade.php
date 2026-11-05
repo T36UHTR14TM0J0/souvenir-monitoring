@@ -1,659 +1,713 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Pembelian')
+@section('title', 'Catat Pembelian Bahan Baku Online')
 
 @push('styles')
 <style>
-    :root {
-        --sidebar-bg-1: #26476f;
-        --sidebar-bg-2: #1f3a5c;
-        --sidebar-bg-3: #1a304d;
-        --sidebar-cream: #fbfaf7;
-        --danger-color: #dc2626;
-        --danger-hover: #b91c1c;
-        --gray-50: #f9fafb;
-        --gray-100: #f3f4f6;
-        --gray-200: #e5e7eb;
-        --gray-300: #d1d5db;
-        --gray-400: #9ca3af;
-        --gray-500: #6b7280;
-        --gray-600: #4b5563;
-        --gray-700: #374151;
-        --gray-800: #1f2937;
-        --gray-900: #111827;
-    }
-
-    .card-modern {
-        border: 1px solid var(--gray-200);
-        border-radius: 0.875rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
-    }
-
-    .page-title-custom {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--gray-900);
-        letter-spacing: -0.02em;
-        display: flex;
-        align-items: center;
-        gap: 0.625rem;
-        margin-bottom: 0.25rem;
-    }
-
-    .page-title-icon {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, #26476f 0%, #1a304d 100%);
-        color: var(--sidebar-cream);
-        border: 1px solid rgba(95, 143, 194, 0.3);
-        border-radius: 0.625rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(38, 71, 111, 0.25);
-    }
-
-    .page-subtitle-custom {
-        font-size: 0.875rem;
-        color: var(--gray-500);
-        margin-bottom: 0;
-    }
-
-    .btn-primary-custom {
-        background: linear-gradient(135deg, #26476f 0%, #1a304d 100%);
-        border: 1px solid #26476f;
-        color: #fff;
-        font-weight: 500;
-        padding: 0.625rem 1.25rem;
-        border-radius: 0.625rem;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        box-shadow: 0 2px 8px rgba(38, 71, 111, 0.25);
-        cursor: pointer;
-        width: 100%;
-        text-decoration: none;
-    }
-
-    .btn-primary-custom:hover {
-        background: linear-gradient(135deg, #1f3a5c 0%, #1a304d 100%);
-        color: #fff;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(38, 71, 111, 0.35);
-    }
-
-    .btn-primary-custom:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .btn-danger-custom {
-        background-color: var(--danger-color);
-        border: 1px solid var(--danger-color);
-        color: #fff;
-        font-weight: 500;
-        padding: 0.625rem 1.25rem;
-        border-radius: 0.625rem;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        text-decoration: none;
-        width: 100%;
-    }
-
-    .btn-danger-custom:hover {
-        background-color: var(--danger-hover);
-        border-color: var(--danger-hover);
-        color: #fff;
-        transform: translateY(-1px);
-    }
-
-    .form-label-custom {
-        font-weight: 500;
-        color: var(--gray-700);
-        font-size: 0.875rem;
-        margin-bottom: 0.5rem;
-        display: inline-block;
-    }
-
-    .form-control-modern {
-        border: 1px solid var(--gray-200);
+    /* SEARCH INPUT GROUP PERSIS KATALOG SOUVENIR */
+    .search-input-group {
         border-radius: 0.5rem;
-        padding: 0.625rem 0.875rem;
-        font-size: 0.875rem;
-        color: var(--gray-800);
-        transition: all 0.15s ease;
-        background-color: #fff;
-        width: 100%;
+        overflow: hidden;
     }
-
-    .form-control-modern:focus {
+    .search-input-group .input-group-text {
+        height: 38px;
+        background-color: #ffffff;
+        border-color: #cbd5e1;
+        color: #64748b;
+        font-size: 0.8125rem;
+    }
+    .search-input-group .form-control {
+        height: 38px;
+        background-color: #ffffff;
+        border-color: #cbd5e1;
+        font-size: 0.8125rem;
+        color: #1e293b;
+    }
+    .search-input-group .form-control:focus {
+        background-color: #ffffff;
         border-color: #26476f;
-        box-shadow: 0 0 0 3px rgba(38, 71, 111, 0.1);
-        outline: none;
+        box-shadow: 0 0 0 3px rgba(38, 71, 111, 0.12);
     }
 
-    .form-section-title {
-        font-size: 0.75rem;
+    /* THEAD TABLE HEADER NAVY GRADIENT PERSIS KATALOG SOUVENIR */
+    .table-cart-pembelian thead {
+        background: linear-gradient(135deg, #26476f 0%, #1f3a5c 50%, #1a304d 100%);
+    }
+    .table-cart-pembelian thead th {
+        background-color: transparent !important;
+        color: #ffffff !important;
+        font-size: 0.72rem;
         font-weight: 700;
-        color: var(--gray-800);
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 1rem;
+        letter-spacing: 0.06em;
+        border-bottom: none !important;
+        padding: 0.75rem 0.85rem;
+        white-space: nowrap;
+    }
+    .table-cart-pembelian tbody td {
+        padding: 0.75rem 0.85rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.8125rem;
+        background-color: #ffffff;
+    }
+
+    /* BADGES & AVATAR PERSIS KATALOG SOUVENIR */
+    .badge-kode {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.725rem;
+        font-weight: 700;
+        padding: 0.2rem 0.5rem;
+        border-radius: 0.375rem;
+        background: #f1f5f9;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+    }
+    .badge-satuan {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+        padding: 0.25rem 0.6rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        border: 1px solid #e2e8f0;
+    }
+    .badge-kategori-custom {
+        background: #eff6ff;
+        color: #1d4ed8;
+        font-weight: 600;
+        padding: 0.25rem 0.6rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        border: 1px solid #bfdbfe;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .avatar-icon-souvenir {
+        width: 34px;
+        height: 34px;
+        border-radius: 0.5rem;
+        background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+        color: #4338ca;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-    }
-
-    .form-section-title i {
-        color: #26476f;
+        justify-content: center;
         font-size: 0.875rem;
+        flex-shrink: 0;
+        border: 1px solid #c7d2fe;
     }
 
-    .items-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
-    .items-table thead th {
-        background: linear-gradient(135deg, #26476f 0%, #1a304d 100%);
-        color: #fff;
+    .btn-add-item {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #ffffff !important;
+        border: 1px solid #059669;
+        border-radius: 0.45rem;
+        padding: 0.35rem 0.75rem;
         font-size: 0.75rem;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        padding: 0.75rem 0.5rem;
-        text-align: left;
-        position: sticky;
-        top: 0;
-        z-index: 10;
+        transition: all 0.15s ease;
+        box-shadow: 0 1px 2px rgba(16, 185, 129, 0.25);
+    }
+    .btn-add-item:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-1px);
     }
 
-    .items-table thead th:first-child { border-top-left-radius: 0.5rem; }
-    .items-table thead th:last-child  { border-top-right-radius: 0.5rem; }
-
-    .items-table tbody td {
-        padding: 0.625rem 0.5rem;
-        border-bottom: 1px solid var(--gray-100);
-        vertical-align: middle;
-        font-size: 0.875rem;
-    }
-
-    .table-hover tbody tr:hover td {
-        background-color: var(--gray-50);
-    }
-
-    .items-table .form-control-modern {
-        padding: 0.35rem 0.5rem;
-        font-size: 0.85rem;
-    }
-
-    .subtotal-display {
-        font-weight: 600;
-        color: #26476f;
-        font-size: 0.9rem;
-    }
-
-    .btn-remove-row {
+    .btn-cart-delete {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: #ffffff !important;
+        border: 1px solid #dc2626;
         width: 30px;
         height: 30px;
+        border-radius: 0.45rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 0.375rem;
-        border: 1px solid transparent;
-        background: transparent;
-        color: #ef4444;
-        cursor: pointer;
+        font-size: 0.78rem;
         transition: all 0.15s ease;
     }
-
-    .btn-remove-row:hover {
-        background-color: #fef2f2;
-        border-color: #fecaca;
-        color: #dc2626;
+    .btn-cart-delete:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        transform: translateY(-1px);
     }
-
-    .btn-qty {
-        width: 28px;
-        height: 28px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--gray-300);
-        background: #fff;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: bold;
-        color: var(--gray-700);
-        transition: all 0.2s;
-    }
-
-    .btn-qty:hover { background: var(--gray-100); }
-
-    .summary-card {
-        background: linear-gradient(135deg, #26476f 0%, #1a304d 100%);
-        border-radius: 0.875rem;
-        padding: 1.5rem;
-        color: #fff;
-        box-shadow: 0 8px 24px rgba(38, 71, 111, 0.25);
-    }
-
-    .summary-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5rem 0;
-        font-size: 0.875rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .summary-row:last-of-type { border-bottom: none; }
-    .summary-row .label { color: rgba(255, 255, 255, 0.7); }
-    .summary-row .value { font-weight: 600; }
-
-    .summary-row.grand {
-        padding-top: 1rem;
-        margin-top: 0.5rem;
-        border-top: 2px solid rgba(255, 255, 255, 0.3);
-        border-bottom: none;
-    }
-
-    .summary-row.grand .label { font-size: 1rem; color: #fff; font-weight: 600; }
-    .summary-row.grand .value { font-size: 1.5rem; font-weight: 700; color: #fde68a; letter-spacing: -0.02em; }
-
-    .badge-stock {
-        padding: 0.25em 0.5em;
-        border-radius: 4px;
-        font-weight: 600;
-        font-size: 0.7rem;
-    }
-    .bg-success-custom { background-color: #10b981; color: white; }
-    .bg-danger-custom { background-color: #ef4444; color: white; }
-    .bg-info-custom { background-color: #3b82f6; color: white; }
-
-    .product-list-container {
-        max-height: 300px;
-        overflow-y: auto;
-    }
-    .product-list-container::-webkit-scrollbar { width: 6px; }
-    .product-list-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-    .product-list-container::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-    .product-list-container::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
 </style>
 @endpush
 
 @section('content')
 <div class="container-fluid px-0">
 
-    <div class="mb-4">
-        <h1 class="page-title-custom">
-            <span class="page-title-icon">
-                <i class="fas fa-truck-loading"></i>
-            </span>
-            Tambah Transaksi Pembelian
-        </h1>
-        <p class="page-subtitle-custom">Pilih produk dari daftar, lalu periksa keranjang dan grand total di bawah.</p>
-    </div>
+    {{-- HEADER PERSIS KATALOG SOUVENIR CREATE --}}
+    <x-page-header
+        icon="fas fa-truck-ramp-box"
+        title="Catat Pembelian Bahan Baku Online"
+        subtitle="Pengadaan material mentah, blanko souvenir, dan packaging kargo dari marketplace supplier."
+    />
 
-    <form action="{{ route('transaksi-pembelian.store') }}" method="POST" id="pembelianForm" novalidate>
-        @csrf
+    {{-- FORM CARD PERSIS KATALOG SOUVENIR CREATE --}}
+    <div class="card card-modern">
+        <div class="card-body p-4 p-md-5">
+            <form action="{{ route('transaksi-pembelian.store') }}" method="POST" id="pembelianForm" enctype="multipart/form-data" novalidate>
+                @csrf
 
-        <!-- ROW 1: INFORMASI PEMBELIAN HEADER -->
-        <div class="card card-modern bg-white mb-4">
-            <div class="card-body p-3 p-md-4">
+                {{-- ============ SECTION 1: DATA TOKO SUPPLIER & MARKETPLACE ============ --}}
+                <div class="form-section-title">
+                    <i class="fas fa-store"></i>
+                    Informasi Toko Supplier &amp; Pengiriman Kargo
+                </div>
+
                 <div class="row g-3">
+                    {{-- Kode Pembelian --}}
                     <div class="col-12 col-md-3">
-                        <label class="form-label-custom">Kode Pembelian</label>
-                        <input type="text" class="form-control form-control-modern"
-                               value="{{ $kodePembelian }}" readonly
-                               style="background-color: #f9fafb; font-family: monospace; font-weight: 600; color: #2563eb;">
+                        <label class="form-label-custom" for="kode_pembelian_display">
+                            Kode Pembelian <span class="required">*</span>
+                        </label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-barcode input-icon"></i>
+                            <input type="text"
+                                   id="kode_pembelian_display"
+                                   class="form-control form-control-modern"
+                                   value="{{ $kodePembelian }}"
+                                   readonly
+                                   style="background-color: #f9fafb; font-family: monospace; font-weight: 700; color: #26476f;">
+                        </div>
+                        <div class="required-note">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Kode unik otomatis</span>
+                        </div>
                     </div>
+
+                    {{-- Tanggal Beli --}}
                     <div class="col-12 col-md-3">
-                        <label class="form-label-custom" for="tanggal">Tanggal <span class="text-danger">*</span></label>
-                        <input type="date" name="tanggal" id="tanggal"
-                               class="form-control form-control-modern @error('tanggal') is-invalid @enderror"
-                               value="{{ old('tanggal', date('Y-m-d')) }}" max="{{ date('Y-m-d') }}">
-                        @error('tanggal')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <label class="form-label-custom" for="tanggal">
+                            Tanggal Beli <span class="required">*</span>
+                        </label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-calendar-check input-icon"></i>
+                            <input type="date"
+                                   name="tanggal"
+                                   id="tanggal"
+                                   class="form-control form-control-modern @error('tanggal') is-invalid @enderror"
+                                   value="{{ old('tanggal', date('Y-m-d')) }}"
+                                   max="{{ date('Y-m-d') }}"
+                                   required>
+                        </div>
+                        <div class="invalid-feedback" id="error_tanggal" @if(!$errors->has('tanggal')) style="display: none !important;" @endif>
+                            @error('tanggal'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_tanggal" @if($errors->has('tanggal')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Tanggal checkout / transaksi</span>
+                        </div>
                     </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label-custom" for="supplier">Supplier / Toko</label>
-                        <input type="text" name="supplier" id="supplier"
-                               class="form-control form-control-modern @error('supplier') is-invalid @enderror"
-                               value="{{ old('supplier') }}"
-                               placeholder="Contoh: Toko Grosir Jaya, Supplier ABC..."
-                               maxlength="150">
-                        @error('supplier')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+                    {{-- Platform Belanja --}}
+                    <div class="col-12 col-md-3">
+                        <label class="form-label-custom" for="platform">
+                            Platform Belanja <span class="required">*</span>
+                        </label>
+                        <select name="platform"
+                                id="platform"
+                                class="form-select form-select-modern @error('platform') is-invalid @enderror"
+                                required>
+                            @foreach(App\Models\Pembelian::PLATFORMS as $key => $label)
+                                <option value="{{ $key }}" {{ old('platform') === $key ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="invalid-feedback" id="error_platform" @if(!$errors->has('platform')) style="display: none !important;" @endif>
+                            @error('platform'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_platform" @if($errors->has('platform')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Pilih kanal pembelian bahan</span>
+                        </div>
+                    </div>
+
+                    {{-- Nama Toko / Seller Online --}}
+                    <div class="col-12 col-md-3">
+                        <label class="form-label-custom" for="supplier">
+                            Nama Toko / Supplier <span class="required">*</span>
+                        </label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-shop input-icon"></i>
+                            <input type="text"
+                                   name="supplier"
+                                   id="supplier"
+                                   class="form-control form-control-modern @error('supplier') is-invalid @enderror"
+                                   value="{{ old('supplier') }}"
+                                   placeholder="Contoh: Pabrik Keramik Official"
+                                   maxlength="150"
+                                   required>
+                        </div>
+                        <div class="invalid-feedback" id="error_supplier" @if(!$errors->has('supplier')) style="display: none !important;" @endif>
+                            @error('supplier'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_supplier" @if($errors->has('supplier')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Wajib diisi, nama seller / toko</span>
+                        </div>
+                    </div>
+
+                    {{-- No. Pesanan / Invoice Supplier --}}
+                    <div class="col-12 col-md-4">
+                        <label class="form-label-custom" for="no_invoice_online">
+                            No. Pesanan / Invoice Supplier
+                        </label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-file-invoice input-icon"></i>
+                            <input type="text"
+                                   name="no_invoice_online"
+                                   id="no_invoice_online"
+                                   class="form-control form-control-modern @error('no_invoice_online') is-invalid @enderror"
+                                   value="{{ old('no_invoice_online') }}"
+                                   placeholder="Contoh: INV/20261105/SHP/998822">
+                        </div>
+                        <div class="required-note">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Opsional, nomor referensi pesanan marketplace</span>
+                        </div>
+                    </div>
+
+                    {{-- Status Kedatangan Barang --}}
+                    <div class="col-12 col-md-4">
+                        <label class="form-label-custom" for="status_pembelian">
+                            Status Kedatangan Barang <span class="required">*</span>
+                        </label>
+                        <select name="status_pembelian"
+                                id="status_pembelian"
+                                class="form-select form-select-modern @error('status_pembelian') is-invalid @enderror"
+                                required>
+                            <option value="dipesan" {{ old('status_pembelian') === 'dipesan' ? 'selected' : '' }}>
+                                Dipesan (Stok belum bertambah)
+                            </option>
+                            <option value="dikirim" {{ old('status_pembelian') === 'dikirim' ? 'selected' : '' }}>
+                                Dikirim Kargo (Stok belum bertambah)
+                            </option>
+                            <option value="diterima" {{ old('status_pembelian', 'diterima') === 'diterima' ? 'selected' : '' }}>
+                                Diterima di Workshop (Stok langsung masuk gudang)
+                            </option>
+                        </select>
+                        <div class="required-note">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Stok gudang bertambah saat berstatus Diterima</span>
+                        </div>
+                    </div>
+
+                    {{-- Kurir Kargo & No. Resi --}}
+                    <div class="col-12 col-md-4">
+                        <label class="form-label-custom" for="kurir_kargo">
+                            Kurir Kargo &amp; Nomor Resi
+                        </label>
+                        <div class="input-group">
+                            <input type="text"
+                                   name="kurir_kargo"
+                                   id="kurir_kargo"
+                                   style="max-width: 130px;"
+                                   class="form-control form-control-modern"
+                                   placeholder="J&amp;T Cargo"
+                                   value="{{ old('kurir_kargo') }}">
+                            <input type="text"
+                                   name="no_resi_kargo"
+                                   id="no_resi_kargo"
+                                   class="form-control form-control-modern"
+                                   placeholder="No. Resi Pengiriman"
+                                   value="{{ old('no_resi_kargo') }}">
+                        </div>
+                        <div class="required-note">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Opsional, nama ekspedisi &amp; nomor resi pelacakan</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- ROW 2: DAFTAR PRODUK (FULL WIDTH) -->
-        <div class="card card-modern bg-white mb-4">
-            <div class="card-body p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="form-section-title mb-0">
-                        <i class="fas fa-box"></i> Daftar Produk
+                {{-- ============ SECTION 2: PILIH & RINCIAN BAHAN BAKU ============ --}}
+                <div class="form-section mt-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+                        <div class="form-section-title mb-0">
+                            <i class="fas fa-layer-group"></i>
+                            1. Pilih Material Mentah &amp; Blanko Souvenir
+                        </div>
+                        <div style="min-width: 280px;">
+                            <div class="input-group search-input-group shadow-none">
+                                <span class="input-group-text bg-white border-end-0 text-muted ps-3 pe-2">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text"
+                                       id="searchProduct"
+                                       class="form-control border-start-0 ps-1"
+                                       placeholder="Cari nama atau kode bahan...">
+                            </div>
+                        </div>
                     </div>
-                    <input type="text" id="searchProduct" class="form-control form-control-modern"
-                           placeholder="Cari nama/kode produk..." style="width: 300px; padding: 0.35rem 0.75rem;">
-                </div>
 
-                @if($produks->isEmpty())
-                    <div class="alert alert-warning" style="background: #fffbeb; border-color: #fde68a; color: #92400e; border-radius: 0.5rem; padding: 0.75rem 1rem; font-size: 0.85rem;">
-                        <i class="fas fa-exclamation-triangle me-1"></i>
-                        Belum ada produk. Silakan tambah produk terlebih dahulu di menu <b>Produk</b>.
-                    </div>
-                @else
-                    <div class="product-list-container">
-                        <table class="items-table table-hover w-100" id="productTable">
-                            <thead>
+                    <div class="product-list-container bg-white mb-4" style="max-height: 230px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 0.625rem;">
+                        <table class="table table-hover align-middle mb-0" id="productTable">
+                            <thead class="table-light sticky-top" style="z-index: 2;">
                                 <tr>
-                                    <th>Kode</th>
-                                    <th>Nama Produk</th>
-                                    <th class="text-center">Stok Saat Ini</th>
-                                    <th class="text-end text-nowrap col-nominal" style="width: 140px; min-width: 140px;">Harga Beli</th>
+                                    <th class="ps-3 text-start" style="font-size: 0.72rem;">Informasi Bahan Baku</th>
+                                    <th style="font-size: 0.72rem;">Kategori</th>
+                                    <th style="font-size: 0.72rem;" class="text-center">Stok Gudang</th>
+                                    <th style="font-size: 0.72rem;" class="text-end">Harga Beli Terakhir</th>
+                                    <th style="font-size: 0.72rem; width: 110px;" class="text-center pe-3">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($produks as $p)
-                                <tr onclick="addToCart({{ $p->id }})" style="cursor: pointer;">
-                                    <td><span style="font-size: 0.85rem; color: var(--gray-500);">{{ $p->kode_produk }}</span></td>
-                                    <td style="font-weight: 500; color: var(--gray-800);">{{ $p->nama_produk }}</td>
-                                    <td class="text-center">
-                                        @if($p->stok > 0)
-                                            <span class="badge-stock bg-info-custom">{{ $p->stok }} {{ $p->satuan->singkatan ?? 'Pcs' }}</span>
-                                        @else
-                                            <span class="badge-stock bg-danger-custom">Habis</span>
-                                        @endif
+                                @forelse($produks as $p)
+                                <tr onclick="addToCart({{ $p->id }})" class="product-item-row" style="cursor: pointer;">
+                                    <td class="ps-3">
+                                        <div class="d-flex align-items-center gap-2.5">
+                                            <div class="avatar-icon-souvenir">
+                                                <i class="fas fa-layer-group"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-dark" style="font-size: 0.8125rem;">{{ $p->nama_produk }}</div>
+                                                <span class="badge-kode">{{ $p->kode_produk }}</span>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td class="text-end text-nowrap col-nominal" style="color: #2563eb; font-weight: 600; width: 140px; min-width: 140px; white-space: nowrap;">Rp {{ number_format($p->harga_beli, 0, ',', '.') }}</td>
+                                    <td>
+                                        <span class="badge-kategori-custom">
+                                            <i class="fas fa-tag text-primary"></i>
+                                            <span>{{ $p->kategori->nama_kategori ?? '-' }}</span>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge-satuan font-monospace">
+                                            {{ number_format($p->stok) }} {{ $p->satuan->singkatan ?? 'pcs' }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end font-monospace fw-semibold text-dark" style="font-size: 0.8125rem;">
+                                        Rp {{ number_format($p->harga_beli, 0, ',', '.') }}
+                                    </td>
+                                    <td class="text-center pe-3">
+                                        <button type="button" class="btn-add-item">
+                                            <i class="fas fa-plus me-1"></i> Tambah
+                                        </button>
+                                    </td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted small">
+                                        Belum ada data bahan baku. Daftarkan bahan baku terlebih dahulu di menu <strong>Stok Bahan Baku</strong>.
+                                    </td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
-                @endif
-            </div>
-        </div>
 
-        <!-- ROW 3: KERANJANG (KIRI) & SUMMARY (KANAN) -->
-        <div class="row g-4">
-
-            <!-- KOLOM KIRI: KERANJANG -->
-            <div class="col-12 col-lg-8">
-                <div class="card card-modern bg-white h-100">
-                    <div class="card-body p-3 p-md-4">
-                        <div class="form-section-title">
-                            <i class="fas fa-shopping-basket"></i> Daftar Pembelian
-                        </div>
-
-                        <div style="overflow-x: auto;">
-                            <table class="items-table w-100" id="cartTable">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 35%;">Produk</th>
-                                        <th style="width: 25%; min-width: 130px;">Harga Beli</th>
-                                        <th style="width: 20%; text-align: center;">Qty</th>
-                                        <th style="width: 20%; min-width: 140px; text-align: center;" class="text-nowrap col-nominal">Subtotal</th>
-                                        <th style="width: 5%;"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="itemsBody">
-                                    <tr id="emptyCartMsg">
-                                        <td colspan="5" class="text-center text-muted py-5" style="font-size: 0.9rem;">
-                                            <i class="fas fa-shopping-basket fa-2x mb-2 text-gray-300"></i><br>
-                                            Belum ada produk dipilih. Klik produk di tabel atas untuk menambahkan.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div id="cartErrorMsg" class="alert alert-danger mt-3 py-2 px-3" style="display: none; font-size: 0.85rem;">
-                            <i class="fas fa-circle-exclamation me-1"></i> Silakan pilih minimal 1 produk ke dalam daftar pembelian sebelum menyimpan.
-                        </div>
+                    {{-- KERANJANG RINCIAN PEMBELIAN --}}
+                    <div class="form-section-title mb-2">
+                        <i class="fas fa-shopping-cart"></i>
+                        2. Rincian Bahan yang Dipesan / Dibeli
                     </div>
-                </div>
-            </div>
 
-            <!-- KOLOM KANAN: SUMMARY / GRAND TOTAL -->
-            <div class="col-12 col-lg-4">
-                <div class="summary-card h-100 d-flex flex-column justify-content-between">
-                    <div>
-                        <div class="form-section-title text-white mb-3" style="border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem;">
-                            <i class="fas fa-calculator text-white"></i> Ringkasan Pembelian
-                        </div>
-                        <div class="summary-row">
-                            <span class="label">Total Item</span>
-                            <span class="value" id="summaryTotalItem">0</span>
-                        </div>
-                        <div class="summary-row">
-                            <span class="label">Total Harga</span>
-                            <span class="value" id="summaryTotalHarga">Rp 0</span>
-                        </div>
-                        <div class="summary-row" style="padding-top: 0.75rem;">
-                            <span class="label">Diskon (Rp)</span>
-                            <div style="width: 50%;">
-                                <input type="number" name="total_diskon" id="total_diskon"
-                                       class="form-control" value="{{ old('total_diskon', 0) }}" min="0" step="500"
-                                       style="background: rgba(255,255,255,0.95); border: none; padding: 0.375rem 0.625rem; font-size: 0.85rem; text-align: right; font-weight: 600; color: #26476f;">
+                    <div class="table-responsive rounded-3 border bg-white mb-3">
+                        <table class="table table-cart-pembelian align-middle mb-0" id="cartTable">
+                            <thead>
+                                <tr>
+                                    <th class="ps-3">Informasi Bahan Baku</th>
+                                    <th style="width: 160px;" class="text-center">Qty Dibeli</th>
+                                    <th style="width: 190px;" class="text-end">Harga Satuan (Rp)</th>
+                                    <th style="width: 190px;" class="text-end">Subtotal (Rp)</th>
+                                    <th style="width: 70px;" class="text-center pe-3">Hapus</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cartTableBody">
+                                <tr id="cartEmptyRow">
+                                    <td colspan="5" class="text-center py-4 text-muted small">
+                                        <i class="fas fa-cart-arrow-down fa-2x mb-2 text-muted d-block opacity-50"></i>
+                                        Klik tombol <strong>"Tambah"</strong> pada salah satu bahan baku di atas untuk menambahkan ke rincian pembelian.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{-- Input Ongkir & Diskon --}}
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label-custom" for="ongkirInput">
+                                Ongkos Kirim Kargo (+)
+                            </label>
+                            <div class="input-group-modern">
+                                <i class="fas fa-truck-fast input-icon"></i>
+                                <input type="number"
+                                       step="any"
+                                       min="0"
+                                       name="ongkir"
+                                       id="ongkirInput"
+                                       class="form-control form-control-modern"
+                                       value="{{ old('ongkir', 0) }}"
+                                       placeholder="0">
+                            </div>
+                            <div class="required-note">
+                                <i class="fas fa-circle-info"></i>
+                                <span>Biaya pengiriman kargo / ekspedisi (Rp)</span>
                             </div>
                         </div>
-                        <div class="summary-row grand">
-                            <span class="label">Grand Total</span>
-                            <span class="value" id="summaryGrandTotal">Rp 0</span>
-                        </div>
-                        <div class="mt-4 mb-4">
-                            <label class="form-label-custom text-white" style="font-size: 0.8rem;">Catatan Tambahan</label>
-                            <textarea name="catatan" rows="2" class="form-control form-control-modern"
-                                      placeholder="Opsional..." maxlength="500"
-                                      style="background: rgba(255,255,255,0.95); border: none; font-size: 0.85rem;">{{ old('catatan') }}</textarea>
+
+                        <div class="col-12 col-md-6">
+                            <label class="form-label-custom" for="diskonInput">
+                                Diskon / Voucher Cashback (-)
+                            </label>
+                            <div class="input-group-modern">
+                                <i class="fas fa-tags input-icon"></i>
+                                <input type="number"
+                                       step="any"
+                                       min="0"
+                                       name="total_diskon"
+                                       id="diskonInput"
+                                       class="form-control form-control-modern"
+                                       value="{{ old('total_diskon', 0) }}"
+                                       placeholder="0">
+                            </div>
+                            <div class="required-note">
+                                <i class="fas fa-circle-info"></i>
+                                <span>Potongan harga dari toko / platform (Rp)</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="row g-2 mt-auto">
-                        <div class="col-6">
-                            <a href="{{ route('transaksi-pembelian.index') }}" class="btn btn-danger-custom w-100 justify-content-center">
-                                <i class="fas fa-arrow-left"></i>
-                                <span>Kembali</span>
-                            </a>
-                        </div>
-                        <div class="col-6">
-                            <button type="submit" class="btn btn-primary-custom w-100 justify-content-center" id="submitBtn" {{ $produks->isEmpty() ? 'disabled' : '' }}>
-                                <i class="fas fa-save"></i>
-                                <span>Simpan Pembelian</span>
-                            </button>
+                    {{-- Preview Ringkasan Biaya Pengadaan (Gaya Box Hijau Persis Katalog Souvenir) --}}
+                    <div id="preview_pembelian_box">
+                        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: #22c55e; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                                    <i class="fas fa-calculator"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #166534; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Ringkasan Biaya Pengadaan Bahan Baku</div>
+                                    <div style="font-size: 0.85rem; color: #15803d;">
+                                        Subtotal Bahan: <strong id="displaySubtotal">Rp 0</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.75rem; color: #15803d; font-weight: 600;">Grand Total Pembelian</div>
+                                <div style="font-size: 1.25rem; font-weight: 700; color: #166534;" id="displayGrandTotal">Rp 0</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
+                {{-- ============ SECTION 3: LAMPIRAN & CATATAN ============ --}}
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label-custom" for="bukti_transaksi">
+                            Upload Bukti Invoice / Checkout Marketplace
+                        </label>
+                        <input type="file"
+                               name="bukti_transaksi"
+                               id="bukti_transaksi"
+                               class="form-control form-control-modern @error('bukti_transaksi') is-invalid @enderror"
+                               accept=".jpg,.jpeg,.png,.webp,.pdf">
+                        <div class="invalid-feedback" id="error_bukti_transaksi" @if(!$errors->has('bukti_transaksi')) style="display: none !important;" @endif>
+                            @error('bukti_transaksi'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Opsional, screenshot pembayaran Shopee/Tokopedia atau invoice PDF kargo (Maks. 5MB)</span>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label-custom" for="catatan">
+                            Catatan Kulakan / Pengadaan
+                        </label>
+                        <textarea name="catatan"
+                                  id="catatan"
+                                  rows="2"
+                                  class="form-control form-control-modern @error('catatan') is-invalid @enderror"
+                                  placeholder="Catatan opsional mengenai pembelian bahan baku ini..."
+                                  maxlength="500">{{ old('catatan') }}</textarea>
+                        <div class="required-note">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Opsional, maksimal 500 karakter</span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="form-divider">
+
+                {{-- ============ ACTIONS PERSIS KATALOG SOUVENIR CREATE ============ --}}
+                <div class="form-actions">
+                    <a href="{{ route('transaksi-pembelian.index') }}" class="btn btn-danger-custom">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Kembali</span>
+                    </a>
+                    <button type="submit" class="btn btn-primary-custom" id="submitBtn">
+                        <i class="fas fa-save"></i>
+                        <span>Simpan Pembelian</span>
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-(function () {
+(function() {
     'use strict';
 
-    const PRODUKS = @json($produksJson);
-    let rowCounter = 0;
+    const rawProduks = @json($produksJson ?? []);
+    const produksMap = {};
+    rawProduks.forEach(p => produksMap[p.id] = p);
 
-    // FITUR PENCARIAN
-    document.getElementById('searchProduct')?.addEventListener('keyup', function() {
-        let keyword = this.value.toLowerCase();
-        let rows = document.querySelectorAll('#productTable tbody tr');
+    let cart = {};
 
-        rows.forEach(row => {
-            let text = row.innerText.toLowerCase();
-            row.style.display = text.includes(keyword) ? '' : 'none';
+    const searchInput = document.getElementById('searchProduct');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('.product-item-row');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
         });
-    });
-
-    function formatRupiah(angka) {
-        return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka || 0);
     }
 
-    // TAMBAH KE KERANJANG
-    window.addToCart = function(produkId) {
-        const p = PRODUKS.find(x => x.id == produkId);
-        if(!p) return;
+    window.addToCart = function(id) {
+        const p = produksMap[id];
+        if (!p) return;
 
-        const cartErrorMsg = document.getElementById('cartErrorMsg');
-        if (cartErrorMsg) cartErrorMsg.style.display = 'none';
+        if (cart[id]) {
+            cart[id].qty += 1;
+        } else {
+            cart[id] = {
+                id: p.id,
+                nama: p.nama,
+                kode: p.kode,
+                satuan: p.satuan,
+                harga_beli: p.harga_beli,
+                qty: 1
+            };
+        }
+        renderCart();
+    };
 
-        document.getElementById('emptyCartMsg').style.display = 'none';
-        const rowId = `cart_row_${p.id}`;
-        const existingRow = document.getElementById(rowId);
+    window.updateQty = function(id, val) {
+        const qty = parseInt(val) || 1;
+        if (cart[id]) {
+            cart[id].qty = Math.max(1, qty);
+            renderCart();
+        }
+    };
 
-        if (existingRow) {
-            const qtyInput = existingRow.querySelector('.qty-input');
-            let currentQty = parseInt(qtyInput.value) || 0;
-            qtyInput.value = currentQty + 1;
-            updateSubtotal(existingRow);
+    window.updateHarga = function(id, val) {
+        const harga = parseFloat(val) || 0;
+        if (cart[id]) {
+            cart[id].harga_beli = Math.max(0, harga);
+            renderCart();
+        }
+    };
+
+    window.removeFromCart = function(id) {
+        delete cart[id];
+        renderCart();
+    };
+
+    function renderCart() {
+        const tbody = document.getElementById('cartTableBody');
+        const keys = Object.keys(cart);
+
+        if (keys.length === 0) {
+            tbody.innerHTML = `
+                <tr id="cartEmptyRow">
+                    <td colspan="5" class="text-center py-4 text-muted small">
+                        <i class="fas fa-cart-arrow-down fa-2x mb-2 text-muted d-block opacity-50"></i>
+                        Klik tombol <strong>"Tambah"</strong> pada salah satu bahan baku di atas untuk menambahkan ke rincian pembelian.
+                    </td>
+                </tr>
+            `;
+            updateTotals(0);
             return;
         }
 
-        rowCounter++;
-        const tr = document.createElement('tr');
-        tr.id = rowId;
-        tr.innerHTML = `
-            <td>
-                <div style="font-weight: 600; color: var(--gray-800);">${p.nama}</div>
-                <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 2px;">Stok saat ini: ${p.stok} ${p.satuan || 'pcs'}</div>
-                <input type="hidden" name="items[${rowCounter}][produk_id]" value="${p.id}">
-            </td>
-            <td>
-                <input type="number" name="items[${rowCounter}][harga_beli]" class="form-control form-control-modern harga-input"
-                       min="0" step="500" value="${p.harga_beli}" required onchange="onHargaChange(this)" oninput="onHargaChange(this)">
-            </td>
-            <td>
-                <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-                    <button type="button" class="btn-qty" onclick="changeQty('${rowId}', -1)">-</button>
-                    <input type="number" name="items[${rowCounter}][qty]" class="form-control form-control-modern qty-input text-center"
-                           style="width: 50px; padding: 0.2rem;" min="1" value="1" required
-                           onchange="onQtyChange(this)" oninput="onQtyChange(this)">
-                    <button type="button" class="btn-qty" onclick="changeQty('${rowId}', 1)">+</button>
-                </div>
-            </td>
-            <td class="text-end text-nowrap col-nominal" style="min-width: 140px; white-space: nowrap;">
-                <span class="subtotal-display text-nowrap">${formatRupiah(p.harga_beli)}</span>
-            </td>
-            <td class="text-center">
-                <button type="button" class="btn-remove-row" onclick="removeRow('${rowId}')" title="Hapus">
-                    <i class="fas fa-times"></i>
-                </button>
-            </td>
-        `;
+        let html = '';
+        let subtotalAll = 0;
+        let index = 0;
 
-        document.getElementById('itemsBody').appendChild(tr);
-        updateSummary();
-    };
+        keys.forEach(id => {
+            const item = cart[id];
+            const subtotal = item.qty * item.harga_beli;
+            subtotalAll += subtotal;
 
-    window.changeQty = function(rowId, delta) {
-        const row = document.getElementById(rowId);
-        const input = row.querySelector('.qty-input');
-        let val = parseInt(input.value) || 0;
-        val += delta;
-
-        if (val < 1) val = 1;
-
-        input.value = val;
-        updateSubtotal(row);
-    };
-
-    window.onQtyChange = function(input) {
-        let val = parseInt(input.value) || 0;
-        if (val < 1) input.value = 1;
-        updateSubtotal(input.closest('tr'));
-    };
-
-    window.onHargaChange = function(input) {
-        updateSubtotal(input.closest('tr'));
-    };
-
-    window.removeRow = function(rowId) {
-        const row = document.getElementById(rowId);
-        if (row) {
-            row.remove();
-            updateSummary();
-
-            const tbody = document.getElementById('itemsBody');
-            if (tbody.querySelectorAll('tr:not(#emptyCartMsg)').length === 0) {
-                document.getElementById('emptyCartMsg').style.display = 'table-row';
-            }
-        }
-    };
-
-    function updateSubtotal(row) {
-        const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
-        const harga = parseFloat(row.querySelector('.harga-input').value) || 0;
-        const subtotal = qty * harga;
-
-        row.querySelector('.subtotal-display').textContent = formatRupiah(subtotal);
-        updateSummary();
-    }
-
-    function updateSummary() {
-        let totalItem = 0;
-        let totalHarga = 0;
-
-        document.querySelectorAll('#itemsBody tr:not(#emptyCartMsg)').forEach(function(row) {
-            const qty = parseFloat(row.querySelector('.qty-input')?.value) || 0;
-            const harga = parseFloat(row.querySelector('.harga-input')?.value) || 0;
-            totalItem += qty;
-            totalHarga += (qty * harga);
+            html += `
+                <tr>
+                    <td class="ps-3">
+                        <input type="hidden" name="items[${index}][produk_id]" value="${item.id}">
+                        <div class="d-flex align-items-center gap-2.5">
+                            <div class="avatar-icon-souvenir">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">${item.nama}</div>
+                                <span class="badge-kode">${item.kode}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="input-group input-group-sm justify-content-center">
+                            <input type="number" min="1" class="form-control text-center fw-bold" style="max-width: 85px;"
+                                   name="items[${index}][qty]"
+                                   value="${item.qty}"
+                                   onchange="updateQty(${item.id}, this.value)">
+                            <span class="input-group-text">${item.satuan}</span>
+                        </div>
+                    </td>
+                    <td class="text-end">
+                        <input type="number" min="0" step="any" class="form-control form-control-sm text-end font-monospace"
+                               name="items[${index}][harga_beli]"
+                               value="${item.harga_beli}"
+                               onchange="updateHarga(${item.id}, this.value)">
+                    </td>
+                    <td class="text-end fw-bold text-dark font-monospace">
+                        Rp ${new Intl.NumberFormat('id-ID').format(subtotal)}
+                    </td>
+                    <td class="text-center pe-3">
+                        <button type="button" class="btn-cart-delete" onclick="removeFromCart(${item.id})" title="Hapus dari keranjang">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            index++;
         });
 
-        const diskon = parseFloat(document.getElementById('total_diskon').value) || 0;
-        const grandTotal = Math.max(0, totalHarga - diskon);
-
-        document.getElementById('summaryTotalItem').textContent = totalItem;
-        document.getElementById('summaryTotalHarga').textContent = formatRupiah(totalHarga);
-        document.getElementById('summaryGrandTotal').textContent = formatRupiah(grandTotal);
+        tbody.innerHTML = html;
+        updateTotals(subtotalAll);
     }
 
-    document.getElementById('total_diskon')?.addEventListener('input', updateSummary);
+    function updateTotals(subtotalAll) {
+        const ongkir = parseFloat(document.getElementById('ongkirInput').value) || 0;
+        const diskon = parseFloat(document.getElementById('diskonInput').value) || 0;
+        const grandTotal = Math.max(0, (subtotalAll + ongkir) - diskon);
 
-    // VALIDASI FORM SUBMIT TANPA SWEETALERT
-    document.getElementById('pembelianForm')?.addEventListener('submit', function (e) {
-        const rows = document.querySelectorAll('#itemsBody tr:not(#emptyCartMsg)');
-        const cartErrorMsg = document.getElementById('cartErrorMsg');
+        document.getElementById('displaySubtotal').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(subtotalAll);
+        document.getElementById('displayGrandTotal').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(grandTotal);
+    }
 
-        if (rows.length === 0) {
-            e.preventDefault();
-            if (cartErrorMsg) {
-                cartErrorMsg.style.display = 'block';
-                cartErrorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            return false;
-        }
-
-        if (cartErrorMsg) {
-            cartErrorMsg.style.display = 'none';
-        }
-
-        const btn = document.getElementById('submitBtn');
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> <span>Memproses...</span>';
-        }
+    document.getElementById('ongkirInput').addEventListener('input', () => {
+        let subtotalAll = 0;
+        Object.keys(cart).forEach(id => {
+            subtotalAll += cart[id].qty * cart[id].harga_beli;
+        });
+        updateTotals(subtotalAll);
     });
 
+    document.getElementById('diskonInput').addEventListener('input', () => {
+        let subtotalAll = 0;
+        Object.keys(cart).forEach(id => {
+            subtotalAll += cart[id].qty * cart[id].harga_beli;
+        });
+        updateTotals(subtotalAll);
+    });
 })();
 </script>
 @endpush

@@ -5,146 +5,111 @@
     <title>Laporan Keuangan {{ ucfirst($tab) }} - {{ $tahun }}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 10px;
+            font-size: 9.5px;
             color: #1f2937;
-            padding: 20px;
+            padding: 18px;
             line-height: 1.4;
         }
-
-        /* ============================================
-           HEADER
-           ============================================ */
         .header {
             text-align: center;
             border-bottom: 3px double #26476f;
-            padding-bottom: 12px;
-            margin-bottom: 16px;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
         }
         .header h1 {
-            font-size: 16px;
+            font-size: 15px;
             color: #26476f;
-            margin-bottom: 4px;
-            letter-spacing: 0.5px;
+            margin-bottom: 3px;
             font-weight: bold;
         }
         .header .subtitle {
-            font-size: 11px;
+            font-size: 10px;
             color: #4b5563;
             margin-bottom: 2px;
         }
         .header .periode {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             color: #26476f;
-            margin-top: 6px;
-            padding: 4px 12px;
+            margin-top: 5px;
+            padding: 3px 10px;
             background-color: #f3f4f6;
             border-radius: 4px;
             display: inline-block;
         }
-
-        /* ============================================
-           META INFO (pakai table)
-           ============================================ */
         .meta {
             width: 100%;
-            margin-bottom: 14px;
-            font-size: 9px;
+            margin-bottom: 12px;
+            font-size: 8.5px;
             color: #6b7280;
             border-collapse: collapse;
         }
-        .meta td {
-            padding: 0;
-            vertical-align: top;
-        }
+        .meta td { padding: 0; vertical-align: top; }
         .meta .meta-left  { text-align: left; }
         .meta .meta-right { text-align: right; }
-
-        /* ============================================
-           SUMMARY CARDS
-           ============================================ */
         .summary-grid {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 6px;
-            margin-bottom: 14px;
+            border-spacing: 5px;
+            margin-bottom: 12px;
         }
         .summary-grid td {
             background-color: #f9fafb;
             border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 10px 12px;
+            border-radius: 5px;
+            padding: 8px 10px;
             width: 25%;
             vertical-align: top;
         }
         .summary-label {
-            font-size: 8px;
+            font-size: 7.5px;
             font-weight: bold;
             color: #6b7280;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
         .summary-value {
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: bold;
             color: #111827;
             margin-bottom: 2px;
         }
         .summary-value.green { color: #059669; }
         .summary-value.red   { color: #dc2626; }
-        .summary-value.blue  { color: #2563eb; }
+        .summary-value.blue  { color: #0284c7; }
         .summary-value.amber { color: #d97706; }
         .summary-value.navy  { color: #26476f; }
-        .summary-sub {
-            font-size: 8px;
-            color: #9ca3af;
-        }
-
-        /* ============================================
-           TABLE
-           ============================================ */
+        .summary-sub { font-size: 7.5px; color: #6b7280; }
         .section-title {
-            font-size: 10px;
+            font-size: 9.5px;
             font-weight: bold;
             color: #26476f;
-            margin-bottom: 6px;
-            padding-bottom: 4px;
+            margin-bottom: 5px;
+            padding-bottom: 3px;
             border-bottom: 2px solid #26476f;
         }
-
         table.data-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 12px;
-            font-size: 9px;
+            font-size: 8.5px;
         }
-
         table.data-table thead th {
             background-color: #26476f;
             color: #ffffff;
-            padding: 6px 8px;
+            padding: 5px 6px;
             text-align: center;
-            white-space: nowrap;
-            font-size: 8px;
+            font-size: 7.5px;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
             border: 1px solid #1a304d;
-            white-space: nowrap;
         }
-        table.data-table thead th:first-child { text-align: center; }
-        table.data-table thead th.text-center { text-align: center; }
-
         table.data-table tbody td {
-            padding: 5px 8px;
+            padding: 4px 6px;
             border-bottom: 1px solid #e5e7eb;
             text-align: right;
-            white-space: nowrap;
-            white-space: nowrap;
             color: #374151;
             vertical-align: middle;
         }
@@ -154,62 +119,43 @@
             color: #1f2937;
         }
         table.data-table tbody td.text-center { text-align: center; }
-        table.data-table tbody tr:nth-child(even) td {
-            background-color: #f9fafb;
-        }
-
+        table.data-table tbody td.text-left { text-align: left; }
+        table.data-table tbody tr:nth-child(even) td { background-color: #f9fafb; }
         table.data-table tfoot td {
-            padding: 7px 8px;
+            padding: 6px;
             background-color: #e5e7eb;
             border-top: 2px solid #9ca3af;
             font-weight: bold;
-            font-size: 9px;
+            font-size: 8.5px;
             text-align: right;
-            white-space: nowrap;
             color: #111827;
         }
-        table.data-table tfoot td:first-child {
-            text-align: left;
-        }
-
+        table.data-table tfoot td:first-child { text-align: left; }
         .text-green { color: #059669; font-weight: bold; }
         .text-red   { color: #dc2626; font-weight: bold; }
         .text-amber { color: #d97706; font-weight: bold; }
         .text-navy  { color: #26476f; font-weight: bold; }
-        .text-muted { color: #9ca3af; }
-
-        /* ============================================
-           BADGE
-           ============================================ */
         .badge {
             display: inline-block;
-            font-size: 8px;
+            font-size: 7.5px;
             font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 8px;
-            background-color: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
+            padding: 1px 5px;
+            border-radius: 6px;
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
         }
-
-        /* ============================================
-           FOOTER
-           ============================================ */
         .footer {
-            margin-top: 24px;
-            padding-top: 10px;
+            margin-top: 20px;
+            padding-top: 8px;
             border-top: 1px solid #e5e7eb;
-            font-size: 8px;
+            font-size: 7.5px;
             color: #9ca3af;
             text-align: center;
         }
-
-        /* ============================================
-           SIGNATURE (pakai table — DomPDF friendly)
-           ============================================ */
         .footer-signature {
             width: 100%;
-            margin-top: 40px;
+            margin-top: 30px;
             border-collapse: collapse;
         }
         .footer-signature .sign-box {
@@ -218,27 +164,20 @@
             vertical-align: top;
             padding: 0 20px;
         }
-        .footer-signature .sign-label {
-            font-size: 10px;
-            color: #6b7280;
-            margin-bottom: 60px;
-        }
-        .footer-signature .sign-space {
-            height: 60px;
-        }
+        .footer-signature .sign-label { font-size: 9px; color: #6b7280; }
+        .footer-signature .sign-space { height: 50px; }
         .footer-signature .sign-line {
             border-top: 1px solid #374151;
-            padding-top: 6px;
-            font-size: 10px;
+            padding-top: 5px;
+            font-size: 9px;
             font-weight: bold;
             color: #1f2937;
-            width: 180px;
+            width: 160px;
             margin: 0 auto;
         }
-
         .empty-row {
-            text-align: center;
-            padding: 20px;
+            text-align: center !important;
+            padding: 16px !important;
             color: #9ca3af;
             font-style: italic;
         }
@@ -246,19 +185,20 @@
 </head>
 <body>
 
-    {{-- ============================================
-         HEADER
-         ============================================ --}}
     <div class="header">
-        <h1>LAPORAN KEUANGAN TOKO SOUVENIR JIBRANIME</h1>
-        <div class="subtitle">Sistem Monitoring Keuangan</div>
+        <h1>LAPORAN KEUANGAN & OPERASIONAL TOKO SOUVENIR JIBRANIME</h1>
+        <div class="subtitle">Sistem Monitoring Multi-Marketplace, Produksi & Gudang</div>
         <div class="periode">
             @php
                 $labelTab = [
-                    'laba-rugi'   => 'Laba/Rugi',
-                    'penjualan'   => 'Penjualan',
-                    'pembelian'   => 'Pembelian',
-                    'pengeluaran' => 'Pengeluaran',
+                    'laba-rugi'    => 'Laba/Rugi Bisnis',
+                    'penjualan'    => 'Penjualan Marketplace',
+                    'pembelian'    => 'Pembelian Bahan Baku',
+                    'pengeluaran'  => 'Biaya Operasional & Ads',
+                    'produksi'     => 'Produksi & QC Gudang',
+                    'pribadi'      => 'Keuangan Pribadi (Prive)',
+                    'rekonsiliasi' => 'Rekonsiliasi Kas & Modal',
+                    'kasbon'       => 'Buku Kasbon Tim',
                 ][$tab] ?? 'Laporan';
 
                 $labelPeriode = ($bulan === 'all')
@@ -269,62 +209,52 @@
         </div>
     </div>
 
-    {{-- ============================================
-         META INFO
-         ============================================ --}}
     <table class="meta">
         <tr>
-            <td class="meta-left">
-                <strong>Dicetak:</strong> {{ now()->translatedFormat('d F Y, H:i') }} WIB
-            </td>
-            <td class="meta-right">
-                <strong>Oleh:</strong> {{ auth()->user()->name ?? '-' }}
-            </td>
+            <td class="meta-left"><strong>Dicetak:</strong> {{ now()->translatedFormat('d F Y, H:i') }} WIB</td>
+            <td class="meta-right"><strong>Oleh:</strong> {{ auth()->user()->name ?? '-' }}</td>
         </tr>
     </table>
 
-    {{-- ============================================
-         TAB: LABA/RUGI
-         ============================================ --}}
     @if($tab === 'laba-rugi')
-
         <table class="summary-grid">
             <tr>
                 <td>
-                    <div class="summary-label">Penjualan</div>
-                    <div class="summary-value green">Rp {{ number_format($total['penjualan'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Pendapatan</div>
+                    <div class="summary-label">Penghasilan Bersih MP</div>
+                    <div class="summary-value green">Rp {{ number_format($total['penghasilan_bersih'] ?? $total['penjualan'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">Omzet Kotor: Rp {{ number_format($total['penjualan'], 0, ',', '.') }}</div>
                 </td>
                 <td>
-                    <div class="summary-label">Pembelian</div>
-                    <div class="summary-value navy">Rp {{ number_format($total['pembelian'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Modal / HPP</div>
+                    <div class="summary-label">Belanja Bahan (HPP)</div>
+                    <div class="summary-value blue">Rp {{ number_format($total['pembelian'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">Laba Kotor: Rp {{ number_format($total['laba_kotor'], 0, ',', '.') }}</div>
                 </td>
                 <td>
-                    <div class="summary-label">Pengeluaran</div>
+                    <div class="summary-label">Biaya Bisnis & Ads</div>
                     <div class="summary-value amber">Rp {{ number_format($total['pengeluaran'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Biaya operasional</div>
+                    <div class="summary-sub">Iklan: Rp {{ number_format($total['biaya_iklan'] ?? 0, 0, ',', '.') }}</div>
                 </td>
                 <td>
                     <div class="summary-label">Laba Bersih</div>
                     <div class="summary-value {{ $total['laba_bersih'] >= 0 ? 'green' : 'red' }}">
                         Rp {{ number_format($total['laba_bersih'], 0, ',', '.') }}
                     </div>
-                    <div class="summary-sub">Kotor: Rp {{ number_format($total['laba_kotor'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">Margin: {{ $total['margin_bersih'] ?? 0 }}%</div>
                 </td>
             </tr>
         </table>
 
-        <div class="section-title">RINCIAN LABA/RUGI PER BULAN</div>
-
+        <div class="section-title">RINCIAN LABA/RUGI OPERASIONAL</div>
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Bulan</th>
-                    <th>Penjualan</th>
-                    <th>Pembelian</th>
+                    <th>Periode</th>
+                    <th>Omzet Kotor</th>
+                    <th>Potongan Admin</th>
+                    <th>Penghasilan Bersih</th>
+                    <th>Pembelian Bahan</th>
                     <th>Laba Kotor</th>
-                    <th>Pengeluaran</th>
+                    <th>Biaya Bisnis</th>
                     <th>Laba Bersih</th>
                 </tr>
             </thead>
@@ -332,7 +262,9 @@
                 @foreach($rows as $row)
                     <tr>
                         <td>{{ $row['label'] }}</td>
-                        <td class="text-green">{{ $row['penjualan'] > 0 ? 'Rp ' . number_format($row['penjualan'], 0, ',', '.') : '-' }}</td>
+                        <td>{{ $row['penjualan'] > 0 ? 'Rp ' . number_format($row['penjualan'], 0, ',', '.') : '-' }}</td>
+                        <td class="text-red">{{ ($row['biaya_admin'] ?? 0) > 0 ? '-Rp ' . number_format($row['biaya_admin'], 0, ',', '.') : '-' }}</td>
+                        <td class="text-green">{{ ($row['penghasilan_bersih'] ?? 0) > 0 ? 'Rp ' . number_format($row['penghasilan_bersih'], 0, ',', '.') : '-' }}</td>
                         <td class="text-navy">{{ $row['pembelian'] > 0 ? 'Rp ' . number_format($row['pembelian'], 0, ',', '.') : '-' }}</td>
                         <td class="{{ $row['laba_kotor'] >= 0 ? 'text-green' : 'text-red' }}">
                             {{ $row['laba_kotor'] != 0 ? 'Rp ' . number_format($row['laba_kotor'], 0, ',', '.') : '-' }}
@@ -347,7 +279,9 @@
             <tfoot>
                 <tr>
                     <td>TOTAL</td>
-                    <td class="text-green">Rp {{ number_format($total['penjualan'], 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($total['penjualan'], 0, ',', '.') }}</td>
+                    <td class="text-red">-Rp {{ number_format($total['biaya_admin'] ?? 0, 0, ',', '.') }}</td>
+                    <td class="text-green">Rp {{ number_format($total['penghasilan_bersih'] ?? $total['penjualan'], 0, ',', '.') }}</td>
                     <td class="text-navy">Rp {{ number_format($total['pembelian'], 0, ',', '.') }}</td>
                     <td class="{{ $total['laba_kotor'] >= 0 ? 'text-green' : 'text-red' }}">Rp {{ number_format($total['laba_kotor'], 0, ',', '.') }}</td>
                     <td class="text-amber">Rp {{ number_format($total['pengeluaran'], 0, ',', '.') }}</td>
@@ -355,209 +289,147 @@
                 </tr>
             </tfoot>
         </table>
-
     @endif
 
-    {{-- ============================================
-         TAB: PENJUALAN
-         ============================================ --}}
     @if($tab === 'penjualan')
-
         <table class="summary-grid">
             <tr>
                 <td>
-                    <div class="summary-label">Total Penjualan</div>
-                    <div class="summary-value green">Rp {{ number_format($total['penjualan'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Pendapatan</div>
+                    <div class="summary-label">Omzet Kotor Valid</div>
+                    <div class="summary-value navy">Rp {{ number_format($total['penjualan'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">{{ number_format($total['transaksi'], 0, ',', '.') }} pesanan</div>
                 </td>
                 <td>
-                    <div class="summary-label">Jumlah Transaksi</div>
-                    <div class="summary-value navy">{{ number_format($total['transaksi'], 0, ',', '.') }}x</div>
-                    <div class="summary-sub">Transaksi</div>
+                    <div class="summary-label">Potongan Admin MP</div>
+                    <div class="summary-value red">Rp {{ number_format($total['biaya_admin'] ?? 0, 0, ',', '.') }}</div>
+                    <div class="summary-sub">Diskon: Rp {{ number_format($total['diskon'], 0, ',', '.') }}</div>
                 </td>
                 <td>
-                    <div class="summary-label">Total Diskon</div>
-                    <div class="summary-value amber">Rp {{ number_format($total['diskon'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Potongan harga</div>
+                    <div class="summary-label">Penghasilan Bersih</div>
+                    <div class="summary-value green">Rp {{ number_format($total['penghasilan_bersih'] ?? $total['penjualan'], 0, ',', '.') }}</div>
+                    <div class="summary-sub">Dana bersih seller</div>
                 </td>
                 <td>
                     <div class="summary-label">Item Terjual</div>
                     <div class="summary-value">{{ number_format($total['item'], 0, ',', '.') }} pcs</div>
-                    <div class="summary-sub">Unit produk</div>
+                    <div class="summary-sub">Unit produk souvenir</div>
                 </td>
             </tr>
         </table>
 
-        <div class="section-title">DETAIL TRANSAKSI PENJUALAN ({{ $rows->count() }} transaksi)</div>
-
+        <div class="section-title">DETAIL PESANAN MARKETPLACE ({{ $rows->count() }} transaksi)</div>
         <table class="data-table">
             <thead>
                 <tr>
                     <th>Kode</th>
                     <th>Tanggal</th>
+                    <th>Channel</th>
                     <th>Pelanggan</th>
-                    <th class="text-center">Item</th>
-                    <th>Diskon</th>
-                    <th>Grand Total</th>
+                    <th>Status</th>
+                    <th>Qty</th>
+                    <th>Omzet Kotor</th>
+                    <th>Fee Admin</th>
+                    <th>Dana Bersih</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($rows as $trx)
                     <tr>
-                        <td style="font-family: 'Courier New', monospace;">{{ $trx->kode_transaksi }}</td>
-                        <td>{{ $trx->tanggal->translatedFormat('d M Y') }}</td>
-                        <td style="text-align: left;">{{ $trx->nama_pelanggan ?? '-' }}</td>
-                        <td class="text-center">{{ $trx->details->count() }}</td>
-                        <td class="text-amber">
-                            {{ $trx->total_diskon > 0 ? 'Rp ' . number_format($trx->total_diskon, 0, ',', '.') : '-' }}
-                        </td>
-                        <td class="text-green">Rp {{ number_format($trx->grand_total, 0, ',', '.') }}</td>
+                        <td>{{ $trx->kode_transaksi }}</td>
+                        <td class="text-center">{{ $trx->tanggal->format('d/m/Y') }}</td>
+                        <td class="text-center">{{ strtoupper($trx->channel ?? 'SHOPEE') }}</td>
+                        <td class="text-left">{{ $trx->nama_pelanggan ?? '-' }}</td>
+                        <td class="text-center">{{ $trx->status_pesanan_label }}</td>
+                        <td class="text-center">{{ $trx->details->sum('qty') }}</td>
+                        <td>Rp {{ number_format($trx->grand_total, 0, ',', '.') }}</td>
+                        <td class="text-red">{{ $trx->biaya_admin_marketplace > 0 ? '-Rp ' . number_format($trx->biaya_admin_marketplace, 0, ',', '.') : '-' }}</td>
+                        <td class="text-green">Rp {{ number_format((float) $trx->grand_total - (float) $trx->biaya_admin_marketplace, 0, ',', '.') }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="empty-row">Tidak ada data transaksi</td></tr>
+                    <tr><td colspan="9" class="empty-row">Tidak ada data transaksi</td></tr>
                 @endforelse
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="5">TOTAL</td>
-                    <td class="text-green">Rp {{ number_format($total['penjualan'], 0, ',', '.') }}</td>
+                    <td colspan="5">TOTAL PESANAN VALID</td>
+                    <td class="text-center">{{ number_format($total['item'], 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($total['penjualan'], 0, ',', '.') }}</td>
+                    <td class="text-red">-Rp {{ number_format($total['biaya_admin'] ?? 0, 0, ',', '.') }}</td>
+                    <td class="text-green">Rp {{ number_format($total['penghasilan_bersih'] ?? $total['penjualan'], 0, ',', '.') }}</td>
                 </tr>
             </tfoot>
         </table>
-
     @endif
 
-    {{-- ============================================
-         TAB: PEMBELIAN
-         ============================================ --}}
     @if($tab === 'pembelian')
-
         <table class="summary-grid">
             <tr>
                 <td>
                     <div class="summary-label">Total Pembelian</div>
                     <div class="summary-value navy">Rp {{ number_format($total['pembelian'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Modal / HPP</div>
+                    <div class="summary-sub">{{ number_format($total['transaksi'], 0, ',', '.') }} transaksi</div>
                 </td>
                 <td>
-                    <div class="summary-label">Jumlah Transaksi</div>
-                    <div class="summary-value">{{ number_format($total['transaksi'], 0, ',', '.') }}x</div>
-                    <div class="summary-sub">Transaksi</div>
+                    <div class="summary-label">Total Ongkir</div>
+                    <div class="summary-value amber">Rp {{ number_format($total['ongkir'] ?? 0, 0, ',', '.') }}</div>
+                    <div class="summary-sub">Diskon: Rp {{ number_format($total['diskon'], 0, ',', '.') }}</div>
                 </td>
                 <td>
-                    <div class="summary-label">Total Diskon</div>
-                    <div class="summary-value amber">Rp {{ number_format($total['diskon'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Dari supplier</div>
+                    <div class="summary-label">Kuantitas Bahan</div>
+                    <div class="summary-value">{{ number_format($total['item'], 0, ',', '.') }} unit</div>
+                    <div class="summary-sub">Total qty bahan masuk</div>
                 </td>
                 <td>
-                    <div class="summary-label">Item Masuk</div>
-                    <div class="summary-value">{{ number_format($total['item'], 0, ',', '.') }} pcs</div>
-                    <div class="summary-sub">Unit produk</div>
+                    <div class="summary-label">Paket Diterima</div>
+                    <div class="summary-value green">{{ number_format($total['diterima'] ?? 0, 0, ',', '.') }} Paket</div>
+                    <div class="summary-sub">{{ number_format($total['dalam_perjalanan'] ?? 0, 0, ',', '.') }} dalam pengiriman</div>
                 </td>
             </tr>
         </table>
 
-        <div class="section-title">DETAIL TRANSAKSI PEMBELIAN ({{ $rows->count() }} transaksi)</div>
-
+        <div class="section-title">DETAIL TRANSAKSI PEMBELIAN BAHAN BAKU ({{ $rows->count() }} transaksi)</div>
         <table class="data-table">
             <thead>
                 <tr>
                     <th>Kode</th>
                     <th>Tanggal</th>
                     <th>Supplier</th>
-                    <th class="text-center">Item</th>
-                    <th>Diskon</th>
+                    <th>Platform</th>
+                    <th>Status</th>
+                    <th>Qty</th>
+                    <th>Ongkir</th>
                     <th>Grand Total</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($rows as $pbl)
                     <tr>
-                        <td style="font-family: 'Courier New', monospace;">{{ $pbl->kode_pembelian }}</td>
-                        <td>{{ $pbl->tanggal->translatedFormat('d M Y') }}</td>
-                        <td style="text-align: left;">{{ $pbl->supplier ?? '-' }}</td>
-                        <td class="text-center">{{ $pbl->details->count() }}</td>
-                        <td class="text-amber">
-                            {{ $pbl->total_diskon > 0 ? 'Rp ' . number_format($pbl->total_diskon, 0, ',', '.') : '-' }}
-                        </td>
+                        <td>{{ $pbl->kode_pembelian }}</td>
+                        <td class="text-center">{{ $pbl->tanggal->format('d/m/Y') }}</td>
+                        <td class="text-left">{{ $pbl->supplier ?? '-' }}</td>
+                        <td class="text-center">{{ $pbl->platform_label }}</td>
+                        <td class="text-center">{{ $pbl->status_label }}</td>
+                        <td class="text-center">{{ $pbl->details->sum('qty') }}</td>
+                        <td>{{ $pbl->ongkir > 0 ? 'Rp ' . number_format($pbl->ongkir, 0, ',', '.') : '-' }}</td>
                         <td class="text-navy">Rp {{ number_format($pbl->grand_total, 0, ',', '.') }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="empty-row">Tidak ada data transaksi</td></tr>
+                    <tr><td colspan="8" class="empty-row">Tidak ada data transaksi</td></tr>
                 @endforelse
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="5">TOTAL</td>
+                    <td colspan="5">TOTAL PEMBELIAN</td>
+                    <td class="text-center">{{ number_format($total['item'], 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($total['ongkir'] ?? 0, 0, ',', '.') }}</td>
                     <td class="text-navy">Rp {{ number_format($total['pembelian'], 0, ',', '.') }}</td>
                 </tr>
             </tfoot>
         </table>
-
     @endif
 
-    {{-- ============================================
-         TAB: PENGELUARAN
-         ============================================ --}}
-    @if($tab === 'pengeluaran')
-
-        <table class="summary-grid">
-            <tr>
-                <td>
-                    <div class="summary-label">Total Pengeluaran</div>
-                    <div class="summary-value red">Rp {{ number_format($total['pengeluaran'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Biaya</div>
-                </td>
-                <td>
-                    <div class="summary-label">Jumlah Transaksi</div>
-                    <div class="summary-value">{{ number_format($total['transaksi'], 0, ',', '.') }}x</div>
-                    <div class="summary-sub">Pengeluaran</div>
-                </td>
-                <td colspan="2">
-                    <div class="summary-label">Kategori Terbanyak</div>
-                    <div class="summary-value">
-                        @if($total['per_kategori']->isNotEmpty())
-                            {{ $total['per_kategori']->first()['kategori'] }}
-                        @else
-                            -
-                        @endif
-                    </div>
-                    <div class="summary-sub">
-                        @if($total['per_kategori']->isNotEmpty())
-                            Rp {{ number_format($total['per_kategori']->first()['total'], 0, ',', '.') }}
-                        @else
-                            Belum ada data
-                        @endif
-                    </div>
-                </td>
-            </tr>
-        </table>
-
-        {{-- REKAP PER KATEGORI --}}
-        @if($total['per_kategori']->isNotEmpty())
-            <div class="section-title">REKAP PENGELUARAN PER KATEGORI</div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Kategori</th>
-                        <th class="text-center">Jumlah Transaksi</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($total['per_kategori'] as $pk)
-                        <tr>
-                            <td>{{ $pk['kategori'] }}</td>
-                            <td class="text-center">{{ $pk['count'] }}x</td>
-                            <td class="text-red">Rp {{ number_format($pk['total'], 0, ',', '.') }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @endif
-
+    @if($tab === 'pengeluaran' || $tab === 'pribadi')
         <div class="section-title">DETAIL PENGELUARAN ({{ $rows->count() }} data)</div>
-
         <table class="data-table">
             <thead>
                 <tr>
@@ -571,12 +443,10 @@
             <tbody>
                 @forelse($rows as $pgl)
                     <tr>
-                        <td style="font-family: 'Courier New', monospace;">{{ $pgl->kode_pengeluaran }}</td>
-                        <td>{{ $pgl->tanggal->translatedFormat('d M Y') }}</td>
-                        <td style="text-align: left;">
-                            <span class="badge">{{ $pgl->kategori_label }}</span>
-                        </td>
-                        <td style="text-align: left;">{{ $pgl->keterangan }}</td>
+                        <td>{{ $pgl->kode_pengeluaran }}</td>
+                        <td class="text-center">{{ $pgl->tanggal->format('d/m/Y') }}</td>
+                        <td class="text-left">{{ $pgl->kategori_label }}</td>
+                        <td class="text-left">{{ $pgl->keterangan }}</td>
                         <td class="text-red">Rp {{ number_format($pgl->jumlah, 0, ',', '.') }}</td>
                     </tr>
                 @empty
@@ -590,116 +460,54 @@
                 </tr>
             </tfoot>
         </table>
-
     @endif
 
-    {{-- ============================================
-         TAB: KEUANGAN PRIBADI
-         ============================================ --}}
-    @if($tab === 'pribadi')
-
-        <table class="summary-grid">
-            <tr>
-                <td>
-                    <div class="summary-label">Total Pribadi</div>
-                    <div class="summary-value red">Rp {{ number_format($total['pengeluaran'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">{{ $total['transaksi'] }} Transaksi</div>
-                </td>
-                <td>
-                    <div class="summary-label">Makan / Lunch</div>
-                    <div class="summary-value amber">Rp {{ number_format($total['makan_pribadi'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Konsumsi Pribadi</div>
-                </td>
-                <td>
-                    <div class="summary-label">Kebutuhan Rumah</div>
-                    <div class="summary-value navy">Rp {{ number_format($total['kebutuhan_rumah'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Gas, Galon, Dapur</div>
-                </td>
-                <td>
-                    <div class="summary-label">Prive Penarikan</div>
-                    <div class="summary-value green">Rp {{ number_format($total['prive_penarikan'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Tarik Tunai Pemilik</div>
-                </td>
-            </tr>
-        </table>
-
-        <div class="section-title">DETAIL PENGELUARAN PRIBADI ({{ $rows->count() }} data)</div>
-
+    @if($tab === 'produksi')
+        <div class="section-title">RINCIAN HASIL PRODUKSI MASUK & QC ({{ $rows->count() }} batch)</div>
         <table class="data-table">
             <thead>
                 <tr>
                     <th>Kode</th>
                     <th>Tanggal</th>
-                    <th>Kategori</th>
-                    <th>Keterangan</th>
-                    <th>Jumlah</th>
+                    <th>Petugas QC</th>
+                    <th>Tipe</th>
+                    <th>Lolos QC (Bagus)</th>
+                    <th>Reject QC</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($rows as $prb)
+                @forelse($rows as $prd)
                     <tr>
-                        <td style="font-family: 'Courier New', monospace;">{{ $prb->kode_pengeluaran }}</td>
-                        <td>{{ $prb->tanggal->translatedFormat('d M Y') }}</td>
-                        <td style="text-align: left;">
-                            <span class="badge">{{ $prb->kategori_label }}</span>
-                        </td>
-                        <td style="text-align: left;">{{ $prb->keterangan }}</td>
-                        <td class="text-red">Rp {{ number_format($prb->jumlah, 0, ',', '.') }}</td>
+                        <td>{{ $prd->kode_penerimaan }}</td>
+                        <td class="text-center">{{ $prd->tanggal->format('d/m/Y') }}</td>
+                        <td class="text-left">{{ $prd->nama_petugas ?? '-' }}</td>
+                        <td class="text-center">{{ ucfirst(str_replace('_', ' ', $prd->tipe_produksi ?? 'produksi')) }}</td>
+                        <td class="text-green">{{ number_format($prd->total_qty_bagus, 0, ',', '.') }} pcs</td>
+                        <td class="text-red">{{ number_format($prd->total_qty_reject, 0, ',', '.') }} pcs</td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="empty-row">Tidak ada pengeluaran pribadi pada periode ini</td></tr>
+                    <tr><td colspan="6" class="empty-row">Tidak ada data produksi</td></tr>
                 @endforelse
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="4">TOTAL PENGELUARAN PRIBADI</td>
-                    <td class="text-red">Rp {{ number_format($total['pengeluaran'], 0, ',', '.') }}</td>
+                    <td colspan="4">TOTAL (Rasio Lolos QC: {{ $total['rasio_qc'] }}%)</td>
+                    <td class="text-green">{{ number_format($total['total_bagus'], 0, ',', '.') }} pcs</td>
+                    <td class="text-red">{{ number_format($total['total_reject'], 0, ',', '.') }} pcs</td>
                 </tr>
             </tfoot>
         </table>
-
     @endif
 
-    {{-- ============================================
-         TAB: REKONSILIASI OWNER
-         ============================================ --}}
     @if($tab === 'rekonsiliasi')
-
-        <table class="summary-grid">
-            <tr>
-                <td>
-                    <div class="summary-label">Modal Disetor</div>
-                    <div class="summary-value green">Rp {{ number_format($total['modal_disetor'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Suntikan Dana ke Toko</div>
-                </td>
-                <td>
-                    <div class="summary-label">Prive Ditarik</div>
-                    <div class="summary-value red">Rp {{ number_format($total['prive_ditarik'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Uang Toko Terpakai Pribadi</div>
-                </td>
-                <td>
-                    <div class="summary-label">Saldo Netto Pemilik</div>
-                    <div class="summary-value {{ $total['saldo_netto'] >= 0 ? 'green' : 'amber' }}">
-                        Rp {{ number_format($total['saldo_netto'], 0, ',', '.') }}
-                    </div>
-                    <div class="summary-sub">{{ $total['saldo_netto'] >= 0 ? 'Modal Mengendap di Toko' : 'Prive Melebihi Modal' }}</div>
-                </td>
-                <td>
-                    <div class="summary-label">Kasbon Belum Lunas</div>
-                    <div class="summary-value amber">Rp {{ number_format($total['kasbon_aktif'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Piutang Tim Berjalan</div>
-                </td>
-            </tr>
-        </table>
-
-        <div class="section-title">REKONSILIASI PER BULAN (MODAL VS PRIVE)</div>
-
+        <div class="section-title">REKONSILIASI PER BULAN (MODAL, PENCAIRAN & PRIVE)</div>
         <table class="data-table">
             <thead>
                 <tr>
                     <th>Bulan</th>
-                    <th>Modal Disetor (Debit)</th>
-                    <th>Prive Ditarik (Pribadi)</th>
+                    <th>Modal Disetor</th>
+                    <th>Pendapatan Lain / Pencairan</th>
+                    <th>Prive Ditarik</th>
                     <th>Selisih Netto</th>
                 </tr>
             </thead>
@@ -708,6 +516,7 @@
                     <tr>
                         <td>{{ $rek['bulan_label'] }}</td>
                         <td class="text-green">{{ $rek['modal'] > 0 ? 'Rp ' . number_format($rek['modal'], 0, ',', '.') : '-' }}</td>
+                        <td class="text-navy">{{ ($rek['pendapatan_lain'] ?? 0) > 0 ? 'Rp ' . number_format($rek['pendapatan_lain'], 0, ',', '.') : '-' }}</td>
                         <td class="text-red">{{ $rek['prive'] > 0 ? 'Rp ' . number_format($rek['prive'], 0, ',', '.') : '-' }}</td>
                         <td class="{{ $rek['selisih'] >= 0 ? 'text-green' : 'text-amber' }}">
                             {{ $rek['selisih'] != 0 ? 'Rp ' . number_format($rek['selisih'], 0, ',', '.') : '-' }}
@@ -719,6 +528,7 @@
                 <tr>
                     <td>TOTAL</td>
                     <td class="text-green">Rp {{ number_format($total['modal_disetor'], 0, ',', '.') }}</td>
+                    <td class="text-navy">Rp {{ number_format($total['pendapatan_lain'] ?? 0, 0, ',', '.') }}</td>
                     <td class="text-red">Rp {{ number_format($total['prive_ditarik'], 0, ',', '.') }}</td>
                     <td class="{{ $total['saldo_netto'] >= 0 ? 'text-green' : 'text-amber' }}">
                         Rp {{ number_format($total['saldo_netto'], 0, ',', '.') }}
@@ -726,64 +536,10 @@
                 </tr>
             </tfoot>
         </table>
-
     @endif
 
-    {{-- ============================================
-         TAB: BUKU KASBON KARYAWAN
-         ============================================ --}}
     @if($tab === 'kasbon')
-
-        <table class="summary-grid">
-            <tr>
-                <td>
-                    <div class="summary-label">Total Kasbon Diberikan</div>
-                    <div class="summary-value navy">Rp {{ number_format($total['total_kasbon'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">{{ $total['transaksi'] }} Transaksi</div>
-                </td>
-                <td>
-                    <div class="summary-label">Sudah Lunas</div>
-                    <div class="summary-value green">Rp {{ number_format($total['total_lunas'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Telah Dibayar / Dipotong</div>
-                </td>
-                <td>
-                    <div class="summary-label">Sisa Belum Lunas</div>
-                    <div class="summary-value red">Rp {{ number_format($total['total_belum_lunas'], 0, ',', '.') }}</div>
-                    <div class="summary-sub">Piutang Aktif</div>
-                </td>
-            </tr>
-        </table>
-
-        @if($per_karyawan->isNotEmpty())
-            <div class="section-title">REKAP KASBON PER KARYAWAN</div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Nama Karyawan</th>
-                        <th class="text-center">Jumlah Pinjaman</th>
-                        <th>Total Pinjam</th>
-                        <th>Sudah Bayar</th>
-                        <th>Sisa Piutang</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($per_karyawan as $pk)
-                        <tr>
-                            <td style="font-weight: bold;">{{ $pk['nama'] }}</td>
-                            <td class="text-center">{{ $pk['count'] }}x</td>
-                            <td>Rp {{ number_format($pk['total'], 0, ',', '.') }}</td>
-                            <td class="text-green">Rp {{ number_format($pk['lunas'], 0, ',', '.') }}</td>
-                            <td class="{{ $pk['sisa'] > 0 ? 'text-red' : 'text-green' }}" style="font-weight: bold;">
-                                Rp {{ number_format($pk['sisa'], 0, ',', '.') }}
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @endif
-
         <div class="section-title">DETAIL TRANSAKSI KASBON ({{ $rows->count() }} data)</div>
-
         <table class="data-table">
             <thead>
                 <tr>
@@ -798,16 +554,12 @@
             <tbody>
                 @forelse($rows as $kb)
                     <tr>
-                        <td style="font-family: 'Courier New', monospace;">{{ $kb->kode_pengeluaran }}</td>
-                        <td>{{ $kb->tanggal->translatedFormat('d M Y') }}</td>
-                        <td style="font-weight: bold;">{{ $kb->karyawan_nama ?? '-' }}</td>
-                        <td>{{ $kb->keterangan }}</td>
+                        <td>{{ $kb->kode_pengeluaran }}</td>
+                        <td class="text-center">{{ $kb->tanggal->format('d/m/Y') }}</td>
+                        <td class="text-left">{{ $kb->karyawan_nama ?? '-' }}</td>
+                        <td class="text-left">{{ $kb->keterangan }}</td>
                         <td class="text-navy">Rp {{ number_format($kb->jumlah, 0, ',', '.') }}</td>
-                        <td>
-                            <span class="badge {{ $kb->status_kasbon === 'lunas' ? 'success' : 'warning' }}">
-                                {{ $kb->status_kasbon === 'lunas' ? 'LUNAS' : 'BELUM LUNAS' }}
-                            </span>
-                        </td>
+                        <td class="text-center">{{ $kb->status_kasbon === 'lunas' ? 'LUNAS' : 'BELUM LUNAS' }}</td>
                     </tr>
                 @empty
                     <tr><td colspan="6" class="empty-row">Tidak ada data kasbon pada periode ini</td></tr>
@@ -817,16 +569,12 @@
                 <tr>
                     <td colspan="4">TOTAL</td>
                     <td class="text-navy">Rp {{ number_format($total['total_kasbon'], 0, ',', '.') }}</td>
-                    <td>Sisa: Rp {{ number_format($total['total_belum_lunas'], 0, ',', '.') }}</td>
+                    <td class="text-center">Sisa: Rp {{ number_format($total['total_belum_lunas'], 0, ',', '.') }}</td>
                 </tr>
             </tfoot>
         </table>
-
     @endif
 
-    {{-- ============================================
-         FOOTER — TANDA TANGAN
-         ============================================ --}}
     <table class="footer-signature">
         <tr>
             <td class="sign-box">

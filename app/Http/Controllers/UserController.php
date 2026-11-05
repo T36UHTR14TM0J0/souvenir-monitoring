@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -19,10 +19,10 @@ class UserController extends Controller
 
         // Filter: search by name/email
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = trim((string) $request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -36,10 +36,34 @@ class UserController extends Controller
             $query->where('is_active', $request->status === 'aktif');
         }
 
-        $users = $query->latest()->paginate(10)->withQueryString();
-        $roles = Role::all();
+        // Sorting
+        $sort = $request->get('sort', 'latest');
+        match ($sort) {
+            'oldest' => $query->oldest(),
+            'name_asc' => $query->orderBy('name', 'asc'),
+            'name_desc' => $query->orderBy('name', 'desc'),
+            default => $query->latest(),
+        };
 
-        return view('users.index', compact('users', 'roles'));
+        $users = $query->paginate(10)->withQueryString();
+        $roles = Role::withCount('permissions')->orderBy('name')->get();
+
+        // KPI Summary Stats
+        $totalUsers = User::count();
+        $totalAktif = User::where('is_active', true)->count();
+        $totalNonaktif = User::where('is_active', false)->count();
+        $totalPemilikBendahara = User::whereHas('roles', fn ($q) => $q->whereIn('name', ['Pemilik', 'Bendahara']))->count();
+        $totalAdmin = User::whereHas('roles', fn ($q) => $q->where('name', 'Admin'))->count();
+
+        return view('users.index', compact(
+            'users',
+            'roles',
+            'totalUsers',
+            'totalAktif',
+            'totalNonaktif',
+            'totalPemilikBendahara',
+            'totalAdmin'
+        ));
     }
 
     /**
@@ -47,7 +71,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        $roles = Role::all();
+        $roles = Role::with('permissions')->orderBy('name')->get();
+
         return view('users.create', compact('roles'));
     }
 
@@ -87,9 +112,9 @@ class UserController extends Controller
 
         // Create user
         $user = User::create([
-            'name'      => $validated['name'],
-            'email'     => $validated['email'],
-            'password'  => Hash::make($validated['password']),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
             'is_active' => $request->boolean('is_active', true),
         ]);
 
@@ -106,7 +131,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        $roles = Role::all();
+        $roles = Role::with('permissions')->orderBy('name')->get();
+
         return view('users.edit', compact('user', 'roles'));
     }
 
@@ -146,8 +172,8 @@ class UserController extends Controller
 
         // Update basic info
         $user->update([
-            'name'      => $validated['name'],
-            'email'     => $validated['email'],
+            'name' => $validated['name'],
+            'email' => $validated['email'],
             'is_active' => $request->boolean('is_active', true),
         ]);
 
@@ -195,7 +221,7 @@ class UserController extends Controller
         }
 
         $user->update([
-            'is_active' => !$user->is_active,
+            'is_active' => ! $user->is_active,
         ]);
 
         $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
@@ -209,45 +235,40 @@ class UserController extends Controller
     private function validationMessages(): array
     {
         return [
-            // Nama
             'name.required' => 'Nama wajib diisi.',
-            'name.string'   => 'Nama harus berupa teks.',
-            'name.max'      => 'Nama maksimal 255 karakter.',
+            'name.string' => 'Nama harus berupa teks.',
+            'name.max' => 'Nama maksimal 255 karakter.',
 
-            // Email
             'email.required' => 'Email wajib diisi.',
-            'email.email'    => 'Format email tidak valid.',
-            'email.max'      => 'Email maksimal 255 karakter.',
-            'email.unique'   => 'Email sudah terdaftar, gunakan email lain.',
+            'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email maksimal 255 karakter.',
+            'email.unique' => 'Email sudah terdaftar, gunakan email lain.',
 
-            // Password
-            'password.required'  => 'Password wajib diisi.',
-            'password.string'    => 'Password harus berupa teks.',
-            'password.min'       => 'Password minimal 8 karakter.',
+            'password.required' => 'Password wajib diisi.',
+            'password.string' => 'Password harus berupa teks.',
+            'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
 
-            // Role
             'role.required' => 'Role wajib dipilih.',
-            'role.string'   => 'Role tidak valid.',
-            'role.exists'   => 'Role yang dipilih tidak ditemukan.',
+            'role.string' => 'Role tidak valid.',
+            'role.exists' => 'Role yang dipilih tidak ditemukan.',
 
-            // Status
             'is_active.boolean' => 'Status aktif tidak valid.',
         ];
     }
 
     /**
-     * Custom attribute names (untuk pesan error yang lebih rapi).
+     * Custom attribute names.
      */
     private function validationAttributes(): array
     {
         return [
-            'name'                  => 'Nama',
-            'email'                 => 'Email',
-            'password'              => 'Password',
+            'name' => 'Nama',
+            'email' => 'Email',
+            'password' => 'Password',
             'password_confirmation' => 'Konfirmasi Password',
-            'role'                  => 'Role',
-            'is_active'             => 'Status Aktif',
+            'role' => 'Role',
+            'is_active' => 'Status Aktif',
         ];
     }
 }

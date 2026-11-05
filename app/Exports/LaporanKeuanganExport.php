@@ -3,31 +3,26 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class LaporanKeuanganExport implements FromArray, WithHeadings, WithStyles, WithTitle, WithColumnWidths, WithEvents
+class LaporanKeuanganExport implements FromArray, WithColumnWidths, WithEvents, WithHeadings, WithStyles, WithTitle
 {
-    protected $data;
-    protected $tab;
-    protected $judul;
-    protected $periode;
-
-    public function __construct(array $data, string $tab, string $judul, string $periode)
-    {
-        $this->data    = $data;
-        $this->tab     = $tab;
-        $this->judul   = $judul;
-        $this->periode = $periode;
-    }
+    public function __construct(
+        protected array $data,
+        protected string $tab,
+        protected string $judul,
+        protected string $periode
+    ) {}
 
     public function array(): array
     {
@@ -37,62 +32,100 @@ class LaporanKeuanganExport implements FromArray, WithHeadings, WithStyles, With
     public function headings(): array
     {
         return match ($this->tab) {
-            'laba-rugi'    => ['Bulan', 'Penjualan', 'Pembelian', 'Laba Kotor', 'Pengeluaran Bisnis', 'Laba Bersih'],
-            'penjualan'    => ['Kode', 'Tanggal', 'Pelanggan', 'Item', 'Diskon', 'Grand Total'],
-            'pembelian'    => ['Kode', 'Tanggal', 'Supplier', 'Item', 'Diskon', 'Grand Total'],
-            'pengeluaran'  => ['Kode', 'Tanggal', 'Kategori', 'Keterangan', 'Jumlah'],
-            'pribadi'      => ['Kode', 'Tanggal', 'Kategori Pribadi', 'Keterangan', 'Jumlah'],
-            'rekonsiliasi' => ['Bulan', 'Modal Disetor', 'Prive Ditarik', 'Selisih (Netto)'],
-            'kasbon'       => ['Kode', 'Tanggal', 'Nama Peminjam', 'Keterangan', 'Jumlah', 'Status'],
-            default        => [],
+            'laba-rugi' => [
+                'Periode',
+                'Omzet Kotor',
+                'Potongan Admin MP',
+                'Penghasilan Bersih',
+                'Pembelian Bahan (HPP)',
+                'Laba Kotor',
+                'Biaya Operasional & Ads',
+                'Laba Bersih',
+            ],
+            'penjualan' => [
+                'Kode',
+                'Tanggal',
+                'Channel',
+                'Pelanggan',
+                'Status',
+                'Qty Item',
+                'Omzet Kotor',
+                'Potongan Admin',
+                'Penghasilan Bersih',
+            ],
+            'pembelian' => [
+                'Kode',
+                'Tanggal',
+                'Supplier / Toko',
+                'Platform',
+                'Status Paket',
+                'Qty Item',
+                'Ongkir',
+                'Grand Total',
+            ],
+            'pengeluaran' => ['Kode', 'Tanggal', 'Kategori Bisnis', 'Keterangan', 'Jumlah'],
+            'produksi' => ['Kode Penerimaan', 'Tanggal', 'Petugas QC', 'Tipe Produksi', 'Qty Bagus (Lolos)', 'Qty Reject (Cacat)'],
+            'pribadi' => ['Kode', 'Tanggal', 'Kategori Pribadi', 'Keterangan', 'Jumlah'],
+            'rekonsiliasi' => ['Bulan', 'Modal Disetor', 'Pendapatan Lain / Pencairan', 'Prive Ditarik', 'Selisih Arus Kas'],
+            'kasbon' => ['Kode', 'Tanggal', 'Nama Peminjam', 'Keterangan', 'Jumlah', 'Status'],
+            default => [],
         };
     }
 
     public function title(): string
     {
-        return 'Laporan ' . ucfirst(str_replace('-', '/', $this->tab));
+        return 'Laporan '.ucfirst(str_replace('-', ' ', $this->tab));
     }
 
     public function columnWidths(): array
     {
         return match ($this->tab) {
-            'laba-rugi'    => ['A' => 15, 'B' => 20, 'C' => 20, 'D' => 20, 'E' => 20, 'F' => 20],
-            'penjualan'    => ['A' => 20, 'B' => 15, 'C' => 25, 'D' => 8,  'E' => 18, 'F' => 20],
-            'pembelian'    => ['A' => 20, 'B' => 15, 'C' => 25, 'D' => 8,  'E' => 18, 'F' => 20],
-            'pengeluaran'  => ['A' => 20, 'B' => 15, 'C' => 20, 'D' => 40, 'E' => 20],
-            'pribadi'      => ['A' => 20, 'B' => 15, 'C' => 25, 'D' => 40, 'E' => 20],
-            'rekonsiliasi' => ['A' => 20, 'B' => 22, 'C' => 22, 'D' => 22],
-            'kasbon'       => ['A' => 20, 'B' => 15, 'C' => 22, 'D' => 35, 'E' => 20, 'F' => 18],
-            default        => [],
+            'laba-rugi' => ['A' => 18, 'B' => 18, 'C' => 18, 'D' => 20, 'E' => 20, 'F' => 18, 'G' => 22, 'H' => 20],
+            'penjualan' => ['A' => 18, 'B' => 14, 'C' => 14, 'D' => 22, 'E' => 16, 'F' => 10, 'G' => 18, 'H' => 18, 'I' => 20],
+            'pembelian' => ['A' => 18, 'B' => 14, 'C' => 22, 'D' => 16, 'E' => 16, 'F' => 10, 'G' => 16, 'H' => 20],
+            'pengeluaran', 'pribadi' => ['A' => 20, 'B' => 15, 'C' => 25, 'D' => 40, 'E' => 20],
+            'produksi' => ['A' => 20, 'B' => 15, 'C' => 22, 'D' => 20, 'E' => 18, 'F' => 18],
+            'rekonsiliasi' => ['A' => 18, 'B' => 20, 'C' => 24, 'D' => 20, 'E' => 20],
+            'kasbon' => ['A' => 20, 'B' => 15, 'C' => 22, 'D' => 35, 'E' => 20, 'F' => 18],
+            default => [],
+        };
+    }
+
+    private function getLastColumn(): string
+    {
+        return match ($this->tab) {
+            'penjualan' => 'I',
+            'laba-rugi', 'pembelian' => 'H',
+            'produksi', 'kasbon' => 'F',
+            'pengeluaran', 'pribadi', 'rekonsiliasi' => 'E',
+            default => 'F',
         };
     }
 
     public function styles(Worksheet $sheet): ?array
     {
-        // Insert judul di atas (4 baris kosong)
+        $lastCol = $this->getLastColumn();
+
         $sheet->insertNewRowBefore(1, 4);
 
-        // Judul utama
-        $sheet->mergeCells('A1:F1');
-        $sheet->setCellValue('A1', 'LAPORAN KEUANGAN TOKO SOUVENIR');
+        $sheet->mergeCells("A1:{$lastCol}1");
+        $sheet->setCellValue('A1', 'LAPORAN KEUANGAN & OPERASIONAL TOKO SOUVENIR');
         $sheet->getStyle('A1')->applyFromArray([
-            'font'      => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '26476F']],
+            'font' => ['bold' => true, 'size' => 15, 'color' => ['rgb' => '26476F']],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
         ]);
 
-        // Subjudul
-        $sheet->mergeCells('A2:F2');
-        $sheet->setCellValue('A2', $this->judul . ' — ' . $this->periode);
+        $sheet->mergeCells("A2:{$lastCol}2");
+        $sheet->setCellValue('A2', $this->judul.' — '.$this->periode);
         $sheet->getStyle('A2')->applyFromArray([
-            'font'      => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '4B5563']],
+            'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '4B5563']],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
         ]);
 
-        // Meta info
-        $sheet->mergeCells('A3:F3');
-        $sheet->setCellValue('A3', 'Dicetak: ' . now()->translatedFormat('d F Y, H:i') . ' WIB');
+        $sheet->mergeCells("A3:{$lastCol}3");
+        $sheet->setCellValue('A3', 'Dicetak: '.now()->translatedFormat('d F Y, H:i').' WIB');
         $sheet->getStyle('A3')->applyFromArray([
-            'font'      => ['italic' => true, 'size' => 9, 'color' => ['rgb' => '6B7280']],
+            'font' => ['italic' => true, 'size' => 9, 'color' => ['rgb' => '6B7280']],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
         ]);
 
@@ -107,95 +140,80 @@ class LaporanKeuanganExport implements FromArray, WithHeadings, WithStyles, With
 
                 $highestRow = $sheet->getHighestRow();
                 $headingRow = 5;
-                $lastColumn = match ($this->tab) {
-                    'laba-rugi', 'penjualan', 'pembelian', 'kasbon' => 'F',
-                    'pengeluaran', 'pribadi'                         => 'E',
-                    'rekonsiliasi'                                   => 'D',
-                    default                                          => 'E',
-                };
+                $lastColumn = $this->getLastColumn();
 
-                // Style header row (row 5)
                 $sheet->getStyle("A{$headingRow}:{$lastColumn}{$headingRow}")->applyFromArray([
                     'font' => [
-                        'bold'  => true,
+                        'bold' => true,
                         'color' => ['rgb' => 'FFFFFF'],
-                        'size'  => 10,
+                        'size' => 10,
                     ],
                     'fill' => [
-                        'fillType'   => Fill::FILL_SOLID,
+                        'fillType' => Fill::FILL_SOLID,
                         'startColor' => ['rgb' => '26476F'],
                     ],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical'   => Alignment::VERTICAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
                     ],
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color'       => ['rgb' => '1A304D'],
+                            'color' => ['rgb' => '1A304D'],
                         ],
                     ],
                 ]);
 
-                // Border semua data
                 $sheet->getStyle("A{$headingRow}:{$lastColumn}{$highestRow}")->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color'       => ['rgb' => 'E5E7EB'],
+                            'color' => ['rgb' => 'E5E7EB'],
                         ],
                     ],
                 ]);
 
-                // Zebra striping (baris genap abu muda)
                 for ($row = $headingRow + 1; $row <= $highestRow; $row++) {
                     if (($row - $headingRow) % 2 === 0) {
                         $sheet->getStyle("A{$row}:{$lastColumn}{$row}")->applyFromArray([
                             'fill' => [
-                                'fillType'   => Fill::FILL_SOLID,
+                                'fillType' => Fill::FILL_SOLID,
                                 'startColor' => ['rgb' => 'F9FAFB'],
                             ],
                         ]);
                     }
                 }
 
-                // Bold baris terakhir (tfoot/TOTAL)
                 $sheet->getStyle("A{$highestRow}:{$lastColumn}{$highestRow}")->applyFromArray([
                     'font' => ['bold' => true, 'color' => ['rgb' => '111827']],
                     'fill' => [
-                        'fillType'   => Fill::FILL_SOLID,
+                        'fillType' => Fill::FILL_SOLID,
                         'startColor' => ['rgb' => 'E5E7EB'],
                     ],
                 ]);
 
-                // Format kolom angka (mata uang)
                 $currencyColumns = match ($this->tab) {
-                    'laba-rugi'   => ['B', 'C', 'D', 'E', 'F'],
-                    'penjualan'   => ['E', 'F'],
-                    'pembelian'   => ['E', 'F'],
-                    'pengeluaran' => ['E'],
-                    default       => [],
+                    'laba-rugi' => ['B', 'C', 'D', 'E', 'F', 'G', 'H'],
+                    'penjualan' => ['G', 'H', 'I'],
+                    'pembelian' => ['G', 'H'],
+                    'pengeluaran', 'pribadi', 'kasbon' => ['E'],
+                    'rekonsiliasi' => ['B', 'C', 'D', 'E'],
+                    default => [],
                 };
 
                 foreach ($currencyColumns as $col) {
-                    $sheet->getStyle("{$col}" . ($headingRow + 1) . ":{$col}{$highestRow}")
+                    $sheet->getStyle("{$col}".($headingRow + 1).":{$col}{$highestRow}")
                         ->getNumberFormat()
                         ->setFormatCode('#,##0');
                 }
 
-                // Header row height
                 $sheet->getRowDimension($headingRow)->setRowHeight(28);
-
-                // Freeze pane di bawah header
-                $sheet->freezePane("A" . ($headingRow + 1));
-
-                // Auto filter
+                $sheet->freezePane('A'.($headingRow + 1));
                 $sheet->setAutoFilter("A{$headingRow}:{$lastColumn}{$highestRow}");
 
-                // Page setup (landscape A4)
                 $sheet->getPageSetup()
-                    ->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE)
-                    ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+                    ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
+                    ->setPaperSize(PageSetup::PAPERSIZE_A4);
 
                 $sheet->getPageSetup()->setFitToWidth(1);
                 $sheet->getPageSetup()->setFitToHeight(0);

@@ -1,16 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Kategori')
+@section('title', 'Tambah Kategori Produk & Material')
 
 @section('content')
 <div class="container-fluid px-0">
 
     {{-- HEADER --}}
     <x-page-header
-        icon="fas fa-tag"
-        title="Tambah Kategori"
-        subtitle="Buat kategori baru untuk mengelompokkan produk toko souvenir."
-    />
+        icon="fas fa-tags"
+        title="Tambah Kategori Baru"
+        subtitle="Daftarkan kategori klasifikasi baru untuk souvenir jadi atau bahan baku workshop."
+    >
+        <a href="{{ route('kategori.index') }}" class="btn btn-secondary-custom">
+            <i class="fas fa-arrow-left"></i>
+            <span>Kembali ke Daftar</span>
+        </a>
+    </x-page-header>
 
     {{-- FORM CARD --}}
     <div class="card card-modern">
@@ -26,7 +31,7 @@
 
                 <div class="row g-3">
                     {{-- Nama Kategori --}}
-                    <div class="col-12">
+                    <div class="col-12 col-md-6">
                         <label class="form-label-custom" for="nama_kategori">
                             Nama Kategori <span class="required">*</span>
                         </label>
@@ -37,8 +42,9 @@
                                    id="nama_kategori"
                                    class="form-control form-control-modern @error('nama_kategori') is-invalid @enderror"
                                    value="{{ old('nama_kategori') }}"
-                                   placeholder="Contoh: Kaos & Pakaian"
+                                   placeholder="Contoh: Mug & Tumbler Custom"
                                    maxlength="100"
+                                   required
                                    autofocus>
                         </div>
                         <div class="invalid-feedback" id="error_nama_kategori" @if(!$errors->has('nama_kategori')) style="display: none !important;" @endif>
@@ -46,20 +52,35 @@
                         </div>
                         <div class="required-note" id="note_nama_kategori" @if($errors->has('nama_kategori')) style="display: none !important;" @endif>
                             <i class="fas fa-circle-info"></i>
-                            <span>Wajib diisi, maksimal 100 karakter</span>
+                            <span>Wajib diisi, nama kategori harus unik dan maksimal 100 karakter</span>
+                        </div>
+                    </div>
+
+                    {{-- Info Penggunaan Kategori --}}
+                    <div class="col-12 col-md-6">
+                        <label class="form-label-custom">
+                            Peran Klasifikasi <span class="badge bg-secondary-subtle text-secondary ms-1"><i class="fas fa-layer-group me-1"></i>Master Data</span>
+                        </label>
+                        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 0.5rem; padding: 0.65rem 0.9rem; display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: #22c55e; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0;">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                            <div style="font-size: 0.78rem; color: #166534; line-height: 1.4;">
+                                Kategori digunakan pada <strong>Katalog Souvenir</strong>, <strong>Stok Bahan Baku</strong>, serta filter laporan transaksi.
+                            </div>
                         </div>
                     </div>
 
                     {{-- Deskripsi --}}
                     <div class="col-12">
                         <label class="form-label-custom" for="deskripsi">
-                            Deskripsi
+                            Deskripsi Klasifikasi
                         </label>
                         <textarea name="deskripsi"
                                   id="deskripsi"
-                                  rows="4"
+                                  rows="3"
                                   class="form-control form-control-modern @error('deskripsi') is-invalid @enderror"
-                                  placeholder="Deskripsi singkat kategori (opsional)"
+                                  placeholder="Contoh: Kategori aneka mug keramik sablon sublim, tumbler stainless, botol minum souvenir (opsional)"
                                   maxlength="500">{{ old('deskripsi') }}</textarea>
                         <div class="invalid-feedback" id="error_deskripsi" @if(!$errors->has('deskripsi')) style="display: none !important;" @endif>
                             @error('deskripsi'){{ $message }}@enderror
@@ -68,14 +89,6 @@
                             <i class="fas fa-circle-info"></i>
                             <span>Opsional, maksimal 500 karakter</span>
                         </div>
-                    </div>
-                </div>
-
-                {{-- Info Box --}}
-                <div class="info-box mt-4">
-                    <i class="fas fa-lightbulb"></i>
-                    <div>
-                        <strong>Tips:</strong> Gunakan nama kategori yang singkat, jelas, dan mudah dikenali untuk memudahkan pengelompokan produk.
                     </div>
                 </div>
 
@@ -95,6 +108,7 @@
             </form>
         </div>
     </div>
+
 </div>
 @endsection
 
@@ -114,9 +128,7 @@
         const errorEl = document.getElementById('error_' + fieldId);
         const noteEl  = document.getElementById('note_' + fieldId);
 
-        if (input) {
-            input.classList.add('is-invalid');
-        }
+        if (input) input.classList.add('is-invalid');
         if (errorEl) {
             errorEl.textContent = message;
             errorEl.style.setProperty('display', 'block', 'important');
@@ -131,9 +143,7 @@
         const errorEl = document.getElementById('error_' + fieldId);
         const noteEl  = document.getElementById('note_' + fieldId);
 
-        if (input) {
-            input.classList.remove('is-invalid');
-        }
+        if (input) input.classList.remove('is-invalid');
         if (errorEl) {
             errorEl.textContent = '';
             errorEl.style.setProperty('display', 'none', 'important');
@@ -143,7 +153,6 @@
         }
     }
 
-    // Real-time listener: bersihkan teks merah saat pengguna mengetik
     fields.forEach(function (fieldId) {
         const el = document.getElementById(fieldId);
         if (!el) return;
@@ -152,49 +161,32 @@
         });
     });
 
-    // Validasi Form saat Submit: Tampilkan teks merah di bawah field tanpa SweetAlert
     form.addEventListener('submit', function (e) {
         let isValid = true;
-        let firstInvalid = null;
-
         fields.forEach(clearFieldError);
 
         const namaEl = document.getElementById('nama_kategori');
         const namaVal = namaEl ? namaEl.value.trim() : '';
 
-        // Validasi Nama Kategori
         if (!namaVal) {
             setFieldError('nama_kategori', 'Nama kategori wajib diisi.');
             isValid = false;
-            if (!firstInvalid) firstInvalid = namaEl;
         } else if (namaVal.length > 100) {
             setFieldError('nama_kategori', 'Nama kategori maksimal 100 karakter.');
             isValid = false;
-            if (!firstInvalid) firstInvalid = namaEl;
         }
 
         if (!isValid) {
             e.preventDefault();
-            if (firstInvalid) {
-                firstInvalid.focus();
-                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            if (namaEl) namaEl.focus();
             return false;
         }
 
-        // Form valid
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> <span>Menyimpan...</span>';
         }
     });
-
-    // Fokuskan field pertama yang error jika ada error validasi dari server
-    const initialInvalid = document.querySelector('.is-invalid');
-    if (initialInvalid) {
-        initialInvalid.focus();
-        initialInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
 })();
 </script>
 @endpush

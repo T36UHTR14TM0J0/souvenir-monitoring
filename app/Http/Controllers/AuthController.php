@@ -32,7 +32,7 @@ class AuthController extends Controller
         // Coba login
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             // Cek user aktif
-            if (!Auth::user()->is_active) {
+            if (! Auth::user()->is_active) {
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
@@ -54,7 +54,7 @@ class AuthController extends Controller
                 ->with('swal', [
                     'type' => 'success',
                     'title' => 'Selamat Datang!',
-                    'text' => 'Login berhasil. Halo, ' . Auth::user()->name . '!',
+                    'text' => 'Login berhasil. Halo, '.Auth::user()->name.'!',
                 ]);
         }
 

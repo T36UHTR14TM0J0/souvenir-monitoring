@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kategori;
+use App\Models\Produk;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -21,12 +22,52 @@ class KategoriController extends Controller
         $query = Kategori::withCount('produks');
 
         if ($request->filled('search')) {
-            $query->where('nama_kategori', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_kategori', 'like', '%'.$search.'%')
+                    ->orWhere('deskripsi', 'like', '%'.$search.'%');
+            });
         }
 
-        $kategoris = $query->latest()->paginate(10)->withQueryString();
+        if ($request->filled('tipe')) {
+            if ($request->tipe === 'default') {
+                $query->whereIn('nama_kategori', self::PROTECTED_KATEGORI);
+            } elseif ($request->tipe === 'kustom') {
+                $query->whereNotIn('nama_kategori', self::PROTECTED_KATEGORI);
+            }
+        }
 
-        return view('kategori.index', compact('kategoris'));
+        if ($request->filled('status_pakai')) {
+            if ($request->status_pakai === 'terpakai') {
+                $query->has('produks');
+            } elseif ($request->status_pakai === 'kosong') {
+                $query->doesntHave('produks');
+            }
+        }
+
+        $sort = $request->input('sort', 'latest');
+        match ($sort) {
+            'nama_asc' => $query->orderBy('nama_kategori'),
+            'nama_desc' => $query->orderByDesc('nama_kategori'),
+            'produk_desc' => $query->orderByDesc('produks_count'),
+            'produk_asc' => $query->orderBy('produks_count'),
+            default => $query->latest(),
+        };
+
+        $kategoris = $query->paginate(10)->withQueryString();
+
+        $totalKategori = Kategori::count();
+        $kategoriTerpakai = Kategori::has('produks')->count();
+        $kategoriKosong = Kategori::doesntHave('produks')->count();
+        $totalProduk = Produk::count();
+
+        return view('kategori.index', compact(
+            'kategoris',
+            'totalKategori',
+            'kategoriTerpakai',
+            'kategoriKosong',
+            'totalProduk'
+        ));
     }
 
     /**
@@ -152,12 +193,12 @@ class KategoriController extends Controller
     {
         return [
             'nama_kategori.required' => 'Nama kategori wajib diisi.',
-            'nama_kategori.string'   => 'Nama kategori harus berupa teks.',
-            'nama_kategori.max'      => 'Nama kategori maksimal 100 karakter.',
-            'nama_kategori.unique'   => 'Nama kategori sudah digunakan, gunakan nama lain.',
+            'nama_kategori.string' => 'Nama kategori harus berupa teks.',
+            'nama_kategori.max' => 'Nama kategori maksimal 100 karakter.',
+            'nama_kategori.unique' => 'Nama kategori sudah digunakan, gunakan nama lain.',
 
             'deskripsi.string' => 'Deskripsi harus berupa teks.',
-            'deskripsi.max'    => 'Deskripsi maksimal 500 karakter.',
+            'deskripsi.max' => 'Deskripsi maksimal 500 karakter.',
         ];
     }
 
@@ -168,7 +209,7 @@ class KategoriController extends Controller
     {
         return [
             'nama_kategori' => 'Nama Kategori',
-            'deskripsi'     => 'Deskripsi',
+            'deskripsi' => 'Deskripsi',
         ];
     }
 }

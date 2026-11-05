@@ -21,34 +21,37 @@ class Pengeluaran extends Model
         'status_kasbon',
         'jumlah',
         'catatan',
+        'bukti_transaksi',
         'user_id',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
-        'jumlah'  => 'decimal:2',
+        'jumlah' => 'decimal:2',
     ];
 
     public const TIPE_ALOKASI = [
-        'bisnis'  => 'Bisnis (Toko)',
+        'bisnis' => 'Bisnis (Toko)',
         'pribadi' => 'Pribadi (Prive Pemilik)',
-        'kasbon'  => 'Kasbon Karyawan',
+        'kasbon' => 'Kasbon Karyawan',
     ];
 
     public const KATEGORI_BISNIS = [
-        'operasional'  => 'Operasional Toko',
-        'gaji'         => 'Gaji Karyawan',
-        'listrik'      => 'Listrik & Air',
-        'sewa'         => 'Sewa Tempat',
-        'transport'    => 'Transportasi & Bensin',
-        'perlengkapan' => 'Perlengkapan & Bahan',
+        'operasional' => 'Operasional Toko',
+        'iklan' => 'Iklan Marketplace (Shopee, Lazada, TikTok Ads)',
+        'packing' => 'Packing & Pengemasan (Bubble wrap, lakban, kardus)',
+        'gaji' => 'Gaji Karyawan',
+        'listrik' => 'Listrik & Air',
+        'sewa' => 'Sewa Tempat / Gudang',
+        'transport' => 'Transportasi & Bensin',
+        'perlengkapan' => 'Perlengkapan & Bahan Souvenir',
         'pemeliharaan' => 'Pemeliharaan',
-        'pajak'        => 'Pajak & Administrasi',
-        'lainnya'      => 'Lainnya',
+        'pajak' => 'Pajak & Administrasi',
+        'lainnya' => 'Lainnya',
     ];
 
     public const KATEGORI_PRIBADI = [
-        'makan_pribadi'   => 'Makan / Lunch',
+        'makan_pribadi' => 'Makan / Lunch',
         'kebutuhan_rumah' => 'Kebutuhan Rumah (Gas, Galon, Dapur)',
         'prive_penarikan' => 'Penarikan Prive Pemilik',
         'pribadi_lainnya' => 'Pribadi Lainnya',
@@ -60,17 +63,19 @@ class Pengeluaran extends Model
 
     public const KATEGORI = [
         // Bisnis
-        'operasional'     => 'Operasional Toko',
-        'gaji'            => 'Gaji Karyawan',
-        'listrik'         => 'Listrik & Air',
-        'sewa'            => 'Sewa Tempat',
-        'transport'       => 'Transportasi & Bensin',
-        'perlengkapan'    => 'Perlengkapan & Bahan',
-        'pemeliharaan'    => 'Pemeliharaan',
-        'pajak'           => 'Pajak & Administrasi',
-        'lainnya'         => 'Lainnya',
+        'operasional' => 'Operasional Toko',
+        'iklan' => 'Iklan Marketplace (Shopee, Lazada, TikTok Ads)',
+        'packing' => 'Packing & Pengemasan (Bubble wrap, lakban, kardus)',
+        'gaji' => 'Gaji Karyawan',
+        'listrik' => 'Listrik & Air',
+        'sewa' => 'Sewa Tempat',
+        'transport' => 'Transportasi & Bensin',
+        'perlengkapan' => 'Perlengkapan & Bahan',
+        'pemeliharaan' => 'Pemeliharaan',
+        'pajak' => 'Pajak & Administrasi',
+        'lainnya' => 'Lainnya',
         // Pribadi
-        'makan_pribadi'   => 'Makan / Lunch',
+        'makan_pribadi' => 'Makan / Lunch',
         'kebutuhan_rumah' => 'Kebutuhan Rumah (Gas, Galon, Dapur)',
         'prive_penarikan' => 'Penarikan Prive Pemilik',
         'pribadi_lainnya' => 'Pribadi Lainnya',
@@ -111,13 +116,23 @@ class Pengeluaran extends Model
 
     public static function generateKodePengeluaran(): string
     {
-        $prefix = 'PGL-' . now()->format('Ymd') . '-';
-        $last   = self::where('kode_pengeluaran', 'like', $prefix . '%')
+        $prefix = 'PGL-'.now()->format('Ymd').'-';
+        $last = self::where('kode_pengeluaran', 'like', $prefix.'%')
             ->orderBy('kode_pengeluaran', 'desc')
             ->first();
 
         $number = $last ? ((int) substr($last->kode_pengeluaran, -4)) + 1 : 1;
 
-        return $prefix . str_pad($number, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($number, 4, '0', STR_PAD_LEFT);
+    }
+
+    public function getBuktiTransaksiUrlAttribute(): ?string
+    {
+        return $this->bukti_transaksi ? asset('storage/'.$this->bukti_transaksi) : null;
+    }
+
+    public function getIsPdfBuktiAttribute(): bool
+    {
+        return $this->bukti_transaksi ? str_ends_with(strtolower($this->bukti_transaksi), '.pdf') : false;
     }
 }

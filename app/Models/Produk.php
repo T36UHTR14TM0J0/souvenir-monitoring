@@ -11,9 +11,15 @@ class Produk extends Model
 
     protected $table = 'produks';
 
+    public const JENIS = [
+        'souvenir_jadi' => 'Souvenir Jadi',
+        'bahan_baku' => 'Bahan Baku',
+    ];
+
     protected $fillable = [
         'kategori_id',
         'satuan_id',
+        'jenis',
         'kode_produk',
         'nama_produk',
         'harga_beli',
@@ -89,6 +95,21 @@ class Produk extends Model
         return $this->belongsTo(Satuan::class);
     }
 
+    public function scopeSouvenirJadi($query)
+    {
+        return $query->where('jenis', 'souvenir_jadi');
+    }
+
+    public function scopeBahanBaku($query)
+    {
+        return $query->where('jenis', 'bahan_baku');
+    }
+
+    public function getJenisLabelAttribute(): string
+    {
+        return self::JENIS[$this->jenis] ?? 'Souvenir Jadi';
+    }
+
     public function scopeStokMenipis($query)
     {
         return $query->whereColumn('stok', '<=', 'stok_minimal');
@@ -118,5 +139,46 @@ class Produk extends Model
     public function pembelianDetails()
     {
         return $this->hasMany(PembelianDetail::class);
+    }
+
+    public function pemakaianDetails()
+    {
+        return $this->hasMany(PemakaianBahanDetail::class);
+    }
+
+    public function penerimaanDetails()
+    {
+        return $this->hasMany(PenerimaanProdukDetail::class);
+    }
+
+    public function resepBahanBaku()
+    {
+        return $this->belongsToMany(self::class, 'produk_resep', 'produk_id', 'bahan_baku_id')
+            ->withPivot('jumlah', 'keterangan')
+            ->withTimestamps();
+    }
+
+    public function produkHasil()
+    {
+        return $this->belongsToMany(self::class, 'produk_resep', 'bahan_baku_id', 'produk_id')
+            ->withPivot('jumlah', 'keterangan')
+            ->withTimestamps();
+    }
+
+    public function hitungKapasitasProduksi(): ?int
+    {
+        if ($this->resepBahanBaku->isEmpty()) {
+            return null;
+        }
+
+        $kapasitas = [];
+        foreach ($this->resepBahanBaku as $bahan) {
+            $kebutuhan = (float) $bahan->pivot->jumlah;
+            if ($kebutuhan > 0) {
+                $kapasitas[] = (int) floor($bahan->stok / $kebutuhan);
+            }
+        }
+
+        return ! empty($kapasitas) ? max(0, min($kapasitas)) : 0;
     }
 }

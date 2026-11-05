@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Produk;
 use App\Models\Satuan;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -24,14 +25,50 @@ class SatuanController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_satuan', 'like', "%{$search}%")
-                  ->orWhere('singkatan', 'like', "%{$search}%")
-                  ->orWhere('deskripsi', 'like', "%{$search}%");
+                    ->orWhere('singkatan', 'like', "%{$search}%")
+                    ->orWhere('deskripsi', 'like', "%{$search}%");
             });
         }
 
-        $satuans = $query->orderBy('nama_satuan', 'asc')->paginate(10)->withQueryString();
+        if ($request->filled('tipe')) {
+            if ($request->tipe === 'default') {
+                $query->whereIn('nama_satuan', self::PROTECTED_SATUAN);
+            } elseif ($request->tipe === 'kustom') {
+                $query->whereNotIn('nama_satuan', self::PROTECTED_SATUAN);
+            }
+        }
 
-        return view('satuan.index', compact('satuans'));
+        if ($request->filled('status_pakai')) {
+            if ($request->status_pakai === 'terpakai') {
+                $query->has('produks');
+            } elseif ($request->status_pakai === 'kosong') {
+                $query->doesntHave('produks');
+            }
+        }
+
+        $sort = $request->input('sort', 'nama_asc');
+        match ($sort) {
+            'latest' => $query->latest(),
+            'nama_desc' => $query->orderByDesc('nama_satuan'),
+            'produk_desc' => $query->orderByDesc('produks_count'),
+            'produk_asc' => $query->orderBy('produks_count'),
+            default => $query->orderBy('nama_satuan', 'asc'),
+        };
+
+        $satuans = $query->paginate(10)->withQueryString();
+
+        $totalSatuan = Satuan::count();
+        $satuanTerpakai = Satuan::has('produks')->count();
+        $satuanKosong = Satuan::doesntHave('produks')->count();
+        $totalProduk = Produk::count();
+
+        return view('satuan.index', compact(
+            'satuans',
+            'totalSatuan',
+            'satuanTerpakai',
+            'satuanKosong',
+            'totalProduk'
+        ));
     }
 
     /**
@@ -68,7 +105,7 @@ class SatuanController extends Controller
         ], $this->validationMessages(), $this->validationAttributes());
 
         $validated['nama_satuan'] = $this->normalizeNama($validated['nama_satuan']);
-        $validated['singkatan']   = strtolower(trim($validated['singkatan']));
+        $validated['singkatan'] = strtolower(trim($validated['singkatan']));
 
         Satuan::create($validated);
 
@@ -111,7 +148,7 @@ class SatuanController extends Controller
         ], $this->validationMessages(), $this->validationAttributes());
 
         $validated['nama_satuan'] = $this->normalizeNama($validated['nama_satuan']);
-        $validated['singkatan']   = strtolower(trim($validated['singkatan']));
+        $validated['singkatan'] = strtolower(trim($validated['singkatan']));
 
         // Proteksi rename satuan default sistem
         $isProtected = in_array($satuan->nama_satuan, self::PROTECTED_SATUAN, true);
@@ -170,17 +207,17 @@ class SatuanController extends Controller
     {
         return [
             'nama_satuan.required' => 'Nama satuan wajib diisi.',
-            'nama_satuan.string'   => 'Nama satuan harus berupa teks.',
-            'nama_satuan.max'      => 'Nama satuan maksimal 50 karakter.',
-            'nama_satuan.unique'   => 'Nama satuan ini sudah terdaftar.',
+            'nama_satuan.string' => 'Nama satuan harus berupa teks.',
+            'nama_satuan.max' => 'Nama satuan maksimal 50 karakter.',
+            'nama_satuan.unique' => 'Nama satuan ini sudah terdaftar.',
 
-            'singkatan.required'   => 'Singkatan/simbol satuan wajib diisi.',
-            'singkatan.string'     => 'Singkatan satuan harus berupa teks.',
-            'singkatan.max'        => 'Singkatan satuan maksimal 20 karakter.',
-            'singkatan.unique'     => 'Singkatan satuan ini sudah digunakan.',
+            'singkatan.required' => 'Singkatan/simbol satuan wajib diisi.',
+            'singkatan.string' => 'Singkatan satuan harus berupa teks.',
+            'singkatan.max' => 'Singkatan satuan maksimal 20 karakter.',
+            'singkatan.unique' => 'Singkatan satuan ini sudah digunakan.',
 
-            'deskripsi.string'     => 'Deskripsi harus berupa teks.',
-            'deskripsi.max'        => 'Deskripsi maksimal 255 karakter.',
+            'deskripsi.string' => 'Deskripsi harus berupa teks.',
+            'deskripsi.max' => 'Deskripsi maksimal 255 karakter.',
         ];
     }
 
@@ -191,8 +228,8 @@ class SatuanController extends Controller
     {
         return [
             'nama_satuan' => 'Nama Satuan',
-            'singkatan'   => 'Singkatan',
-            'deskripsi'   => 'Deskripsi',
+            'singkatan' => 'Singkatan',
+            'deskripsi' => 'Deskripsi',
         ];
     }
 }

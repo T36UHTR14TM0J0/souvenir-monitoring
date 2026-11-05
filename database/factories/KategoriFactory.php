@@ -21,7 +21,7 @@ class KategoriFactory extends Factory
 
         return [
             'nama_kategori' => $this->faker->unique()->randomElement($kategoris),
-            'deskripsi'     => $this->faker->sentence(8),
+            'deskripsi' => $this->faker->sentence(8),
         ];
     }
 }

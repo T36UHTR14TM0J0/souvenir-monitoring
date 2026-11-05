@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
@@ -13,37 +13,70 @@ class PermissionController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Permission::withCount('roles');
+        $query = Permission::with('roles')->withCount('roles');
 
         // Filter: search by name
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = trim((string) $request->search);
             $query->where('name', 'like', "%{$search}%");
         }
 
-        // Filter: by group (prefix of name, e.g. "user")
+        // Filter: by module group (e.g. "kas-masuk", "bahan-baku", "produk", etc.)
         if ($request->filled('group')) {
-            $query->where('name', 'like', $request->group . '-%');
+            $grp = trim((string) $request->group);
+            $query->where('name', 'like', $grp.'-%');
         }
 
-        // Pagination 15 per halaman
-        $permissions = $query->orderBy('name')->paginate(15)->withQueryString();
+        // Filter: by status pemakaian
+        if ($request->filled('status')) {
+            if ($request->status === 'used') {
+                $query->has('roles');
+            } elseif ($request->status === 'unused') {
+                $query->doesntHave('roles');
+            }
+        }
 
-        // Ambil semua grup untuk dropdown filter
-        $groups = Permission::selectRaw("SUBSTRING_INDEX(name, '-', 1) as grp")
-            ->distinct()
-            ->orderBy('grp')
-            ->pluck('grp');
+        // Sort
+        $sort = $request->get('sort', 'name_asc');
+        match ($sort) {
+            'name_desc' => $query->orderBy('name', 'desc'),
+            'roles_desc' => $query->orderBy('roles_count', 'desc')->orderBy('name', 'asc'),
+            'roles_asc' => $query->orderBy('roles_count', 'asc')->orderBy('name', 'asc'),
+            default => $query->orderBy('name', 'asc'),
+        };
 
-        // Total stats
-        $totalPermissions = Permission::count();
+        $permissions = $query->paginate(15)->withQueryString();
+
+        // Ambil semua grup modul secara cross-database (MySQL & SQLite compatible) sesuai urutan menu sidebar
+        $allNames = Permission::orderBy('name')->pluck('name');
+        $orderedKeys = array_keys(RoleController::MODULE_META);
+        $groups = $allNames
+            ->map(fn (string $name) => RoleController::extractModuleGroup($name))
+            ->unique()
+            ->sortBy(function (string $g) use ($orderedKeys) {
+                $idx = array_search($g, $orderedKeys, true);
+
+                return $idx !== false ? sprintf('%03d_%s', $idx, $g) : '999_'.$g;
+            })
+            ->values();
+
+        // Total stats untuk 4 KPI Cards
+        $totalPermissions = $allNames->count();
         $totalGroups = $groups->count();
+        $totalUsedPermissions = Permission::has('roles')->count();
+        $totalUnusedPermissions = Permission::doesntHave('roles')->count();
+        $moduleMeta = RoleController::MODULE_META;
+        $permLabels = RoleController::PERMISSION_LABELS;
 
         return view('permissions.index', compact(
             'permissions',
             'groups',
             'totalPermissions',
-            'totalGroups'
+            'totalGroups',
+            'totalUsedPermissions',
+            'totalUnusedPermissions',
+            'moduleMeta',
+            'permLabels'
         ));
     }
 
@@ -62,11 +95,9 @@ class PermissionController extends Controller
             ],
         ], $this->validationMessages(), $this->validationAttributes());
 
-        // Normalisasi: lowercase & trim
         $name = strtolower(trim($validated['name']));
 
-        // Validasi tambahan: harus format modul-aksi (ada dash)
-        if (!str_contains($name, '-')) {
+        if (! str_contains($name, '-')) {
             return back()
                 ->withInput()
                 ->withErrors([
@@ -96,11 +127,9 @@ class PermissionController extends Controller
             ],
         ], $this->validationMessages(), $this->validationAttributes());
 
-        // Normalisasi
         $name = strtolower(trim($validated['name']));
 
-        // Validasi format modul-aksi
-        if (!str_contains($name, '-')) {
+        if (! str_contains($name, '-')) {
             return back()
                 ->withInput()
                 ->withErrors([
@@ -121,7 +150,6 @@ class PermissionController extends Controller
      */
     public function destroy(Permission $permission)
     {
-        // Proteksi: permission masih dipakai role
         $rolesCount = $permission->roles()->count();
         if ($rolesCount > 0) {
             return back()->with(
@@ -145,10 +173,10 @@ class PermissionController extends Controller
     {
         return [
             'name.required' => 'Nama permission wajib diisi.',
-            'name.string'   => 'Nama permission harus berupa teks.',
-            'name.max'      => 'Nama permission maksimal 255 karakter.',
-            'name.unique'   => 'Permission sudah ada, gunakan nama lain.',
-            'name.regex'    => 'Nama permission hanya boleh berisi huruf kecil, angka, tanda hubung (-), dan garis bawah (_).',
+            'name.string' => 'Nama permission harus berupa teks.',
+            'name.max' => 'Nama permission maksimal 255 karakter.',
+            'name.unique' => 'Permission sudah ada, gunakan nama lain.',
+            'name.regex' => 'Nama permission hanya boleh berisi huruf kecil, angka, tanda hubung (-), dan garis bawah (_).',
         ];
     }
 

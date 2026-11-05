@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pengeluaran;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PengeluaranController extends Controller
 {
@@ -13,9 +14,9 @@ class PengeluaranController extends Controller
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('kode_pengeluaran', 'like', '%' . $request->search . '%')
-                  ->orWhere('keterangan', 'like', '%' . $request->search . '%')
-                  ->orWhere('karyawan_nama', 'like', '%' . $request->search . '%');
+                $q->where('kode_pengeluaran', 'like', '%'.$request->search.'%')
+                    ->orWhere('keterangan', 'like', '%'.$request->search.'%')
+                    ->orWhere('karyawan_nama', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -35,10 +36,19 @@ class PengeluaranController extends Controller
             $query->whereDate('tanggal', '<=', $request->sampai_tanggal);
         }
 
-        $pengeluarans = $query->latest('tanggal')
-            ->latest('id')
-            ->paginate(10)
-            ->withQueryString();
+        if ($request->filled('status_kasbon')) {
+            $query->where('status_kasbon', $request->status_kasbon);
+        }
+
+        $sort = $request->input('sort', 'latest');
+        match ($sort) {
+            'oldest' => $query->oldest('tanggal')->oldest('id'),
+            'jumlah_desc' => $query->orderByDesc('jumlah')->latest('tanggal'),
+            'jumlah_asc' => $query->orderBy('jumlah')->latest('tanggal'),
+            default => $query->latest('tanggal')->latest('id'),
+        };
+
+        $pengeluarans = $query->paginate(10)->withQueryString();
 
         $bulanSekarang = now()->month;
         $tahunSekarang = now()->year;
@@ -66,7 +76,7 @@ class PengeluaranController extends Controller
             ->whereYear('tanggal', $tahunSekarang)
             ->count();
 
-        $kategoris    = Pengeluaran::KATEGORI;
+        $kategoris = Pengeluaran::KATEGORI;
         $tipeAlokasis = Pengeluaran::TIPE_ALOKASI;
 
         return view('pengeluaran.index', compact(
@@ -84,11 +94,11 @@ class PengeluaranController extends Controller
     public function create()
     {
         $kodePengeluaran = Pengeluaran::generateKodePengeluaran();
-        $tipeAlokasis    = Pengeluaran::TIPE_ALOKASI;
-        $kategoriBisnis  = Pengeluaran::KATEGORI_BISNIS;
+        $tipeAlokasis = Pengeluaran::TIPE_ALOKASI;
+        $kategoriBisnis = Pengeluaran::KATEGORI_BISNIS;
         $kategoriPribadi = Pengeluaran::KATEGORI_PRIBADI;
-        $kategoriKasbon  = Pengeluaran::KATEGORI_KASBON;
-        $kategoris       = Pengeluaran::KATEGORI;
+        $kategoriKasbon = Pengeluaran::KATEGORI_KASBON;
+        $kategoris = Pengeluaran::KATEGORI;
 
         return view('pengeluaran.create', compact(
             'kodePengeluaran',
@@ -103,13 +113,14 @@ class PengeluaranController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'tanggal'       => ['required', 'date'],
-            'tipe_alokasi'  => ['required', 'string', 'in:bisnis,pribadi,kasbon'],
-            'kategori'      => ['required', 'string', 'in:' . implode(',', array_keys(Pengeluaran::KATEGORI))],
-            'keterangan'    => ['required', 'string', 'max:255'],
+            'tanggal' => ['required', 'date'],
+            'tipe_alokasi' => ['required', 'string', 'in:bisnis,pribadi,kasbon'],
+            'kategori' => ['required', 'string', 'in:'.implode(',', array_keys(Pengeluaran::KATEGORI))],
+            'keterangan' => ['required', 'string', 'max:255'],
             'karyawan_nama' => ['nullable', 'string', 'max:100', 'required_if:tipe_alokasi,kasbon'],
-            'jumlah'        => ['required', 'numeric', 'min:1'],
-            'catatan'       => ['nullable', 'string', 'max:500'],
+            'jumlah' => ['required', 'numeric', 'min:1'],
+            'bukti_transaksi' => ['nullable', 'file', 'mimes:jpeg,jpg,png,webp,pdf', 'max:5120'],
+            'catatan' => ['nullable', 'string', 'max:500'],
         ], $this->validationMessages(), $this->validationAttributes());
 
         $statusKasbon = null;
@@ -117,17 +128,23 @@ class PengeluaranController extends Controller
             $statusKasbon = $request->input('status_kasbon', 'belum_lunas');
         }
 
+        $buktiPath = null;
+        if ($request->hasFile('bukti_transaksi')) {
+            $buktiPath = $request->file('bukti_transaksi')->store('bukti-transaksi/pengeluaran', 'public');
+        }
+
         $pengeluaran = Pengeluaran::create([
             'kode_pengeluaran' => Pengeluaran::generateKodePengeluaran(),
-            'tanggal'          => $validated['tanggal'],
-            'tipe_alokasi'     => $validated['tipe_alokasi'],
-            'kategori'         => $validated['kategori'],
-            'keterangan'       => $validated['keterangan'],
-            'karyawan_nama'    => $validated['karyawan_nama'] ?? null,
-            'status_kasbon'    => $statusKasbon,
-            'jumlah'           => $validated['jumlah'],
-            'catatan'          => $validated['catatan'] ?? null,
-            'user_id'          => auth()->id(),
+            'tanggal' => $validated['tanggal'],
+            'tipe_alokasi' => $validated['tipe_alokasi'],
+            'kategori' => $validated['kategori'],
+            'keterangan' => $validated['keterangan'],
+            'karyawan_nama' => $validated['karyawan_nama'] ?? null,
+            'status_kasbon' => $statusKasbon,
+            'jumlah' => $validated['jumlah'],
+            'catatan' => $validated['catatan'] ?? null,
+            'bukti_transaksi' => $buktiPath,
+            'user_id' => auth()->id(),
         ]);
 
         return redirect()
@@ -144,11 +161,11 @@ class PengeluaranController extends Controller
 
     public function edit(Pengeluaran $pengeluaran)
     {
-        $tipeAlokasis    = Pengeluaran::TIPE_ALOKASI;
-        $kategoriBisnis  = Pengeluaran::KATEGORI_BISNIS;
+        $tipeAlokasis = Pengeluaran::TIPE_ALOKASI;
+        $kategoriBisnis = Pengeluaran::KATEGORI_BISNIS;
         $kategoriPribadi = Pengeluaran::KATEGORI_PRIBADI;
-        $kategoriKasbon  = Pengeluaran::KATEGORI_KASBON;
-        $kategoris       = Pengeluaran::KATEGORI;
+        $kategoriKasbon = Pengeluaran::KATEGORI_KASBON;
+        $kategoris = Pengeluaran::KATEGORI;
 
         return view('pengeluaran.edit', compact(
             'pengeluaran',
@@ -163,19 +180,33 @@ class PengeluaranController extends Controller
     public function update(Request $request, Pengeluaran $pengeluaran)
     {
         $validated = $request->validate([
-            'tanggal'       => ['required', 'date'],
-            'tipe_alokasi'  => ['required', 'string', 'in:bisnis,pribadi,kasbon'],
-            'kategori'      => ['required', 'string', 'in:' . implode(',', array_keys(Pengeluaran::KATEGORI))],
-            'keterangan'    => ['required', 'string', 'max:255'],
+            'tanggal' => ['required', 'date'],
+            'tipe_alokasi' => ['required', 'string', 'in:bisnis,pribadi,kasbon'],
+            'kategori' => ['required', 'string', 'in:'.implode(',', array_keys(Pengeluaran::KATEGORI))],
+            'keterangan' => ['required', 'string', 'max:255'],
             'karyawan_nama' => ['nullable', 'string', 'max:100', 'required_if:tipe_alokasi,kasbon'],
             'status_kasbon' => ['nullable', 'string', 'in:belum_lunas,lunas'],
-            'jumlah'        => ['required', 'numeric', 'min:1'],
-            'catatan'       => ['nullable', 'string', 'max:500'],
+            'jumlah' => ['required', 'numeric', 'min:1'],
+            'bukti_transaksi' => ['nullable', 'file', 'mimes:jpeg,jpg,png,webp,pdf', 'max:5120'],
+            'hapus_bukti' => ['nullable', 'boolean'],
+            'catatan' => ['nullable', 'string', 'max:500'],
         ], $this->validationMessages(), $this->validationAttributes());
 
         if ($validated['tipe_alokasi'] !== 'kasbon') {
             $validated['karyawan_nama'] = null;
             $validated['status_kasbon'] = null;
+        }
+
+        if ($request->hasFile('bukti_transaksi')) {
+            if ($pengeluaran->bukti_transaksi) {
+                Storage::disk('public')->delete($pengeluaran->bukti_transaksi);
+            }
+            $validated['bukti_transaksi'] = $request->file('bukti_transaksi')->store('bukti-transaksi/pengeluaran', 'public');
+        } elseif ($request->boolean('hapus_bukti')) {
+            if ($pengeluaran->bukti_transaksi) {
+                Storage::disk('public')->delete($pengeluaran->bukti_transaksi);
+            }
+            $validated['bukti_transaksi'] = null;
         }
 
         $pengeluaran->update($validated);
@@ -195,12 +226,16 @@ class PengeluaranController extends Controller
         $pengeluaran->update(['status_kasbon' => $newStatus]);
 
         $pesan = $newStatus === 'lunas' ? 'Kasbon berhasil ditandai LUNAS.' : 'Status kasbon diubah menjadi BELUM LUNAS.';
+
         return back()->with('success', $pesan);
     }
 
     public function destroy(Pengeluaran $pengeluaran)
     {
         $kode = $pengeluaran->kode_pengeluaran;
+        if ($pengeluaran->bukti_transaksi) {
+            Storage::disk('public')->delete($pengeluaran->bukti_transaksi);
+        }
         $pengeluaran->delete();
 
         return redirect()
@@ -211,32 +246,35 @@ class PengeluaranController extends Controller
     private function validationMessages(): array
     {
         return [
-            'tanggal.required'          => 'Tanggal wajib diisi.',
-            'tanggal.date'              => 'Format tanggal tidak valid.',
-            'tipe_alokasi.required'     => 'Alokasi wajib dipilih.',
-            'tipe_alokasi.in'           => 'Pilihan alokasi tidak valid.',
-            'kategori.required'         => 'Kategori wajib dipilih.',
-            'kategori.in'               => 'Kategori tidak valid.',
-            'keterangan.required'       => 'Keterangan wajib diisi.',
-            'keterangan.max'            => 'Keterangan maksimal 255 karakter.',
+            'tanggal.required' => 'Tanggal wajib diisi.',
+            'tanggal.date' => 'Format tanggal tidak valid.',
+            'tipe_alokasi.required' => 'Alokasi wajib dipilih.',
+            'tipe_alokasi.in' => 'Pilihan alokasi tidak valid.',
+            'kategori.required' => 'Kategori wajib dipilih.',
+            'kategori.in' => 'Kategori tidak valid.',
+            'keterangan.required' => 'Keterangan wajib diisi.',
+            'keterangan.max' => 'Keterangan maksimal 255 karakter.',
             'karyawan_nama.required_if' => 'Nama karyawan/peminjam wajib diisi untuk alokasi Kasbon.',
-            'jumlah.required'           => 'Jumlah wajib diisi.',
-            'jumlah.numeric'            => 'Jumlah harus berupa angka.',
-            'jumlah.min'                => 'Jumlah minimal Rp 1.',
-            'catatan.max'               => 'Catatan maksimal 500 karakter.',
+            'jumlah.required' => 'Jumlah wajib diisi.',
+            'jumlah.numeric' => 'Jumlah harus berupa angka.',
+            'jumlah.min' => 'Jumlah minimal Rp 1.',
+            'catatan.max' => 'Catatan maksimal 500 karakter.',
+            'bukti_transaksi.file' => 'Bukti transaksi harus berupa file.',
+            'bukti_transaksi.mimes' => 'Format bukti transaksi harus JPG, PNG, WEBP, atau PDF.',
+            'bukti_transaksi.max' => 'Ukuran bukti transaksi maksimal 5MB.',
         ];
     }
 
     private function validationAttributes(): array
     {
         return [
-            'tanggal'       => 'Tanggal',
-            'tipe_alokasi'  => 'Alokasi Pengeluaran',
-            'kategori'      => 'Kategori',
-            'keterangan'    => 'Keterangan',
+            'tanggal' => 'Tanggal',
+            'tipe_alokasi' => 'Alokasi Pengeluaran',
+            'kategori' => 'Kategori',
+            'keterangan' => 'Keterangan',
             'karyawan_nama' => 'Nama Karyawan/Peminjam',
-            'jumlah'        => 'Jumlah',
-            'catatan'       => 'Catatan',
+            'jumlah' => 'Jumlah',
+            'catatan' => 'Catatan',
         ];
     }
 }

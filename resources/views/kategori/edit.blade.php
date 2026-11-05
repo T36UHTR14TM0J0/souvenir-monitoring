@@ -1,21 +1,27 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Kategori')
+@section('title', 'Edit Kategori - ' . $kategori->nama_kategori)
 
 @section('content')
 <div class="container-fluid px-0">
 
-    {{-- HEADER --}}
+    {{-- HEADER (variant primary untuk edit persis Katalog Souvenir) --}}
     <x-page-header
-        icon="fas fa-tag"
+        icon="fas fa-tags"
         title="Edit Kategori"
-        subtitle="Perbarui data kategori produk toko souvenir."
-    />
+        subtitle="Perbarui informasi dan deskripsi kategori <strong>{{ $kategori->nama_kategori }}</strong>."
+        iconVariant="primary"
+    >
+        <a href="{{ route('kategori.index') }}" class="btn btn-secondary-custom">
+            <i class="fas fa-arrow-left"></i>
+            <span>Kembali ke Daftar</span>
+        </a>
+    </x-page-header>
 
     {{-- FORM CARD --}}
     <div class="card card-modern">
         <div class="card-body p-4 p-md-5">
-            <form action="{{ route('kategori.update', $kategori) }}" method="POST" id="kategoriForm" novalidate>
+            <form action="{{ route('kategori.update', $kategori) }}" method="POST" id="kategoriEditForm" novalidate>
                 @csrf
                 @method('PUT')
 
@@ -27,12 +33,9 @@
 
                 <div class="row g-3">
                     {{-- Nama Kategori --}}
-                    <div class="col-12">
+                    <div class="col-12 col-md-6">
                         <label class="form-label-custom" for="nama_kategori">
                             Nama Kategori <span class="required">*</span>
-                            @if(in_array($kategori->nama_kategori, ['Umum', 'Lain-lain']))
-                                <span class="badge-protected ms-1"><i class="fas fa-lock me-1"></i>Default Sistem</span>
-                            @endif
                         </label>
                         <div class="input-group-modern">
                             <i class="fas fa-tag input-icon"></i>
@@ -41,9 +44,9 @@
                                    id="nama_kategori"
                                    class="form-control form-control-modern @error('nama_kategori') is-invalid @enderror"
                                    value="{{ old('nama_kategori', $kategori->nama_kategori) }}"
-                                   placeholder="Contoh: Kaos & Pakaian"
+                                   placeholder="Contoh: Mug & Tumbler Custom"
                                    maxlength="100"
-                                   @if(in_array($kategori->nama_kategori, ['Umum', 'Lain-lain'])) readonly style="background-color: #f1f5f9; cursor: not-allowed;" @endif
+                                   required
                                    autofocus>
                         </div>
                         <div class="invalid-feedback" id="error_nama_kategori" @if(!$errors->has('nama_kategori')) style="display: none !important;" @endif>
@@ -51,18 +54,38 @@
                         </div>
                         <div class="required-note" id="note_nama_kategori" @if($errors->has('nama_kategori')) style="display: none !important;" @endif>
                             <i class="fas fa-circle-info"></i>
-                            <span>Wajib diisi, maksimal 100 karakter</span>
+                            <span>Wajib diisi, nama kategori harus unik dan maksimal 100 karakter</span>
+                        </div>
+                    </div>
+
+                    {{-- Status Kategori --}}
+                    <div class="col-12 col-md-6">
+                        <label class="form-label-custom">
+                            Tipe Sistem <span class="badge bg-secondary-subtle text-secondary ms-1"><i class="fas fa-lock me-1"></i>Informasi</span>
+                        </label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-shield-alt input-icon text-muted"></i>
+                            <input type="text"
+                                   class="form-control form-control-modern"
+                                   value="{{ in_array($kategori->nama_kategori, ['Umum', 'Lain-lain']) ? 'Kategori Default Sistem (Dilindungi)' : 'Kategori Kustom' }}"
+                                   readonly
+                                   style="background-color: #f1f5f9; cursor: not-allowed; color: #475569;"
+                                   tabindex="-1">
+                        </div>
+                        <div class="required-note">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Kategori default sistem tidak dapat diganti namanya</span>
                         </div>
                     </div>
 
                     {{-- Deskripsi --}}
                     <div class="col-12">
                         <label class="form-label-custom" for="deskripsi">
-                            Deskripsi
+                            Deskripsi Klasifikasi
                         </label>
                         <textarea name="deskripsi"
                                   id="deskripsi"
-                                  rows="4"
+                                  rows="3"
                                   class="form-control form-control-modern @error('deskripsi') is-invalid @enderror"
                                   placeholder="Deskripsi singkat kategori (opsional)"
                                   maxlength="500">{{ old('deskripsi', $kategori->deskripsi) }}</textarea>
@@ -92,6 +115,7 @@
             </form>
         </div>
     </div>
+
 </div>
 @endsection
 
@@ -100,7 +124,7 @@
 (function () {
     'use strict';
 
-    const form      = document.getElementById('kategoriForm');
+    const form      = document.getElementById('kategoriEditForm');
     const submitBtn = document.getElementById('submitBtn');
     if (!form) return;
 
@@ -111,9 +135,7 @@
         const errorEl = document.getElementById('error_' + fieldId);
         const noteEl  = document.getElementById('note_' + fieldId);
 
-        if (input) {
-            input.classList.add('is-invalid');
-        }
+        if (input) input.classList.add('is-invalid');
         if (errorEl) {
             errorEl.textContent = message;
             errorEl.style.setProperty('display', 'block', 'important');
@@ -128,9 +150,7 @@
         const errorEl = document.getElementById('error_' + fieldId);
         const noteEl  = document.getElementById('note_' + fieldId);
 
-        if (input) {
-            input.classList.remove('is-invalid');
-        }
+        if (input) input.classList.remove('is-invalid');
         if (errorEl) {
             errorEl.textContent = '';
             errorEl.style.setProperty('display', 'none', 'important');
@@ -140,7 +160,6 @@
         }
     }
 
-    // Real-time listener: bersihkan teks merah saat pengguna mengetik
     fields.forEach(function (fieldId) {
         const el = document.getElementById(fieldId);
         if (!el) return;
@@ -149,49 +168,32 @@
         });
     });
 
-    // Validasi Form saat Submit: Tampilkan teks merah di bawah field tanpa SweetAlert
     form.addEventListener('submit', function (e) {
         let isValid = true;
-        let firstInvalid = null;
-
         fields.forEach(clearFieldError);
 
         const namaEl = document.getElementById('nama_kategori');
         const namaVal = namaEl ? namaEl.value.trim() : '';
 
-        // Validasi Nama Kategori
         if (!namaVal) {
             setFieldError('nama_kategori', 'Nama kategori wajib diisi.');
             isValid = false;
-            if (!firstInvalid) firstInvalid = namaEl;
         } else if (namaVal.length > 100) {
             setFieldError('nama_kategori', 'Nama kategori maksimal 100 karakter.');
             isValid = false;
-            if (!firstInvalid) firstInvalid = namaEl;
         }
 
         if (!isValid) {
             e.preventDefault();
-            if (firstInvalid) {
-                firstInvalid.focus();
-                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            if (namaEl) namaEl.focus();
             return false;
         }
 
-        // Form valid
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> <span>Menyimpan...</span>';
         }
     });
-
-    // Fokuskan field pertama yang error jika ada error validasi dari server
-    const initialInvalid = document.querySelector('.is-invalid');
-    if (initialInvalid) {
-        initialInvalid.focus();
-        initialInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
 })();
 </script>
 @endpush

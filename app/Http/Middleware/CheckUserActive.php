@@ -10,8 +10,9 @@ class CheckUserActive
 {
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && !Auth::user()->is_active) {
+        if (Auth::check() && ! Auth::user()->is_active) {
             Auth::logout();
+
             return redirect()->route('login')
                 ->withErrors(['email' => 'Akun Anda tidak aktif. Hubungi administrator.']);
         }

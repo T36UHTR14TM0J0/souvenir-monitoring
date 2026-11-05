@@ -1,170 +1,139 @@
-{{-- SUMMARY CARDS --}}
-<div class="row g-3 mb-3">
-    <div class="col-6 col-lg-4">
-        <div class="summary-card">
-            <div class="summary-icon summary-icon-navy">
-                <i class="fas fa-hand-holding-dollar"></i>
-            </div>
-            <div>
-                <div class="summary-label">Total Kasbon Diberikan</div>
-                <div class="summary-value">Rp {{ number_format($total['total_kasbon'], 0, ',', '.') }}</div>
-                <div class="summary-sub">{{ $total['transaksi'] }} Catatan Transaksi</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-4">
-        <div class="summary-card">
-            <div class="summary-icon summary-icon-green">
-                <i class="fas fa-circle-check"></i>
-            </div>
-            <div>
-                <div class="summary-label">Kasbon Sudah Lunas</div>
-                <div class="summary-value text-green">Rp {{ number_format($total['total_lunas'], 0, ',', '.') }}</div>
-                <div class="summary-sub">Sudah Dikembalikan / Potong Gaji</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-lg-4">
-        <div class="summary-card">
-            <div class="summary-icon summary-icon-red">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div>
-                <div class="summary-label">Sisa Kasbon Belum Lunas</div>
-                <div class="summary-value text-red">Rp {{ number_format($total['total_belum_lunas'], 0, ',', '.') }}</div>
-                <div class="summary-sub">Piutang Aktif Tim Toko</div>
-            </div>
-        </div>
-    </div>
-</div>
-
 {{-- REKAP PER KARYAWAN --}}
 @if($per_karyawan->isNotEmpty())
-<div class="panel mb-3">
-    <div class="panel-header">
-        <h6 class="panel-title">
+<div class="card card-modern bg-white mb-3">
+    <div class="card-header bg-white py-3 px-3 border-bottom d-flex align-items-center gap-2">
+        <span class="d-inline-flex align-items-center justify-content-center rounded-2" style="width: 32px; height: 32px; background: #eef2ff; color: #26476f;">
             <i class="fas fa-users"></i>
-            Rekap Piutang Kasbon Per Anggota Tim
-        </h6>
+        </span>
+        <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Rekap Piutang Kasbon Per Anggota Tim</h6>
     </div>
-    <div class="table-responsive">
-        <table class="table-laporan">
-            <thead>
-                <tr>
-                    <th>Nama Anggota Tim</th>
-                    <th style="text-align: center;">Frekuensi</th>
-                    <th style="text-align: center; min-width: 140px;">Total Dipinjam</th>
-                    <th style="text-align: center; min-width: 140px;">Sudah Dibayar</th>
-                    <th style="text-align: center; min-width: 150px;">Sisa Hutang (Piutang)</th>
-                    <th style="text-align: center; width: 140px;">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($per_karyawan as $pk)
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-produk align-middle mb-0">
+                <thead>
                     <tr>
-                        <td style="font-weight: 700; color: var(--gray-900);">
-                            <i class="fas fa-user-circle me-1 text-primary"></i>
-                            {{ $pk['nama'] }}
-                        </td>
-                        <td style="text-align: center;">{{ $pk['count'] }}x pinjam</td>
-                        <td style="text-align: right;">Rp {{ number_format($pk['total'], 0, ',', '.') }}</td>
-                        <td class="text-green" style="text-align: right;">Rp {{ number_format($pk['lunas'], 0, ',', '.') }}</td>
-                        <td class="{{ $pk['sisa'] > 0 ? 'text-red' : 'text-green' }}" style="text-align: right; font-weight: 700;">
-                            Rp {{ number_format($pk['sisa'], 0, ',', '.') }}
-                        </td>
-                        <td style="text-align: center;">
-                            @if($pk['sisa'] <= 0)
-                                <span class="badge-soft success">LUNAS</span>
-                            @else
-                                <span class="badge-soft warning">BELUM LUNAS</span>
-                            @endif
-                        </td>
+                        <th class="ps-4">Nama Anggota Tim</th>
+                        <th class="text-center">Frekuensi</th>
+                        <th class="text-end">Total Dipinjam</th>
+                        <th class="text-end">Sudah Dibayar</th>
+                        <th class="text-end">Sisa Hutang (Piutang)</th>
+                        <th class="text-center pe-4">Status</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach($per_karyawan as $pk)
+                        <tr>
+                            <td class="ps-4 fw-bold text-dark">
+                                <i class="fas fa-user-circle me-1 text-primary"></i>
+                                {{ $pk['nama'] }}
+                            </td>
+                            <td class="text-center">{{ $pk['count'] }}x pinjam</td>
+                            <td class="text-end fw-semibold font-monospace">Rp {{ number_format($pk['total'], 0, ',', '.') }}</td>
+                            <td class="text-end fw-semibold text-success font-monospace">Rp {{ number_format($pk['lunas'], 0, ',', '.') }}</td>
+                            <td class="text-end fw-bold font-monospace {{ $pk['sisa'] > 0 ? 'text-danger' : 'text-success' }}">
+                                Rp {{ number_format($pk['sisa'], 0, ',', '.') }}
+                            </td>
+                            <td class="text-center pe-4">
+                                @if($pk['sisa'] <= 0)
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">LUNAS</span>
+                                @else
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">BELUM LUNAS</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 @endif
 
 {{-- DETAIL TRANSAKSI KASBON --}}
-<div class="panel">
-    <div class="panel-header">
-        <h6 class="panel-title">
-            <i class="fas fa-list"></i>
-            Rincian Riwayat Transaksi Kasbon
-        </h6>
-        <span class="badge-soft" style="background:#eff6ff; color:#1d4ed8;">
-            {{ $rows->count() }} Data
-        </span>
+<div class="card card-modern bg-white">
+    <div class="card-header bg-white py-3 px-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-2" style="width: 32px; height: 32px; background: #eef2ff; color: #26476f;">
+                <i class="fas fa-list"></i>
+            </span>
+            <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Rincian Riwayat Transaksi Kasbon ({{ $rows->count() }} Data)</h6>
+        </div>
+        <a href="{{ route('pengeluaran.index', ['tipe_alokasi' => 'kasbon']) }}" class="btn btn-primary-custom" style="height: 34px; font-size: 0.76rem; padding: 0 0.85rem;">
+            <i class="fas fa-hand-holding-dollar"></i>
+            <span>Kelola Kasbon</span>
+        </a>
     </div>
-    <div class="table-responsive">
-        <table class="table-laporan">
-            <thead>
-                <tr>
-                    <th style="width: 140px;">Kode</th>
-                    <th style="width: 110px;">Tanggal</th>
-                    <th style="width: 160px;">Nama Peminjam</th>
-                    <th>Keterangan</th>
-                    <th style="width: 150px; min-width: 150px; text-align: center;">Nominal</th>
-                    <th style="width: 130px; text-align: center;">Status</th>
-                    <th style="width: 120px; text-align: center;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($rows as $kb)
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-produk align-middle mb-0">
+                <thead>
                     <tr>
-                        <td style="font-family: monospace; font-size: 0.75rem; font-weight: 600;">
-                            {{ $kb->kode_pengeluaran }}
-                        </td>
-                        <td>{{ $kb->tanggal->format('d/m/Y') }}</td>
-                        <td style="font-weight: 600;">{{ $kb->karyawan_nama ?? '-' }}</td>
-                        <td>{{ $kb->keterangan }}</td>
-                        <td style="text-align: right; font-weight: 700;" class="text-navy">
-                            Rp {{ number_format($kb->jumlah, 0, ',', '.') }}
-                        </td>
-                        <td style="text-align: center;">
-                            @if($kb->status_kasbon === 'lunas')
-                                <span class="badge-soft success">
-                                    <i class="fas fa-check me-1"></i> LUNAS
-                                </span>
-                            @else
-                                <span class="badge-soft warning">
-                                    <i class="fas fa-hourglass-half me-1"></i> BELUM LUNAS
-                                </span>
-                            @endif
-                        </td>
-                        <td style="text-align: center;">
-                            <form action="{{ route('pengeluaran.toggle-kasbon', $kb->id) }}" method="POST" style="display: inline-block;">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="btn btn-sm {{ $kb->status_kasbon === 'lunas' ? 'btn-outline-warning' : 'btn-outline-success' }}" style="font-size: 0.75rem; font-weight: 600; border-radius: 0.375rem; padding: 0.25rem 0.625rem;" title="Klik untuk ubah status">
-                                    <i class="fas {{ $kb->status_kasbon === 'lunas' ? 'fa-undo' : 'fa-check' }} me-1"></i>
-                                    {{ $kb->status_kasbon === 'lunas' ? 'Tandai Belum' : 'Tandai Lunas' }}
-                                </button>
-                            </form>
-                        </td>
+                        <th class="ps-4">Kode</th>
+                        <th>Tanggal</th>
+                        <th>Nama Peminjam</th>
+                        <th>Keterangan</th>
+                        <th class="text-end">Nominal</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center pe-4 col-freeze-aksi" style="min-width: 120px; width: 120px;">Aksi</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="7">
-                            <div class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <div class="text">Tidak ada data kasbon pada periode ini.</div>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="4">TOTAL</td>
-                    <td class="text-navy" style="text-align: right;">Rp {{ number_format($total['total_kasbon'], 0, ',', '.') }}</td>
-                    <td colspan="2" style="text-align: center;" class="text-red">
-                        Sisa Piutang: Rp {{ number_format($total['total_belum_lunas'], 0, ',', '.') }}
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($rows as $kb)
+                        <tr>
+                            <td class="ps-4"><span class="code-badge">{{ $kb->kode_pengeluaran }}</span></td>
+                            <td>{{ $kb->tanggal->format('d/m/Y') }}</td>
+                            <td class="fw-semibold text-dark">{{ $kb->karyawan_nama ?? '-' }}</td>
+                            <td>{{ $kb->keterangan }}</td>
+                            <td class="text-end fw-bold text-dark font-monospace">
+                                Rp {{ number_format($kb->jumlah, 0, ',', '.') }}
+                            </td>
+                            <td class="text-center">
+                                @if($kb->status_kasbon === 'lunas')
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                        <i class="fas fa-check me-1"></i> LUNAS
+                                    </span>
+                                @else
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                        <i class="fas fa-hourglass-half me-1"></i> BELUM LUNAS
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="text-center pe-4 col-freeze-aksi">
+                                <div class="d-inline-flex align-items-center justify-content-center gap-1">
+                                    <form action="{{ route('pengeluaran.toggle-kasbon', $kb->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn-action-icon {{ $kb->status_kasbon === 'lunas' ? 'btn-action-edit' : 'btn-action-view' }}" title="{{ $kb->status_kasbon === 'lunas' ? 'Tandai Belum Lunas' : 'Tandai Lunas' }}">
+                                            <i class="fas {{ $kb->status_kasbon === 'lunas' ? 'fa-undo' : 'fa-check' }}"></i>
+                                        </button>
+                                    </form>
+                                    <a href="{{ route('pengeluaran.show', $kb->id) }}" class="btn-action-icon btn-action-view" title="Lihat Detail Kasbon">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fas fa-inbox fa-2x mb-2 d-block opacity-50"></i>
+                                Tidak ada data kasbon pada periode ini.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+                @if($rows->isNotEmpty())
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" class="ps-4">TOTAL KASBON TIM</td>
+                            <td class="text-end font-monospace">Rp {{ number_format($total['total_kasbon'], 0, ',', '.') }}</td>
+                            <td colspan="2" class="text-center text-danger font-monospace">
+                                Sisa Piutang: Rp {{ number_format($total['total_belum_lunas'], 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                @endif
+            </table>
+        </div>
     </div>
 </div>

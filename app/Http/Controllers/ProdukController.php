@@ -23,13 +23,17 @@ class ProdukController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Produk::with(['kategori', 'satuan']);
+        $query = Produk::souvenirJadi()->with(['kategori', 'satuan']);
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('nama_produk', 'like', '%'.$request->search.'%')
                     ->orWhere('kode_produk', 'like', '%'.$request->search.'%');
             });
+        }
+
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->jenis);
         }
 
         if ($request->filled('kategori_id')) {
@@ -40,15 +44,73 @@ class ProdukController extends Controller
             $query->where('satuan_id', $request->satuan_id);
         }
 
-        if ($request->filled('stok_status') && $request->stok_status === 'menipis') {
-            $query->stokMenipis();
+        if ($request->filled('stok_status')) {
+            if ($request->stok_status === 'menipis') {
+                $query->whereColumn('stok', '<=', 'stok_minimal')->where('stok', '>', 0);
+            } elseif ($request->stok_status === 'habis') {
+                $query->where('stok', '<=', 0);
+            } elseif ($request->stok_status === 'aman') {
+                $query->whereColumn('stok', '>', 'stok_minimal');
+            }
         }
 
-        $produks = $query->latest()->paginate(10)->withQueryString();
+        if ($request->filled('promo_status')) {
+            if ($request->promo_status === 'promo') {
+                $query->whereIn('tipe_diskon', ['persen', 'nominal'])->where('diskon', '>', 0);
+            } elseif ($request->promo_status === 'reguler') {
+                $query->where(function ($q) {
+                    $q->whereNull('tipe_diskon')
+                        ->orWhere('tipe_diskon', 'none')
+                        ->orWhere('diskon', '<=', 0);
+                });
+            }
+        }
+
+        if ($request->filled('harga_min')) {
+            $query->where('harga_jual', '>=', (float) $request->harga_min);
+        }
+
+        if ($request->filled('harga_max')) {
+            $query->where('harga_jual', '<=', (float) $request->harga_max);
+        }
+
+        $sort = $request->input('sort', 'latest');
+        match ($sort) {
+            'nama_asc' => $query->orderBy('nama_produk', 'asc'),
+            'nama_desc' => $query->orderBy('nama_produk', 'desc'),
+            'stok_asc' => $query->orderBy('stok', 'asc'),
+            'stok_desc' => $query->orderBy('stok', 'desc'),
+            'harga_asc' => $query->orderBy('harga_jual', 'asc'),
+            'harga_desc' => $query->orderBy('harga_jual', 'desc'),
+            default => $query->latest(),
+        };
+
+        $produks = $query->paginate(10)->withQueryString();
         $kategoris = Kategori::orderBy('nama_kategori')->get();
         $satuans = Satuan::orderBy('nama_satuan')->get();
 
-        return view('produk.index', compact('produks', 'kategoris', 'satuans'));
+        // Ringkasan KPI Katalog Souvenir
+        $allSouvenirs = Produk::souvenirJadi()->get();
+        $totalItemSouvenir = $allSouvenirs->count();
+        $totalStokFisik = (int) $allSouvenirs->sum('stok');
+        $totalNilaiAset = (float) $allSouvenirs->sum(fn ($p) => (float) $p->stok * (float) $p->harga_beli);
+        $potensiOmzet = (float) $allSouvenirs->sum(fn ($p) => (float) $p->stok * (float) $p->harga_setelah_diskon);
+        $totalStokMenipis = $allSouvenirs->where(fn ($p) => $p->stok <= $p->stok_minimal && $p->stok > 0)->count();
+        $totalStokHabis = $allSouvenirs->where(fn ($p) => $p->stok <= 0)->count();
+        $totalPromo = $allSouvenirs->where(fn ($p) => in_array($p->tipe_diskon, ['persen', 'nominal'], true) && (float) $p->diskon > 0)->count();
+
+        return view('produk.index', compact(
+            'produks',
+            'kategoris',
+            'satuans',
+            'totalItemSouvenir',
+            'totalStokFisik',
+            'totalNilaiAset',
+            'potensiOmzet',
+            'totalStokMenipis',
+            'totalStokHabis',
+            'totalPromo'
+        ));
     }
 
     /**
@@ -80,6 +142,11 @@ class ProdukController extends Controller
                 'required',
                 'integer',
                 'exists:satuans,id',
+            ],
+            'jenis' => [
+                'nullable',
+                'string',
+                'in:souvenir_jadi,bahan_baku',
             ],
             'kode_produk' => [
                 'required',
@@ -131,6 +198,7 @@ class ProdukController extends Controller
         ], $this->validationMessages(), $this->validationAttributes());
 
         // Normalisasi input
+        $validated['jenis'] = 'souvenir_jadi';
         $validated['kode_produk'] = strtoupper(trim($validated['kode_produk']));
         $validated['nama_produk'] = $this->normalizeNama($validated['nama_produk']);
 
@@ -202,10 +270,12 @@ class ProdukController extends Controller
      */
     public function show(Produk $produk)
     {
-        $produk->load(['kategori', 'satuan']);
+        $produk->load(['kategori', 'satuan', 'resepBahanBaku.satuan']);
 
         $totalTerjual = $produk->transaksiDetails()->sum('qty');
-        $totalDibeli = $produk->pembelianDetails()->sum('qty');
+        $totalHasilProduksi = $produk->penerimaanDetails()->sum('qty_bagus');
+        $kapasitasProduksi = $produk->hitungKapasitasProduksi();
+        $semuaBahanBaku = Produk::bahanBaku()->orderBy('nama_produk')->get();
 
         $riwayatPenjualan = $produk->transaksiDetails()
             ->with('transaksi.user')
@@ -213,13 +283,96 @@ class ProdukController extends Controller
             ->limit(5)
             ->get();
 
-        $riwayatPembelian = $produk->pembelianDetails()
-            ->with('pembelian.user')
+        $riwayatPenerimaanProduksi = $produk->penerimaanDetails()
+            ->with('penerimaanProduk.user')
             ->latest()
             ->limit(5)
             ->get();
 
-        return view('produk.show', compact('produk', 'totalTerjual', 'totalDibeli', 'riwayatPenjualan', 'riwayatPembelian'));
+        return view('produk.show', compact(
+            'produk',
+            'totalTerjual',
+            'totalHasilProduksi',
+            'riwayatPenjualan',
+            'riwayatPenerimaanProduksi',
+            'kapasitasProduksi',
+            'semuaBahanBaku'
+        ));
+    }
+
+    /**
+     * Simpan / Perbarui Resep Bahan Baku (BOM) Souvenir Jadi.
+     */
+    public function simpanResep(Request $request, Produk $produk)
+    {
+        $request->validate([
+            'resep' => ['nullable', 'array'],
+            'resep.*.bahan_baku_id' => ['required', 'integer', 'exists:produks,id'],
+            'resep.*.jumlah' => ['required', 'numeric', 'min:0.01'],
+            'resep.*.keterangan' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $syncData = [];
+        if ($request->has('resep')) {
+            foreach ($request->resep as $item) {
+                if (! empty($item['bahan_baku_id']) && (float) $item['jumlah'] > 0) {
+                    $syncData[$item['bahan_baku_id']] = [
+                        'jumlah' => (float) $item['jumlah'],
+                        'keterangan' => $item['keterangan'] ?? null,
+                    ];
+                }
+            }
+        }
+
+        $produk->resepBahanBaku()->sync($syncData);
+
+        return back()->with('success', "Resep bahan baku (BOM) untuk {$produk->nama_produk} berhasil disimpan.");
+    }
+
+    /**
+     * Konversi manual: Produksi sejumlah Souvenir Jadi untuk menambah stok etalase.
+     * Mengurangi bahan baku dan menambah stok souvenir jadi.
+     */
+    public function produksiStok(Request $request, Produk $produk)
+    {
+        $request->validate([
+            'qty_produksi' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $qtyProduksi = (int) $request->qty_produksi;
+        $produk->loadMissing('resepBahanBaku.satuan');
+
+        if ($produk->resepBahanBaku->isEmpty()) {
+            return back()->with('error', 'Produk ini belum memiliki Resep Bahan Baku (BOM). Tentukan resep terlebih dahulu.');
+        }
+
+        // Cek kecukupan stok bahan baku
+        foreach ($produk->resepBahanBaku as $bahan) {
+            $kebutuhan = (float) $bahan->pivot->jumlah * $qtyProduksi;
+            if ($bahan->stok < $kebutuhan) {
+                return back()->with('error', "Stok bahan \"{$bahan->nama_produk}\" tidak mencukupi. Butuh: {$kebutuhan} {$bahan->satuan->singkatan}, tersedia di gudang: {$bahan->stok} {$bahan->satuan->singkatan}.");
+            }
+        }
+
+        DB::beginTransaction();
+        try {
+            // Potong stok bahan baku
+            foreach ($produk->resepBahanBaku as $bahan) {
+                $kebutuhan = (float) $bahan->pivot->jumlah * $qtyProduksi;
+                $bahan->decrement('stok', $kebutuhan);
+            }
+
+            // Tambah stok souvenir jadi
+            $produk->increment('stok', $qtyProduksi);
+
+            DB::commit();
+
+            return back()->with('success', "Berhasil memproduksi {$qtyProduksi} {$produk->satuan->singkatan} \"{$produk->nama_produk}\". Stok produk jadi bertambah dan stok bahan baku gudang otomatis terpotong.");
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return back()->with('error', 'Gagal memproses produksi: '.$e->getMessage());
+        }
     }
 
     /**
@@ -250,6 +403,11 @@ class ProdukController extends Controller
                 'required',
                 'integer',
                 'exists:satuans,id',
+            ],
+            'jenis' => [
+                'nullable',
+                'string',
+                'in:souvenir_jadi,bahan_baku',
             ],
             'kode_produk' => [
                 'required',

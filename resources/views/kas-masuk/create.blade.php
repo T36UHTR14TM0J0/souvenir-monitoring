@@ -2,204 +2,228 @@
 
 @section('title', 'Setor Modal / Kas Masuk')
 
-@push('styles')
-<style>
-    :root {
-        --sidebar-bg-1: #26476f;
-        --sidebar-bg-2: #1f3a5c;
-        --sidebar-bg-3: #1a304d;
-        --danger-color: #dc2626;
-        --danger-hover: #b91c1c;
-        --gray-50: #f9fafb;
-        --gray-100: #f3f4f6;
-        --gray-200: #e5e7eb;
-        --gray-300: #d1d5db;
-        --gray-400: #9ca3af;
-        --gray-500: #6b7280;
-        --gray-600: #4b5563;
-        --gray-700: #374151;
-        --gray-800: #1f2937;
-        --gray-900: #111827;
-    }
-
-    .card-modern {
-        border: 1px solid var(--gray-200);
-        border-radius: 0.875rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    }
-    .page-title-custom {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--gray-900);
-        display: flex;
-        align-items: center;
-        gap: 0.625rem;
-        margin-bottom: 0.25rem;
-    }
-    .page-title-icon {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, var(--sidebar-bg-1) 0%, var(--sidebar-bg-3) 100%);
-        color: #fff;
-        border: 1px solid rgba(38, 71, 111, 0.3);
-        border-radius: 0.625rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(38, 71, 111, 0.25);
-    }
-
-    .btn-primary-custom {
-        background: linear-gradient(135deg, var(--sidebar-bg-1) 0%, var(--sidebar-bg-3) 100%);
-        border: 1px solid var(--sidebar-bg-1);
-        color: #fff;
-        font-weight: 500;
-        padding: 0.625rem 1.25rem;
-        border-radius: 0.625rem;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        box-shadow: 0 2px 8px rgba(38, 71, 111, 0.25);
-        cursor: pointer;
-    }
-    .btn-primary-custom:hover {
-        background: linear-gradient(135deg, var(--sidebar-bg-2) 0%, var(--sidebar-bg-3) 100%);
-        color: #fff;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(38, 71, 111, 0.35);
-    }
-
-    .btn-danger-custom {
-        background-color: var(--danger-color);
-        border: 1px solid var(--danger-color);
-        color: #fff;
-        font-weight: 500;
-        padding: 0.625rem 1.25rem;
-        border-radius: 0.625rem;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        text-decoration: none;
-        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
-    }
-    .btn-danger-custom:hover {
-        background-color: var(--danger-hover);
-        color: #fff;
-        transform: translateY(-1px);
-    }
-
-    .form-control-modern, .form-select-modern {
-        border: 1.5px solid var(--gray-300);
-        border-radius: 0.625rem;
-        padding: 0.625rem 0.875rem;
-        font-size: 0.875rem;
-        width: 100%;
-        background-color: #fff;
-    }
-    .form-control-modern:focus, .form-select-modern:focus {
-        border-color: #26476f;
-        box-shadow: 0 0 0 3px rgba(38, 71, 111, 0.12);
-        outline: none;
-    }
-    .form-label-custom {
-        font-size: 0.8125rem;
-        font-weight: 600;
-        color: var(--gray-700);
-        margin-bottom: 0.375rem;
-        display: block;
-    }
-    .form-actions {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 0.625rem;
-        flex-wrap: wrap;
-    }
-    @media (max-width: 768px) {
-        .form-actions { flex-direction: column-reverse; align-items: stretch; }
-        .form-actions .btn-primary-custom, .form-actions .btn-danger-custom { width: 100%; }
-    }
-</style>
-@endpush
-
 @section('content')
 <div class="container-fluid px-0">
 
-    <div class="mb-4">
-        <h1 class="page-title-custom">
-            <span class="page-title-icon">
-                <i class="fas fa-hand-holding-dollar"></i>
-            </span>
-            Setor Modal / Kas Masuk
-        </h1>
-        <p class="text-muted" style="font-size: 0.875rem;">Catat penambahan uang kas toko dari suntikan modal debit pribadi atau pendapatan lain.</p>
-    </div>
+    {{-- HEADER --}}
+    <x-page-header
+        icon="fas fa-hand-holding-dollar"
+        title="Setor Modal / Kas Masuk"
+        subtitle="Catat penambahan uang kas toko dari suntikan modal debit pribadi, pencairan saldo, atau pendapatan lain."
+    >
+        <a href="{{ route('kas-masuk.index') }}" class="btn btn-secondary-custom">
+            <i class="fas fa-arrow-left"></i>
+            <span>Kembali ke Daftar</span>
+        </a>
+    </x-page-header>
 
-    <form action="{{ route('kas-masuk.store') }}" method="POST">
-        @csrf
+    {{-- FORM CARD --}}
+    <div class="card card-modern">
+        <div class="card-body p-4 p-md-5">
+            <form action="{{ route('kas-masuk.store') }}" method="POST" id="kasMasukForm" enctype="multipart/form-data" novalidate>
+                @csrf
 
-        <div class="card card-modern bg-white">
-            <div class="card-body p-4 p-md-5">
+                {{-- ============ SECTION 1: INFORMASI TRANSAKSI KAS MASUK ============ --}}
+                <div class="form-section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Informasi Kas Masuk &amp; Modal
+                </div>
+
                 <div class="row g-3">
+                    {{-- Kode Transaksi --}}
                     <div class="col-12 col-md-6">
-                        <label class="form-label-custom">Kode Transaksi</label>
-                        <input type="text" class="form-control form-control-modern" value="{{ $kodeTransaksi }}" readonly style="background:#f9fafb; font-family:monospace; font-weight:700; color:#10b981;">
+                        <label class="form-label-custom" for="kode_transaksi">
+                            Kode Transaksi
+                        </label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-barcode input-icon"></i>
+                            <input type="text"
+                                   id="kode_transaksi"
+                                   class="form-control form-control-modern"
+                                   value="{{ $kodeTransaksi }}"
+                                   readonly
+                                   style="background: #f8fafc; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-weight: 700; color: #059669;">
+                        </div>
+                        <div class="required-note">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Kode transaksi dibuat otomatis oleh sistem</span>
+                        </div>
                     </div>
 
+                    {{-- Tanggal --}}
                     <div class="col-12 col-md-6">
-                        <label class="form-label-custom">Tanggal <span class="text-danger">*</span></label>
-                        <input type="date" name="tanggal" class="form-control form-control-modern @error('tanggal') is-invalid @enderror" value="{{ old('tanggal', date('Y-m-d')) }}" max="{{ date('Y-m-d') }}">
-                        @error('tanggal')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <label class="form-label-custom" for="tanggal">
+                            Tanggal Transaksi <span class="required">*</span>
+                        </label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-calendar-day input-icon"></i>
+                            <input type="date"
+                                   name="tanggal"
+                                   id="tanggal"
+                                   class="form-control form-control-modern @error('tanggal') is-invalid @enderror"
+                                   value="{{ old('tanggal', date('Y-m-d')) }}"
+                                   max="{{ date('Y-m-d') }}"
+                                   required>
+                        </div>
+                        <div class="invalid-feedback" id="error_tanggal" @if(!$errors->has('tanggal')) style="display: none !important;" @endif>
+                            @error('tanggal'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_tanggal" @if($errors->has('tanggal')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Wajib diisi, tanggal uang kas masuk diterima</span>
+                        </div>
                     </div>
 
+                    {{-- Tipe Kas Masuk --}}
                     <div class="col-12 col-md-6">
-                        <label class="form-label-custom">Tipe Kas Masuk <span class="text-danger">*</span></label>
-                        <select name="tipe" class="form-select form-select-modern @error('tipe') is-invalid @enderror">
-                            @foreach($tipes as $k => $v)
-                                <option value="{{ $k }}" {{ old('tipe') === $k ? 'selected' : '' }}>{{ $v }}</option>
-                            @endforeach
-                        </select>
-                        @error('tipe')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <label class="form-label-custom" for="tipe">
+                            Tipe Kas Masuk <span class="required">*</span>
+                        </label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-tags input-icon"></i>
+                            <select name="tipe" id="tipe" class="form-select form-select-modern @error('tipe') is-invalid @enderror" required>
+                                @foreach($tipes as $k => $v)
+                                    <option value="{{ $k }}" {{ old('tipe') === $k ? 'selected' : '' }}>{{ $v }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="invalid-feedback" id="error_tipe" @if(!$errors->has('tipe')) style="display: none !important;" @endif>
+                            @error('tipe'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_tipe" @if($errors->has('tipe')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Pilih kategori sumber pemasukan kas</span>
+                        </div>
                     </div>
 
+                    {{-- Sumber Dana --}}
                     <div class="col-12 col-md-6">
-                        <label class="form-label-custom">Sumber Dana <span class="text-danger">*</span></label>
-                        <select name="sumber" class="form-select form-select-modern @error('sumber') is-invalid @enderror">
-                            @foreach($sumbers as $sk => $sv)
-                                <option value="{{ $sk }}" {{ old('sumber', 'Debit / Transfer') === $sk ? 'selected' : '' }}>{{ $sv }}</option>
-                            @endforeach
-                        </select>
-                        @error('sumber')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <label class="form-label-custom" for="sumber">
+                            Sumber Dana <span class="required">*</span>
+                        </label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-building-columns input-icon"></i>
+                            <select name="sumber" id="sumber" class="form-select form-select-modern @error('sumber') is-invalid @enderror" required>
+                                @foreach($sumbers as $sk => $sv)
+                                    <option value="{{ $sk }}" {{ old('sumber', 'Debit / Transfer') === $sk ? 'selected' : '' }}>{{ $sv }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="invalid-feedback" id="error_sumber" @if(!$errors->has('sumber')) style="display: none !important;" @endif>
+                            @error('sumber'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_sumber" @if($errors->has('sumber')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Metode atau rekening asal dana masuk</span>
+                        </div>
                     </div>
 
+                    {{-- Jumlah Masuk --}}
                     <div class="col-12 col-md-6">
-                        <label class="form-label-custom">Jumlah Masuk (Rp) <span class="text-danger">*</span></label>
-                        <input type="number" name="jumlah" class="form-control form-control-modern @error('jumlah') is-invalid @enderror" value="{{ old('jumlah') }}" min="1" step="500" placeholder="Contoh: 2000000">
-                        @error('jumlah')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <label class="form-label-custom" for="jumlah">
+                            Jumlah Masuk (Rp) <span class="required">*</span>
+                        </label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-money-bill-wave input-icon"></i>
+                            <input type="number"
+                                   name="jumlah"
+                                   id="jumlah"
+                                   class="form-control form-control-modern @error('jumlah') is-invalid @enderror"
+                                   value="{{ old('jumlah') }}"
+                                   min="1"
+                                   step="500"
+                                   placeholder="Contoh: 2000000"
+                                   required>
+                        </div>
+                        <div class="invalid-feedback" id="error_jumlah" @if(!$errors->has('jumlah')) style="display: none !important;" @endif>
+                            @error('jumlah'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_jumlah" @if($errors->has('jumlah')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Wajib diisi, nominal minimal Rp 1</span>
+                        </div>
                     </div>
 
+                    {{-- Keterangan --}}
                     <div class="col-12 col-md-6">
-                        <label class="form-label-custom">Keterangan <span class="text-danger">*</span></label>
-                        <input type="text" name="keterangan" class="form-control form-control-modern @error('keterangan') is-invalid @enderror" value="{{ old('keterangan', 'Modal Harian / Top-up Kas Toko') }}" placeholder="Contoh: Modal kas harian, suntikan saldo debit...">
-                        @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-
-                    <div class="col-12">
-                        <label class="form-label-custom">Catatan Tambahan</label>
-                        <textarea name="catatan" rows="2" class="form-control form-control-modern" placeholder="Opsional...">{{ old('catatan') }}</textarea>
+                        <label class="form-label-custom" for="keterangan">
+                            Keterangan <span class="required">*</span>
+                        </label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-pen input-icon"></i>
+                            <input type="text"
+                                   name="keterangan"
+                                   id="keterangan"
+                                   class="form-control form-control-modern @error('keterangan') is-invalid @enderror"
+                                   value="{{ old('keterangan', 'Modal Harian / Top-up Kas Toko') }}"
+                                   placeholder="Contoh: Modal kas harian, suntikan saldo debit..."
+                                   maxlength="255"
+                                   required>
+                        </div>
+                        <div class="invalid-feedback" id="error_keterangan" @if(!$errors->has('keterangan')) style="display: none !important;" @endif>
+                            @error('keterangan'){{ $message }}@enderror
+                        </div>
+                        <div class="required-note" id="note_keterangan" @if($errors->has('keterangan')) style="display: none !important;" @endif>
+                            <i class="fas fa-circle-info"></i>
+                            <span>Wajib diisi, ringkasan tujuan setoran modal atau kas masuk</span>
+                        </div>
                     </div>
                 </div>
 
-                <hr style="border-color: var(--gray-100); margin: 1.75rem 0 1.5rem;">
+                {{-- ============ SECTION 2: LAMPIRAN & CATATAN ============ --}}
+                <div class="form-section-title mt-4">
+                    <i class="fas fa-paperclip"></i>
+                    Lampiran Bukti &amp; Catatan
+                </div>
 
+                <div class="row g-3">
+                    {{-- Catatan Tambahan --}}
+                    <div class="col-12 col-md-6">
+                        <label class="form-label-custom" for="catatan">
+                            Catatan Tambahan
+                        </label>
+                        <textarea name="catatan"
+                                  id="catatan"
+                                  rows="3"
+                                  class="form-control form-control-modern @error('catatan') is-invalid @enderror"
+                                  placeholder="Catatan opsional..."
+                                  maxlength="500">{{ old('catatan') }}</textarea>
+                        @error('catatan')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        <div class="required-note">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Opsional, maksimal 500 karakter</span>
+                        </div>
+                    </div>
+
+                    {{-- Bukti Transaksi --}}
+                    <div class="col-12 col-md-6">
+                        <label class="form-label-custom" for="bukti_transaksi">
+                            Bukti Transfer / Slip Setor Modal (Opsional)
+                        </label>
+                        <input type="file"
+                               name="bukti_transaksi"
+                               id="bukti_transaksi"
+                               accept="image/jpeg,image/png,image/webp,application/pdf"
+                               class="form-control form-control-modern @error('bukti_transaksi') is-invalid @enderror">
+                        <div class="required-note">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Format: JPG, PNG, WEBP, atau PDF (Maks. 5MB)</span>
+                        </div>
+                        <div id="previewBuktiContainer" class="mt-2 p-2 bg-light rounded text-center d-none" style="border: 1px dashed #cbd5e1;">
+                            <img id="previewBuktiImg" src="" alt="Preview Bukti" class="img-fluid rounded d-none" style="max-height: 140px; object-fit: contain;">
+                            <div id="previewBuktiPdfName" class="text-dark small d-none" style="font-size: 0.85rem;">
+                                <i class="fas fa-file-pdf text-danger me-1"></i> <span id="pdfFileName"></span>
+                            </div>
+                        </div>
+                        @error('bukti_transaksi')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <hr class="form-divider">
+
+                {{-- ============ ACTIONS ============ --}}
                 <div class="form-actions">
                     <a href="{{ route('kas-masuk.index') }}" class="btn btn-danger-custom">
                         <i class="fas fa-arrow-left"></i>
@@ -210,9 +234,117 @@
                         <span>Simpan Kas Masuk</span>
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
-    </form>
+    </div>
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(function() {
+    'use strict';
+
+    const form = document.getElementById('kasMasukForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const fields = ['tanggal', 'jumlah', 'keterangan'];
+
+    function setFieldError(fieldId, message) {
+        const input = document.getElementById(fieldId);
+        const errorEl = document.getElementById('error_' + fieldId);
+        const noteEl = document.getElementById('note_' + fieldId);
+
+        if (input) input.classList.add('is-invalid');
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.style.setProperty('display', 'block', 'important');
+        }
+        if (noteEl) {
+            noteEl.style.setProperty('display', 'none', 'important');
+        }
+    }
+
+    function clearFieldError(fieldId) {
+        const input = document.getElementById(fieldId);
+        const errorEl = document.getElementById('error_' + fieldId);
+        const noteEl = document.getElementById('note_' + fieldId);
+
+        if (input) input.classList.remove('is-invalid');
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.style.setProperty('display', 'none', 'important');
+        }
+        if (noteEl) {
+            noteEl.style.removeProperty('display');
+        }
+    }
+
+    fields.forEach(function (fieldId) {
+        const el = document.getElementById(fieldId);
+        if (!el) return;
+        el.addEventListener('input', function () {
+            clearFieldError(fieldId);
+        });
+    });
+
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            let isValid = true;
+            fields.forEach(clearFieldError);
+
+            const jumlahEl = document.getElementById('jumlah');
+            const jumlahVal = parseFloat(jumlahEl ? jumlahEl.value : 0) || 0;
+            if (jumlahVal < 1) {
+                setFieldError('jumlah', 'Jumlah kas masuk minimal Rp 1.');
+                isValid = false;
+            }
+
+            const ketEl = document.getElementById('keterangan');
+            const ketVal = ketEl ? ketEl.value.trim() : '';
+            if (!ketVal) {
+                setFieldError('keterangan', 'Keterangan kas masuk wajib diisi.');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                return false;
+            }
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> <span>Menyimpan...</span>';
+            }
+        });
+    }
+
+    const inputBukti = document.getElementById('bukti_transaksi');
+    if (inputBukti) {
+        inputBukti.addEventListener('change', function() {
+            const file = this.files[0];
+            const previewContainer = document.getElementById('previewBuktiContainer');
+            const previewImg = document.getElementById('previewBuktiImg');
+            const previewPdfName = document.getElementById('previewBuktiPdfName');
+            const pdfFileName = document.getElementById('pdfFileName');
+
+            if (!file) {
+                previewContainer.classList.add('d-none');
+                return;
+            }
+
+            previewContainer.classList.remove('d-none');
+            if (file.type.includes('image')) {
+                previewImg.src = URL.createObjectURL(file);
+                previewImg.classList.remove('d-none');
+                previewPdfName.classList.add('d-none');
+            } else {
+                previewImg.classList.add('d-none');
+                previewPdfName.classList.remove('d-none');
+                pdfFileName.textContent = file.name;
+            }
+        });
+    }
+})();
+</script>
+@endpush

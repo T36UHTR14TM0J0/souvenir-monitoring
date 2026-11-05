@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Satuan')
+@section('title', 'Tambah Satuan Ukuran & Kemasan')
 
 @section('content')
 <div class="container-fluid px-0">
@@ -8,9 +8,14 @@
     {{-- HEADER --}}
     <x-page-header
         icon="fas fa-ruler-combined"
-        title="Tambah Satuan"
-        subtitle="Buat satuan baru untuk ukuran atau takaran kemasan produk souvenir."
-    />
+        title="Tambah Satuan Baru"
+        subtitle="Daftarkan satuan takaran, kemasan, atau hitungan baru untuk produk dan material workshop."
+    >
+        <a href="{{ route('satuan.index') }}" class="btn btn-secondary-custom">
+            <i class="fas fa-arrow-left"></i>
+            <span>Kembali ke Daftar</span>
+        </a>
+    </x-page-header>
 
     {{-- FORM CARD --}}
     <div class="card card-modern">
@@ -21,24 +26,25 @@
                 {{-- ============ SECTION: INFORMASI SATUAN ============ --}}
                 <div class="form-section-title">
                     <i class="fas fa-info-circle"></i>
-                    Informasi Satuan
+                    Informasi Satuan Ukuran &amp; Takaran
                 </div>
 
                 <div class="row g-3">
                     {{-- Nama Satuan --}}
-                    <div class="col-12 col-md-7">
+                    <div class="col-12 col-md-6">
                         <label class="form-label-custom" for="nama_satuan">
-                            Nama Satuan <span class="required">*</span>
+                            Nama Satuan Lengkap <span class="required">*</span>
                         </label>
                         <div class="input-group-modern">
-                            <i class="fas fa-ruler input-icon"></i>
+                            <i class="fas fa-ruler-combined input-icon"></i>
                             <input type="text"
                                    name="nama_satuan"
                                    id="nama_satuan"
                                    class="form-control form-control-modern @error('nama_satuan') is-invalid @enderror"
                                    value="{{ old('nama_satuan') }}"
-                                   placeholder="Contoh: Lusin, Box, Lembar, Pack"
+                                   placeholder="Contoh: Kilogram, Meter, Lembar"
                                    maxlength="50"
+                                   required
                                    autofocus>
                         </div>
                         <div class="invalid-feedback" id="error_nama_satuan" @if(!$errors->has('nama_satuan')) style="display: none !important;" @endif>
@@ -46,14 +52,14 @@
                         </div>
                         <div class="required-note" id="note_nama_satuan" @if($errors->has('nama_satuan')) style="display: none !important;" @endif>
                             <i class="fas fa-circle-info"></i>
-                            <span>Nama lengkap satuan, maksimal 50 karakter</span>
+                            <span>Wajib diisi, nama lengkap satuan (maksimal 50 karakter)</span>
                         </div>
                     </div>
 
                     {{-- Singkatan / Simbol --}}
-                    <div class="col-12 col-md-5">
+                    <div class="col-12 col-md-6">
                         <label class="form-label-custom" for="singkatan">
-                            Singkatan / Simbol <span class="required">*</span>
+                            Singkatan / Simbol Ringkas <span class="required">*</span>
                         </label>
                         <div class="input-group-modern">
                             <i class="fas fa-tag input-icon"></i>
@@ -62,28 +68,29 @@
                                    id="singkatan"
                                    class="form-control form-control-modern font-monospace @error('singkatan') is-invalid @enderror"
                                    value="{{ old('singkatan') }}"
-                                   placeholder="Contoh: lsn, box, lbr, pck"
-                                   maxlength="20">
+                                   placeholder="Contoh: kg, m, lbr, box"
+                                   maxlength="20"
+                                   required>
                         </div>
                         <div class="invalid-feedback" id="error_singkatan" @if(!$errors->has('singkatan')) style="display: none !important;" @endif>
                             @error('singkatan'){{ $message }}@enderror
                         </div>
                         <div class="required-note" id="note_singkatan" @if($errors->has('singkatan')) style="display: none !important;" @endif>
                             <i class="fas fa-circle-info"></i>
-                            <span>Ditampilkan pada label stok & transaksi (maksimal 20 karakter)</span>
+                            <span>Wajib diisi, simbol tercetak pada label &amp; nota (maksimal 20 karakter)</span>
                         </div>
                     </div>
 
                     {{-- Deskripsi --}}
                     <div class="col-12">
                         <label class="form-label-custom" for="deskripsi">
-                            Deskripsi
+                            Deskripsi atau Keterangan Takaran
                         </label>
                         <textarea name="deskripsi"
                                   id="deskripsi"
                                   rows="3"
                                   class="form-control form-control-modern @error('deskripsi') is-invalid @enderror"
-                                  placeholder="Deskripsi atau keterangan takaran isi satuan (opsional)"
+                                  placeholder="Contoh: Satuan berat material mentah atau bahan resin sablon (opsional)"
                                   maxlength="255">{{ old('deskripsi') }}</textarea>
                         <div class="invalid-feedback" id="error_deskripsi" @if(!$errors->has('deskripsi')) style="display: none !important;" @endif>
                             @error('deskripsi'){{ $message }}@enderror
@@ -92,14 +99,6 @@
                             <i class="fas fa-circle-info"></i>
                             <span>Opsional, maksimal 255 karakter</span>
                         </div>
-                    </div>
-                </div>
-
-                {{-- Info Box --}}
-                <div class="info-box mt-4">
-                    <i class="fas fa-lightbulb"></i>
-                    <div>
-                        <strong>Tips:</strong> Singkatan satuan akan digunakan pada tampilan label stok, nota kasir, formulir pembelian, dan laporan (misal: <em>10 box</em>, <em>5 lsn</em>).
                     </div>
                 </div>
 
@@ -119,6 +118,7 @@
             </form>
         </div>
     </div>
+
 </div>
 @endsection
 
@@ -138,9 +138,7 @@
         const errorEl = document.getElementById('error_' + fieldId);
         const noteEl  = document.getElementById('note_' + fieldId);
 
-        if (input) {
-            input.classList.add('is-invalid');
-        }
+        if (input) input.classList.add('is-invalid');
         if (errorEl) {
             errorEl.textContent = message;
             errorEl.style.setProperty('display', 'block', 'important');
@@ -155,9 +153,7 @@
         const errorEl = document.getElementById('error_' + fieldId);
         const noteEl  = document.getElementById('note_' + fieldId);
 
-        if (input) {
-            input.classList.remove('is-invalid');
-        }
+        if (input) input.classList.remove('is-invalid');
         if (errorEl) {
             errorEl.textContent = '';
             errorEl.style.setProperty('display', 'none', 'important');
@@ -167,7 +163,6 @@
         }
     }
 
-    // Real-time listener: bersihkan teks merah saat pengguna mengetik
     fields.forEach(function (fieldId) {
         const el = document.getElementById(fieldId);
         if (!el) return;
@@ -176,62 +171,39 @@
         });
     });
 
-    // Validasi Form saat Submit: Tampilkan teks merah di bawah field tanpa SweetAlert
     form.addEventListener('submit', function (e) {
         let isValid = true;
         let firstInvalid = null;
-
         fields.forEach(clearFieldError);
 
-        const namaEl = document.getElementById('nama_satuan');
+        const namaEl      = document.getElementById('nama_satuan');
         const singkatanEl = document.getElementById('singkatan');
 
-        // 1. Validasi Nama Satuan
         const namaVal = namaEl ? namaEl.value.trim() : '';
         if (!namaVal) {
             setFieldError('nama_satuan', 'Nama satuan wajib diisi.');
             isValid = false;
             if (!firstInvalid) firstInvalid = namaEl;
-        } else if (namaVal.length > 50) {
-            setFieldError('nama_satuan', 'Nama satuan maksimal 50 karakter.');
-            isValid = false;
-            if (!firstInvalid) firstInvalid = namaEl;
         }
 
-        // 2. Validasi Singkatan
         const singkatanVal = singkatanEl ? singkatanEl.value.trim() : '';
         if (!singkatanVal) {
-            setFieldError('singkatan', 'Singkatan / simbol satuan wajib diisi.');
-            isValid = false;
-            if (!firstInvalid) firstInvalid = singkatanEl;
-        } else if (singkatanVal.length > 20) {
-            setFieldError('singkatan', 'Singkatan maksimal 20 karakter.');
+            setFieldError('singkatan', 'Singkatan/simbol satuan wajib diisi.');
             isValid = false;
             if (!firstInvalid) firstInvalid = singkatanEl;
         }
 
         if (!isValid) {
             e.preventDefault();
-            if (firstInvalid) {
-                firstInvalid.focus();
-                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            if (firstInvalid) firstInvalid.focus();
             return false;
         }
 
-        // Form valid
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> <span>Menyimpan...</span>';
         }
     });
-
-    // Fokuskan field pertama yang error jika ada error validasi dari server
-    const initialInvalid = document.querySelector('.is-invalid');
-    if (initialInvalid) {
-        initialInvalid.focus();
-        initialInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
 })();
 </script>
 @endpush

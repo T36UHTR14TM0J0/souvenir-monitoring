@@ -645,7 +645,7 @@
 
             <div class="login-form-side">
                 <div class="form-header">
-                    <h2 class="form-title">Selamat Datang 👋</h2>
+                    <h2 class="form-title">Selamat Datang</h2>
                     <p class="form-subtitle">Masuk untuk melanjutkan ke dashboard Anda</p>
                 </div>
 
