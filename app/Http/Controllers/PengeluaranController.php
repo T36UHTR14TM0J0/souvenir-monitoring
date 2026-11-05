@@ -62,6 +62,16 @@ class PengeluaranController extends Controller
             ->whereYear('tanggal', $tahunSekarang)
             ->sum('jumlah');
 
+        $totalModalBahanBulanIni = Pengeluaran::modalBahan()
+            ->whereMonth('tanggal', $bulanSekarang)
+            ->whereYear('tanggal', $tahunSekarang)
+            ->sum('jumlah');
+
+        $totalOperasionalBulanIni = Pengeluaran::operasionalMurni()
+            ->whereMonth('tanggal', $bulanSekarang)
+            ->whereYear('tanggal', $tahunSekarang)
+            ->sum('jumlah');
+
         $totalPribadiBulanIni = Pengeluaran::pribadi()
             ->whereMonth('tanggal', $bulanSekarang)
             ->whereYear('tanggal', $tahunSekarang)
@@ -83,6 +93,8 @@ class PengeluaranController extends Controller
             'pengeluarans',
             'totalBulanIni',
             'totalBisnisBulanIni',
+            'totalModalBahanBulanIni',
+            'totalOperasionalBulanIni',
             'totalPribadiBulanIni',
             'totalKasbonBulanIni',
             'totalTransaksi',

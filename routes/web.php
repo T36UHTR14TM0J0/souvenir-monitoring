@@ -1,19 +1,15 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BahanBakuController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KasMasukController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LaporanKeuanganController;
-use App\Http\Controllers\PemakaianBahanController;
-use App\Http\Controllers\PenerimaanProdukController;
 use App\Http\Controllers\PengeluaranController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SatuanController;
-use App\Http\Controllers\TransaksiPembelianController;
 use App\Http\Controllers\TransaksiPenjualanController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -131,71 +127,12 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     Route::middleware('permission:produk-edit')->group(function () {
         Route::get('/produk/{produk}/edit', [ProdukController::class, 'edit'])->name('produk.edit');
         Route::put('/produk/{produk}', [ProdukController::class, 'update'])->name('produk.update');
-        Route::post('/produk/{produk}/resep', [ProdukController::class, 'simpanResep'])->name('produk.simpan-resep');
-        Route::post('/produk/{produk}/produksi', [ProdukController::class, 'produksiStok'])->name('produk.produksi-stok');
     });
     Route::middleware('permission:produk-delete')->group(function () {
         Route::delete('/produk/{produk}', [ProdukController::class, 'destroy'])->name('produk.destroy');
     });
     Route::middleware('permission:produk-list')->group(function () {
         Route::get('/produk/{produk}', [ProdukController::class, 'show'])->name('produk.show');
-    });
-
-    // ============================================
-    // PENERIMAAN HASIL PRODUKSI (READY STOCK MASUK)
-    // ============================================
-    Route::middleware('permission:penerimaan-produk-list|produk-list')->group(function () {
-        Route::get('/penerimaan-produk', [PenerimaanProdukController::class, 'index'])->name('penerimaan-produk.index');
-    });
-    Route::middleware('permission:penerimaan-produk-create|produk-create')->group(function () {
-        Route::get('/penerimaan-produk/create', [PenerimaanProdukController::class, 'create'])->name('penerimaan-produk.create');
-        Route::post('/penerimaan-produk', [PenerimaanProdukController::class, 'store'])->name('penerimaan-produk.store');
-    });
-    Route::middleware('permission:penerimaan-produk-list|produk-list')->group(function () {
-        Route::get('/penerimaan-produk/{penerimaanProduk}/cetak', [PenerimaanProdukController::class, 'cetak'])->name('penerimaan-produk.cetak');
-        Route::get('/penerimaan-produk/{penerimaanProduk}', [PenerimaanProdukController::class, 'show'])->name('penerimaan-produk.show');
-    });
-    Route::middleware('permission:penerimaan-produk-delete|produk-delete')->group(function () {
-        Route::delete('/penerimaan-produk/{penerimaanProduk}', [PenerimaanProdukController::class, 'destroy'])->name('penerimaan-produk.destroy');
-    });
-
-    // ============================================
-    // STOK BAHAN BAKU & PACKAGING (WORKSHOP)
-    // ============================================
-    Route::middleware('permission:bahan-baku-list|produk-list')->group(function () {
-        Route::get('/bahan-baku', [BahanBakuController::class, 'index'])->name('bahan-baku.index');
-    });
-    Route::middleware('permission:bahan-baku-create|produk-create')->group(function () {
-        Route::get('/bahan-baku/create', [BahanBakuController::class, 'create'])->name('bahan-baku.create');
-        Route::post('/bahan-baku', [BahanBakuController::class, 'store'])->name('bahan-baku.store');
-    });
-    Route::middleware('permission:bahan-baku-edit|produk-edit')->group(function () {
-        Route::get('/bahan-baku/{bahanBaku}/edit', [BahanBakuController::class, 'edit'])->name('bahan-baku.edit');
-        Route::put('/bahan-baku/{bahanBaku}', [BahanBakuController::class, 'update'])->name('bahan-baku.update');
-    });
-    Route::middleware('permission:bahan-baku-delete|produk-delete')->group(function () {
-        Route::delete('/bahan-baku/{bahanBaku}', [BahanBakuController::class, 'destroy'])->name('bahan-baku.destroy');
-    });
-    Route::middleware('permission:bahan-baku-list|produk-list')->group(function () {
-        Route::get('/bahan-baku/{bahanBaku}', [BahanBakuController::class, 'show'])->name('bahan-baku.show');
-    });
-
-    // ============================================
-    // PEMAKAIAN BAHAN BAKU (PENGAMBILAN WORKSHOP)
-    // ============================================
-    Route::middleware('permission:pemakaian-bahan-list|produk-list')->group(function () {
-        Route::get('/pemakaian-bahan', [PemakaianBahanController::class, 'index'])->name('pemakaian-bahan.index');
-    });
-    Route::middleware('permission:pemakaian-bahan-create|produk-create')->group(function () {
-        Route::get('/pemakaian-bahan/create', [PemakaianBahanController::class, 'create'])->name('pemakaian-bahan.create');
-        Route::post('/pemakaian-bahan', [PemakaianBahanController::class, 'store'])->name('pemakaian-bahan.store');
-    });
-    Route::middleware('permission:pemakaian-bahan-list|produk-list')->group(function () {
-        Route::get('/pemakaian-bahan/{pemakaianBahan}/cetak', [PemakaianBahanController::class, 'cetak'])->name('pemakaian-bahan.cetak');
-        Route::get('/pemakaian-bahan/{pemakaianBahan}', [PemakaianBahanController::class, 'show'])->name('pemakaian-bahan.show');
-    });
-    Route::middleware('permission:pemakaian-bahan-delete|produk-delete')->group(function () {
-        Route::delete('/pemakaian-bahan/{pemakaianBahan}', [PemakaianBahanController::class, 'destroy'])->name('pemakaian-bahan.destroy');
     });
 
     // ============================================
@@ -228,32 +165,6 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     Route::middleware('permission:penjualan-delete')->group(function () {
         Route::delete('/transaksi-penjualan/{transaksiPenjualan}', [TransaksiPenjualanController::class, 'destroy'])
             ->name('transaksi-penjualan.destroy');
-    });
-
-    Route::middleware('permission:pembelian-list')->group(function () {
-        Route::get('/transaksi-pembelian', [TransaksiPembelianController::class, 'index'])
-            ->name('transaksi-pembelian.index');
-    });
-
-    Route::middleware('permission:pembelian-create')->group(function () {
-        Route::get('/transaksi-pembelian/create', [TransaksiPembelianController::class, 'create'])
-            ->name('transaksi-pembelian.create');
-        Route::post('/transaksi-pembelian', [TransaksiPembelianController::class, 'store'])
-            ->name('transaksi-pembelian.store');
-    });
-
-    Route::middleware('permission:pembelian-list')->group(function () {
-        Route::get('/transaksi-pembelian/{transaksiPembelian}', [TransaksiPembelianController::class, 'show'])
-            ->name('transaksi-pembelian.show');
-        Route::patch('/transaksi-pembelian/{transaksiPembelian}/konfirmasi-diterima', [TransaksiPembelianController::class, 'konfirmasiDiterima'])
-            ->name('transaksi-pembelian.konfirmasi-diterima');
-        Route::patch('/transaksi-pembelian/{transaksiPembelian}/update-status', [TransaksiPembelianController::class, 'updateStatus'])
-            ->name('transaksi-pembelian.update-status');
-    });
-
-    Route::middleware('permission:pembelian-delete')->group(function () {
-        Route::delete('/transaksi-pembelian/{transaksiPembelian}', [TransaksiPembelianController::class, 'destroy'])
-            ->name('transaksi-pembelian.destroy');
     });
 
     Route::middleware('permission:pengeluaran-list')->group(function () {

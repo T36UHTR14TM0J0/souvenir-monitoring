@@ -235,104 +235,26 @@ class Transaksi extends Model
     }
 
     /**
-     * Hitung total rincian bahan baku yang dibutuhkan transaksi ini berdasarkan Resep BOM.
+     * Hitung total rincian bahan baku yang dibutuhkan transaksi ini (kompatibilitas view).
      */
     public function getRincianKebutuhanBahanAttribute(): array
     {
-        $this->loadMissing('details.produk.resepBahanBaku.satuan');
-        $bahanList = [];
-
-        foreach ($this->details as $detail) {
-            $produk = $detail->produk;
-            if (! $produk) {
-                continue;
-            }
-
-            foreach ($produk->resepBahanBaku as $bahan) {
-                $qtyDibutuhkan = (float) $bahan->pivot->jumlah * (int) $detail->qty;
-                $key = $bahan->id;
-
-                if (! isset($bahanList[$key])) {
-                    $bahanList[$key] = [
-                        'bahan_id' => $bahan->id,
-                        'nama_bahan' => $bahan->nama_produk,
-                        'kode_bahan' => $bahan->kode_produk,
-                        'satuan' => $bahan->satuan->singkatan ?? 'pcs',
-                        'qty_kebutuhan' => 0,
-                        'stok_gudang' => (int) $bahan->stok,
-                    ];
-                }
-
-                $bahanList[$key]['qty_kebutuhan'] += $qtyDibutuhkan;
-            }
-        }
-
-        return array_values($bahanList);
+        return [];
     }
 
     /**
-     * Potong stok bahan baku otomatis saat pesanan masuk tahapan produksi workshop.
+     * Potong stok bahan baku otomatis (kompatibilitas).
      */
     public function potongBahanBakuOtomatis(): bool
     {
-        if ($this->bahan_baku_dipotong) {
-            return false;
-        }
-
-        $this->loadMissing('details.produk.resepBahanBaku');
-
-        foreach ($this->details as $detail) {
-            $produk = $detail->produk;
-            if (! $produk || $produk->resepBahanBaku->isEmpty()) {
-                continue;
-            }
-
-            foreach ($produk->resepBahanBaku as $bahan) {
-                $kebutuhan = (float) $bahan->pivot->jumlah * (int) $detail->qty;
-                if ($kebutuhan > 0) {
-                    $bahan->decrement('stok', $kebutuhan);
-                }
-            }
-        }
-
-        $this->update([
-            'bahan_baku_dipotong' => true,
-            'waktu_potong_bahan' => now(),
-        ]);
-
         return true;
     }
 
     /**
-     * Kembalikan stok bahan baku jika pesanan dibatalkan setelah bahan dipotong.
+     * Kembalikan stok bahan baku jika pesanan dibatalkan (kompatibilitas).
      */
     public function kembalikanBahanBaku(): bool
     {
-        if (! $this->bahan_baku_dipotong) {
-            return false;
-        }
-
-        $this->loadMissing('details.produk.resepBahanBaku');
-
-        foreach ($this->details as $detail) {
-            $produk = $detail->produk;
-            if (! $produk || $produk->resepBahanBaku->isEmpty()) {
-                continue;
-            }
-
-            foreach ($produk->resepBahanBaku as $bahan) {
-                $kebutuhan = (float) $bahan->pivot->jumlah * (int) $detail->qty;
-                if ($kebutuhan > 0) {
-                    $bahan->increment('stok', $kebutuhan);
-                }
-            }
-        }
-
-        $this->update([
-            'bahan_baku_dipotong' => false,
-            'waktu_potong_bahan' => null,
-        ]);
-
         return true;
     }
 }

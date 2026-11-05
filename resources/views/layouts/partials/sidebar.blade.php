@@ -26,7 +26,7 @@
             @endcan
 
             {{-- 1. Pesanan & Produk Jualan --}}
-            @canany(['penjualan-list', 'produk-list', 'penerimaan-produk-list'])
+            @canany(['penjualan-list', 'produk-list'])
                 <li class="sidebar-header">Pesanan &amp; Produk</li>
 
                 @can('penjualan-list')
@@ -46,44 +46,26 @@
                         </a>
                     </li>
                 @endcan
-
-                @can('penerimaan-produk-list')
-                    <li class="sidebar-item {{ request()->routeIs('penerimaan-produk.*') ? 'active' : '' }}">
-                        <a class="sidebar-link" href="{{ route('penerimaan-produk.index') }}">
-                            <span class="sidebar-link-icon"><i class="fas fa-boxes-stacked"></i></span>
-                            <span>Hasil Produksi Masuk</span>
-                        </a>
-                    </li>
-                @endcan
             @endcanany
 
-            {{-- 2. Gudang & Bahan Baku (Operasional Material Workshop) --}}
-            @canany(['bahan-baku-list', 'pemakaian-bahan-list', 'pembelian-list'])
-                <li class="sidebar-header">Gudang &amp; Bahan Baku</li>
+            {{-- 2. Keuangan & Kas (Kas Masuk, Bahan Baku & Operasional) --}}
+            @canany(['kas-masuk-list', 'pengeluaran-list'])
+                <li class="sidebar-header">Keuangan &amp; Kas</li>
 
-                @can('bahan-baku-list')
-                    <li class="sidebar-item {{ request()->routeIs('bahan-baku.*') ? 'active' : '' }}">
-                        <a class="sidebar-link" href="{{ route('bahan-baku.index') }}">
-                            <span class="sidebar-link-icon"><i class="fas fa-layer-group"></i></span>
-                            <span>Stok Bahan Baku</span>
+                @can('kas-masuk-list')
+                    <li class="sidebar-item {{ request()->routeIs('kas-masuk.*') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('kas-masuk.index') }}">
+                            <span class="sidebar-link-icon"><i class="fas fa-hand-holding-dollar"></i></span>
+                            <span>Pencairan Saldo &amp; Modal</span>
                         </a>
                     </li>
                 @endcan
 
-                @can('pemakaian-bahan-list')
-                    <li class="sidebar-item {{ request()->routeIs('pemakaian-bahan.*') ? 'active' : '' }}">
-                        <a class="sidebar-link" href="{{ route('pemakaian-bahan.index') }}">
-                            <span class="sidebar-link-icon"><i class="fas fa-dolly"></i></span>
-                            <span>Pemakaian Bahan Baku</span>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('pembelian-list')
-                    <li class="sidebar-item {{ request()->routeIs('transaksi-pembelian.*') ? 'active' : '' }}">
-                        <a class="sidebar-link" href="{{ route('transaksi-pembelian.index') }}">
-                            <span class="sidebar-link-icon"><i class="fas fa-truck-ramp-box"></i></span>
-                            <span>Pembelian Bahan Baku</span>
+                @can('pengeluaran-list')
+                    <li class="sidebar-item {{ request()->routeIs('pengeluaran.*') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('pengeluaran.index') }}">
+                            <span class="sidebar-link-icon"><i class="fas fa-wallet"></i></span>
+                            <span>Pengeluaran Toko &amp; Bahan</span>
                         </a>
                     </li>
                 @endcan
@@ -112,29 +94,6 @@
                 @endcan
             @endcanany
 
-            {{-- 4. Keuangan & Kas (Kas Masuk & Pengeluaran Operasional) --}}
-            @canany(['kas-masuk-list', 'pengeluaran-list'])
-                <li class="sidebar-header">Keuangan &amp; Kas</li>
-
-                @can('kas-masuk-list')
-                    <li class="sidebar-item {{ request()->routeIs('kas-masuk.*') ? 'active' : '' }}">
-                        <a class="sidebar-link" href="{{ route('kas-masuk.index') }}">
-                            <span class="sidebar-link-icon"><i class="fas fa-hand-holding-dollar"></i></span>
-                            <span>Pencairan Saldo &amp; Modal</span>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('pengeluaran-list')
-                    <li class="sidebar-item {{ request()->routeIs('pengeluaran.*') ? 'active' : '' }}">
-                        <a class="sidebar-link" href="{{ route('pengeluaran.index') }}">
-                            <span class="sidebar-link-icon"><i class="fas fa-credit-card"></i></span>
-                            <span>Biaya Operasional &amp; Ads</span>
-                        </a>
-                    </li>
-                @endcan
-            @endcanany
-
             {{-- 5. Laporan & Analitik --}}
             @canany([
                 'laporan-view',
@@ -156,7 +115,7 @@
                     <li class="sidebar-item {{ $currentLaporanTab === 'laba-rugi' ? 'active' : '' }}">
                         <a class="sidebar-link" href="{{ route('laporan.keuangan', ['tab' => 'laba-rugi']) }}">
                             <span class="sidebar-link-icon"><i class="fas fa-chart-line"></i></span>
-                            <span>Laba/Rugi Bisnis</span>
+                            <span>Laba / Rugi Bisnis</span>
                         </a>
                     </li>
                 @endcan
@@ -165,16 +124,7 @@
                     <li class="sidebar-item {{ $currentLaporanTab === 'penjualan' ? 'active' : '' }}">
                         <a class="sidebar-link" href="{{ route('laporan.keuangan', ['tab' => 'penjualan']) }}">
                             <span class="sidebar-link-icon"><i class="fas fa-bag-shopping"></i></span>
-                            <span>Laporan Penjualan MP</span>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('laporan-pembelian')
-                    <li class="sidebar-item {{ $currentLaporanTab === 'pembelian' ? 'active' : '' }}">
-                        <a class="sidebar-link" href="{{ route('laporan.keuangan', ['tab' => 'pembelian']) }}">
-                            <span class="sidebar-link-icon"><i class="fas fa-cart-flatbed"></i></span>
-                            <span>Laporan Pembelian Bahan</span>
+                            <span>Penjualan Marketplace</span>
                         </a>
                     </li>
                 @endcan
@@ -182,35 +132,8 @@
                 @can('laporan-pengeluaran')
                     <li class="sidebar-item {{ $currentLaporanTab === 'pengeluaran' ? 'active' : '' }}">
                         <a class="sidebar-link" href="{{ route('laporan.keuangan', ['tab' => 'pengeluaran']) }}">
-                            <span class="sidebar-link-icon"><i class="fas fa-bullhorn"></i></span>
-                            <span>Laporan Operasional &amp; Ads</span>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('laporan-produksi')
-                    <li class="sidebar-item {{ $currentLaporanTab === 'produksi' ? 'active' : '' }}">
-                        <a class="sidebar-link" href="{{ route('laporan.keuangan', ['tab' => 'produksi']) }}">
-                            <span class="sidebar-link-icon"><i class="fas fa-industry"></i></span>
-                            <span>Laporan Produksi &amp; QC</span>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('laporan-pribadi')
-                    <li class="sidebar-item {{ $currentLaporanTab === 'pribadi' ? 'active' : '' }}">
-                        <a class="sidebar-link" href="{{ route('laporan.keuangan', ['tab' => 'pribadi']) }}">
                             <span class="sidebar-link-icon"><i class="fas fa-wallet"></i></span>
-                            <span>Laporan Prive Pemilik</span>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('laporan-rekonsiliasi')
-                    <li class="sidebar-item {{ $currentLaporanTab === 'rekonsiliasi' ? 'active' : '' }}">
-                        <a class="sidebar-link" href="{{ route('laporan.keuangan', ['tab' => 'rekonsiliasi']) }}">
-                            <span class="sidebar-link-icon"><i class="fas fa-scale-balanced"></i></span>
-                            <span>Rekonsiliasi Kas &amp; Modal</span>
+                            <span>Pengeluaran &amp; Bahan</span>
                         </a>
                     </li>
                 @endcan
@@ -219,7 +142,7 @@
                     <li class="sidebar-item {{ $currentLaporanTab === 'kasbon' ? 'active' : '' }}">
                         <a class="sidebar-link" href="{{ route('laporan.keuangan', ['tab' => 'kasbon']) }}">
                             <span class="sidebar-link-icon"><i class="fas fa-hand-holding-dollar"></i></span>
-                            <span>Laporan Kasbon Tim</span>
+                            <span>Kasbon Karyawan</span>
                         </a>
                     </li>
                 @endcan

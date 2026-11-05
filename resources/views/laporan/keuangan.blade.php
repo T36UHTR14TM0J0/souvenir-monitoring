@@ -8,35 +8,11 @@
             'icon' => 'fas fa-bag-shopping',
             'search_placeholder' => 'Cari kode transaksi, no pesanan marketplace, pelanggan, channel, atau resi...',
         ],
-        'pembelian' => [
-            'title' => 'Laporan Pembelian Bahan Baku',
-            'subtitle' => 'Rekapitulasi belanja bahan baku, kemasan, ongkos kirim kargo, dan status penerimaan paket.',
-            'icon' => 'fas fa-cart-flatbed',
-            'search_placeholder' => 'Cari kode pembelian, nama supplier/toko, platform, atau nomor invoice...',
-        ],
         'pengeluaran' => [
-            'title' => 'Laporan Biaya Operasional & Ads',
-            'subtitle' => 'Monitoring pengeluaran murni bisnis toko, iklan marketplace (Ads), packing, gaji & utilitas.',
-            'icon' => 'fas fa-bullhorn',
-            'search_placeholder' => 'Cari kode pengeluaran, kategori bisnis, atau keterangan biaya...',
-        ],
-        'produksi' => [
-            'title' => 'Laporan Produksi & QC Gudang',
-            'subtitle' => 'Evaluasi output produksi souvenir lolos QC vs reject cacat produksi serta nilai pemakaian bahan.',
-            'icon' => 'fas fa-industry',
-            'search_placeholder' => 'Cari kode produksi/pemakaian, petugas QC, operator, atau keperluan...',
-        ],
-        'pribadi' => [
-            'title' => 'Laporan Keuangan Pribadi (Prive)',
-            'subtitle' => 'Pemisahan pencatatan pengeluaran pribadi pemilik (konsumsi, rumah tangga & tarik prive).',
-            'icon' => 'fas fa-wallet',
-            'search_placeholder' => 'Cari kode pengeluaran pribadi, kategori prive, atau keterangan...',
-        ],
-        'rekonsiliasi' => [
-            'title' => 'Rekonsiliasi Kas & Modal Pemilik',
-            'subtitle' => 'Perbandingan arus setoran modal pemilik, pencairan pendapatan lain-lain, dan penarikan prive.',
-            'icon' => 'fas fa-scale-balanced',
-            'search_placeholder' => 'Cari nama bulan, kode kas masuk, sumber dana, atau keterangan...',
+            'title' => 'Laporan Pengeluaran & Belanja Bahan',
+            'subtitle' => 'Monitoring pengeluaran toko: modal belanja bahan baku, operasional murni, ads, dan kasbon tim.',
+            'icon' => 'fas fa-money-bill-wave',
+            'search_placeholder' => 'Cari kode pengeluaran, kategori, atau keterangan biaya...',
         ],
         'kasbon' => [
             'title' => 'Laporan Buku Kasbon Tim',
@@ -467,63 +443,6 @@
                     </div>
                 </div>
             </div>
-        @elseif($tab === 'pembelian')
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-info">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #e0f2fe; color: #0284c7;">
-                            <i class="fas fa-cart-flatbed"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label">Total Belanja Bahan (HPP)</div>
-                            <div class="kpi-value text-primary">Rp {{ number_format($total['pembelian'], 0, ',', '.') }}</div>
-                            <div class="kpi-subtext">{{ number_format($total['transaksi'], 0, ',', '.') }} transaksi pengadaan</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-warning">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #fffbeb; color: #d97706;">
-                            <i class="fas fa-truck-fast"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label" style="color: #d97706;">Total Ongkos Kirim</div>
-                            <div class="kpi-value" style="color: #d97706;">Rp {{ number_format($total['ongkir'] ?? 0, 0, ',', '.') }}</div>
-                            <div class="kpi-subtext">Diskon Supplier: Rp {{ number_format($total['diskon'], 0, ',', '.') }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-indigo">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #eef2ff; color: #4f46e5;">
-                            <i class="fas fa-boxes-stacked"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label">Total Kuantitas Bahan</div>
-                            <div class="kpi-value">{{ number_format($total['item'], 0, ',', '.') }} unit</div>
-                            <div class="kpi-subtext">Akumulasi qty bahan & kemasan</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-success">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #ecfdf5; color: #059669;">
-                            <i class="fas fa-box-open"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label" style="color: #059669;">Status Penerimaan Paket</div>
-                            <div class="kpi-value text-success">{{ number_format($total['diterima'] ?? 0, 0, ',', '.') }} Diterima</div>
-                            <div class="kpi-subtext">{{ number_format($total['dalam_perjalanan'] ?? 0, 0, ',', '.') }} paket dalam perjalanan</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         @elseif($tab === 'pengeluaran')
             <div class="col-12 col-sm-6 col-xl-3">
                 <div class="kpi-card-modern kpi-accent-danger">
@@ -577,179 +496,6 @@
                             <div class="kpi-label">Operasional Lainnya</div>
                             <div class="kpi-value">Rp {{ number_format($total['operasional_lain'] ?? 0, 0, ',', '.') }}</div>
                             <div class="kpi-subtext">Gaji, listrik, bensin & sewa</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @elseif($tab === 'produksi')
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-success">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #ecfdf5; color: #059669;">
-                            <i class="fas fa-circle-check"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label" style="color: #059669;">Souvenir Lolos QC</div>
-                            <div class="kpi-value text-success">{{ number_format($total['total_bagus'], 0, ',', '.') }} pcs</div>
-                            <div class="kpi-subtext">{{ number_format($total['batch_produksi'], 0, ',', '.') }} batch produksi masuk</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-danger">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #fef2f2; color: #dc2626;">
-                            <i class="fas fa-triangle-exclamation"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label" style="color: #dc2626;">Reject / Cacat QC</div>
-                            <div class="kpi-value text-danger">{{ number_format($total['total_reject'], 0, ',', '.') }} pcs</div>
-                            <div class="kpi-subtext">Rasio Lolos QC: <strong>{{ $total['rasio_qc'] }}%</strong></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-info">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #e0f2fe; color: #0284c7;">
-                            <i class="fas fa-dolly"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label">Pengambilan Bahan</div>
-                            <div class="kpi-value text-primary">{{ number_format($total['qty_bahan'], 0, ',', '.') }} unit</div>
-                            <div class="kpi-subtext">{{ number_format($total['trx_pemakaian'], 0, ',', '.') }} transaksi pemakaian</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-indigo">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #eef2ff; color: #4f46e5;">
-                            <i class="fas fa-industry"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label">Estimasi Nilai Bahan</div>
-                            <div class="kpi-value">Rp {{ number_format($total['estimasi_nilai_bahan'], 0, ',', '.') }}</div>
-                            <div class="kpi-subtext">Nilai HPP bahan terpakai</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @elseif($tab === 'pribadi')
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-danger">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #fef2f2; color: #dc2626;">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label" style="color: #dc2626;">Total Pribadi / Prive</div>
-                            <div class="kpi-value text-danger">Rp {{ number_format($total['pengeluaran'], 0, ',', '.') }}</div>
-                            <div class="kpi-subtext">{{ number_format($total['transaksi'], 0, ',', '.') }} penarikan dari kas toko</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-warning">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #fffbeb; color: #d97706;">
-                            <i class="fas fa-utensils"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label" style="color: #d97706;">Makan / Konsumsi</div>
-                            <div class="kpi-value" style="color: #d97706;">Rp {{ number_format($total['makan_pribadi'], 0, ',', '.') }}</div>
-                            <div class="kpi-subtext">Konsumsi harian pemilik</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-indigo">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #eef2ff; color: #4f46e5;">
-                            <i class="fas fa-house"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label">Kebutuhan Rumah</div>
-                            <div class="kpi-value">Rp {{ number_format($total['kebutuhan_rumah'], 0, ',', '.') }}</div>
-                            <div class="kpi-subtext">Gas, galon & keperluan rumah</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-success">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #ecfdf5; color: #059669;">
-                            <i class="fas fa-money-bill-wave"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label" style="color: #059669;">Penarikan Prive Tunai</div>
-                            <div class="kpi-value text-success">Rp {{ number_format($total['prive_penarikan'], 0, ',', '.') }}</div>
-                            <div class="kpi-subtext">Tarik dana pemilik langsung</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @elseif($tab === 'rekonsiliasi')
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-success">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #ecfdf5; color: #059669;">
-                            <i class="fas fa-arrow-down-to-bracket"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label" style="color: #059669;">Modal Disetor Owner</div>
-                            <div class="kpi-value text-success">Rp {{ number_format($total['modal_disetor'], 0, ',', '.') }}</div>
-                            <div class="kpi-subtext">+Pendapatan Lain: Rp {{ number_format($total['pendapatan_lain'] ?? 0, 0, ',', '.') }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-danger">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #fef2f2; color: #dc2626;">
-                            <i class="fas fa-arrow-up-from-bracket"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label" style="color: #dc2626;">Prive Ditarik (Pribadi)</div>
-                            <div class="kpi-value text-danger">Rp {{ number_format($total['prive_ditarik'], 0, ',', '.') }}</div>
-                            <div class="kpi-subtext">Dana toko dipakai keperluan pribadi</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern {{ $total['saldo_netto'] >= 0 ? 'kpi-accent-indigo' : 'kpi-accent-warning' }}">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #eef2ff; color: #4f46e5;">
-                            <i class="fas fa-scale-balanced"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label">Saldo Netto Pemilik</div>
-                            <div class="kpi-value {{ $total['saldo_netto'] >= 0 ? 'text-success' : 'text-danger' }}">
-                                Rp {{ number_format($total['saldo_netto'], 0, ',', '.') }}
-                            </div>
-                            <div class="kpi-subtext">{{ $total['saldo_netto'] >= 0 ? 'Modal Mengendap di Toko' : 'Prive Melebihi Modal Disetor' }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-modern kpi-accent-warning">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="kpi-icon-wrap" style="background: #fffbeb; color: #d97706;">
-                            <i class="fas fa-hand-holding-dollar"></i>
-                        </div>
-                        <div>
-                            <div class="kpi-label" style="color: #d97706;">Kasbon Belum Lunas</div>
-                            <div class="kpi-value" style="color: #d97706;">Rp {{ number_format($total['kasbon_aktif'], 0, ',', '.') }}</div>
-                            <div class="kpi-subtext">Piutang tim aktif berjalan</div>
                         </div>
                     </div>
                 </div>
@@ -981,16 +727,8 @@
         @include('laporan.partials.tab-laba-rugi', ['rows' => $rows, 'total' => $total, 'chart' => $chart])
     @elseif($tab === 'penjualan')
         @include('laporan.partials.tab-penjualan', ['rows' => $rows, 'total' => $total, 'chart' => $chart, 'per_channel' => $per_channel ?? collect()])
-    @elseif($tab === 'pembelian')
-        @include('laporan.partials.tab-pembelian', ['rows' => $rows, 'total' => $total, 'chart' => $chart, 'per_platform' => $per_platform ?? collect()])
     @elseif($tab === 'pengeluaran')
         @include('laporan.partials.tab-pengeluaran', ['rows' => $rows, 'total' => $total, 'chart' => $chart])
-    @elseif($tab === 'produksi')
-        @include('laporan.partials.tab-produksi', ['rows' => $rows, 'rows_pemakaian' => $rows_pemakaian ?? collect(), 'total' => $total, 'chart' => $chart])
-    @elseif($tab === 'pribadi')
-        @include('laporan.partials.tab-pribadi', ['rows' => $rows, 'total' => $total, 'chart' => $chart])
-    @elseif($tab === 'rekonsiliasi')
-        @include('laporan.partials.tab-rekonsiliasi', ['rows' => $rows, 'total' => $total, 'chart' => $chart, 'list_modal' => $list_modal ?? collect()])
     @elseif($tab === 'kasbon')
         @include('laporan.partials.tab-kasbon', ['rows' => $rows, 'total' => $total, 'chart' => $chart, 'per_karyawan' => $per_karyawan ?? collect()])
     @endif
@@ -1019,28 +757,16 @@
                             <label class="form-label" for="modal_tab">Jenis Laporan &amp; Analitik</label>
                             <select name="tab" id="modal_tab" class="form-select">
                                 @can('laporan-laba-rugi')
-                                    <option value="laba-rugi" {{ $tab === 'laba-rugi' ? 'selected' : '' }}>Laba/Rugi Bisnis</option>
+                                    <option value="laba-rugi" {{ $tab === 'laba-rugi' ? 'selected' : '' }}>Laba / Rugi Bisnis</option>
                                 @endcan
                                 @can('laporan-penjualan')
                                     <option value="penjualan" {{ $tab === 'penjualan' ? 'selected' : '' }}>Laporan Penjualan Marketplace</option>
                                 @endcan
-                                @can('laporan-pembelian')
-                                    <option value="pembelian" {{ $tab === 'pembelian' ? 'selected' : '' }}>Laporan Pembelian Bahan Baku</option>
-                                @endcan
                                 @can('laporan-pengeluaran')
-                                    <option value="pengeluaran" {{ $tab === 'pengeluaran' ? 'selected' : '' }}>Laporan Biaya Operasional &amp; Ads</option>
-                                @endcan
-                                @can('laporan-produksi')
-                                    <option value="produksi" {{ $tab === 'produksi' ? 'selected' : '' }}>Laporan Produksi &amp; QC Gudang</option>
-                                @endcan
-                                @can('laporan-pribadi')
-                                    <option value="pribadi" {{ $tab === 'pribadi' ? 'selected' : '' }}>Laporan Keuangan Pribadi (Prive)</option>
-                                @endcan
-                                @can('laporan-rekonsiliasi')
-                                    <option value="rekonsiliasi" {{ $tab === 'rekonsiliasi' ? 'selected' : '' }}>Rekonsiliasi Kas &amp; Modal</option>
+                                    <option value="pengeluaran" {{ $tab === 'pengeluaran' ? 'selected' : '' }}>Laporan Pengeluaran &amp; Belanja Bahan</option>
                                 @endcan
                                 @can('laporan-kasbon')
-                                    <option value="kasbon" {{ $tab === 'kasbon' ? 'selected' : '' }}>Laporan Buku Kasbon Tim</option>
+                                    <option value="kasbon" {{ $tab === 'kasbon' ? 'selected' : '' }}>Laporan Kasbon &amp; Piutang Tim</option>
                                 @endcan
                             </select>
                         </div>
@@ -1232,7 +958,7 @@
                             categoryPercentage: 0.8,
                         },
                         {
-                            label: 'Pembelian Bahan (HPP)',
+                            label: 'Modal Belanja Bahan Baku',
                             data: chartData.pembelian,
                             backgroundColor: '#3b82f6',
                             borderRadius: 4,
@@ -1240,7 +966,7 @@
                             categoryPercentage: 0.8,
                         },
                         {
-                            label: 'Biaya Operasional & Ads',
+                            label: 'Biaya Operasional Toko',
                             data: chartData.pengeluaran,
                             backgroundColor: '#f59e0b',
                             borderRadius: 4,
@@ -1259,62 +985,10 @@
                 },
                 options: window.chartOptions(false),
             });
-        } else if (tab === 'rekonsiliasi') {
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: chartData.labels,
-                    datasets: [
-                        {
-                            label: 'Modal Disetor (Owner)',
-                            data: chartData.modal,
-                            backgroundColor: '#10b981',
-                            borderRadius: 4,
-                        },
-                        {
-                            label: 'Pendapatan Lain / Pencairan',
-                            data: chartData.pendapatan_lain || [],
-                            backgroundColor: '#0284c7',
-                            borderRadius: 4,
-                        },
-                        {
-                            label: 'Prive Ditarik (Pribadi)',
-                            data: chartData.prive,
-                            backgroundColor: '#ef4444',
-                            borderRadius: 4,
-                        },
-                    ],
-                },
-                options: window.chartOptions(false),
-            });
-        } else if (tab === 'produksi') {
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: chartData.labels,
-                    datasets: [
-                        {
-                            label: 'Lolos QC (Bagus)',
-                            data: chartData.bagus || [],
-                            backgroundColor: '#10b981',
-                            borderRadius: 4,
-                        },
-                        {
-                            label: 'Reject / Cacat QC',
-                            data: chartData.reject || [],
-                            backgroundColor: '#ef4444',
-                            borderRadius: 4,
-                        },
-                    ],
-                },
-                options: window.chartOptions(true),
-            });
-        } else if (['penjualan', 'pembelian', 'pengeluaran', 'pribadi'].includes(tab)) {
+        } else if (['penjualan', 'pengeluaran'].includes(tab)) {
             const colors = {
                 penjualan:   { border: '#10b981', bg: 'rgba(16, 185, 129, 0.12)', label: 'Omzet Penjualan Valid' },
-                pembelian:   { border: '#0284c7', bg: 'rgba(2, 132, 199, 0.12)',  label: 'Belanja Bahan Baku & Kemasan' },
-                pengeluaran: { border: '#ef4444', bg: 'rgba(239, 68, 68, 0.12)',  label: 'Biaya Operasional & Ads' },
-                pribadi:     { border: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)', label: 'Pengeluaran Pribadi (Prive)' },
+                pengeluaran: { border: '#ef4444', bg: 'rgba(239, 68, 68, 0.12)',  label: 'Biaya Pengeluaran & Bahan' },
             };
             const c = colors[tab];
 

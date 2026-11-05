@@ -251,17 +251,20 @@
                             <div class="kategori-grid">
                                 @php
                                     $kategoriIcons = [
-                                        'operasional'  => 'fa-briefcase',
-                                        'iklan'        => 'fa-bullhorn',
-                                        'packing'      => 'fa-box-open',
-                                        'gaji'         => 'fa-users',
-                                        'listrik'      => 'fa-bolt',
-                                        'sewa'         => 'fa-store',
-                                        'transport'    => 'fa-truck',
-                                        'perlengkapan' => 'fa-box',
-                                        'pemeliharaan' => 'fa-tools',
-                                        'pajak'        => 'fa-file-invoice-dollar',
-                                        'lainnya'      => 'fa-ellipsis-h',
+                                        'bahan_baku'    => 'fa-boxes-stacked',
+                                        'jasa_produksi' => 'fa-scissors',
+                                        'operasional'   => 'fa-briefcase',
+                                        'konsumsi'      => 'fa-utensils',
+                                        'transport'     => 'fa-gas-pump',
+                                        'iklan'         => 'fa-bullhorn',
+                                        'packing'       => 'fa-box-open',
+                                        'gaji'          => 'fa-users',
+                                        'listrik'       => 'fa-bolt',
+                                        'sewa'          => 'fa-store',
+                                        'perlengkapan'  => 'fa-box',
+                                        'pemeliharaan'  => 'fa-tools',
+                                        'pajak'         => 'fa-file-invoice-dollar',
+                                        'lainnya'       => 'fa-ellipsis-h',
                                     ];
                                 @endphp
                                 @foreach($kategoriBisnis as $key => $label)

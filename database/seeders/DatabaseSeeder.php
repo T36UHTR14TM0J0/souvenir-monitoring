@@ -15,23 +15,36 @@ class DatabaseSeeder extends Seeder
             SatuanSeeder::class,
             ProdukSeeder::class,
             KasMasukSeeder::class,
-            PembelianSeeder::class,
-            PemakaianBahanSeeder::class,
-            PenerimaanProdukSeeder::class,
             TransaksiSeeder::class,
             PengeluaranSeeder::class,
         ]);
 
-        // Rekalkulasi stok akhir produk agar stok realistis (Stok Awal + Total Masuk - Total Terjual)
+        // Rekalkulasi stok produk jualan (Stok Awal - Total Terjual)
         $this->command->info('Mengkalkulasi ulang stok akhir produk...');
         foreach (Produk::all() as $p) {
-            $totalBeli = (int) $p->pembelianDetails()->sum('qty');
             $totalJual = (int) $p->transaksiDetails()->sum('qty');
-            $totalMasukHasil = (int) $p->penerimaanDetails()->sum('qty_bagus');
-            $totalKeluarBahan = (int) $p->pemakaianDetails()->sum('qty');
-            $stokAkhir = max(15, ($p->stok + $totalBeli + $totalMasukHasil) - ($totalJual + $totalKeluarBahan));
+            $stokAkhir = max(15, $p->stok - $totalJual);
             $p->update(['stok' => $stokAkhir]);
         }
-        $this->command->info('Seluruh Database Seeder 2025-2026 selesai dijalankan dengan sempurna!');
+
+        // Jalankan import data Excel / JSON 2025 jika filenya tersedia
+        $excelPath = 'C:/Users/teguh/Downloads/KEUANGAN TAHUN 2025 (2).xlsx';
+        $jsonPath = database_path('data/import_keuangan_2025.json');
+
+        if (file_exists($excelPath)) {
+            $this->command->info('Mengimpor data historis Excel 2025...');
+            $this->command->call('import:keuangan-2025', [
+                'file' => $excelPath,
+                '--force' => true,
+            ]);
+        } elseif (file_exists($jsonPath)) {
+            $this->command->info('Mengimpor data historis Keuangan 2025 (JSON)...');
+            $this->command->call('import:keuangan-2025', [
+                'file' => $jsonPath,
+                '--force' => true,
+            ]);
+        }
+
+        $this->command->info('Seluruh Database Seeder Monitoring Keuangan selesai dijalankan dengan sempurna!');
     }
 }

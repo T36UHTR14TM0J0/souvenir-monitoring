@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kategori;
-use App\Models\Pembelian;
-use App\Models\PembelianDetail;
 use App\Models\Produk;
 use App\Models\Satuan;
 use Illuminate\Http\Request;
@@ -220,48 +218,18 @@ class ProdukController extends Controller
         try {
             $produk = Produk::create($validated);
 
-            // Jika stok awal > 0 dan harga_beli > 0, otomatis catat transaksi pembelian awal
-            // agar modal pengadaan barang terhitung ke dalam Laporan Keuangan
-            if ((int) $validated['stok'] > 0 && (float) $validated['harga_beli'] > 0) {
-                $subtotal = (int) $validated['stok'] * (float) $validated['harga_beli'];
-
-                $pembelian = Pembelian::create([
-                    'kode_pembelian' => Pembelian::generateKodePembelian(),
-                    'tanggal' => now()->format('Y-m-d'),
-                    'supplier' => 'Stok Awal Produk Baru',
-                    'total_harga' => $subtotal,
-                    'total_diskon' => 0,
-                    'grand_total' => $subtotal,
-                    'catatan' => "Pengadaan stok awal untuk produk baru: {$produk->nama_produk} ({$produk->kode_produk})",
-                    'user_id' => auth()->id() ?? 1,
-                ]);
-
-                PembelianDetail::create([
-                    'pembelian_id' => $pembelian->id,
-                    'produk_id' => $produk->id,
-                    'nama_produk' => $produk->nama_produk,
-                    'harga_beli' => $produk->harga_beli,
-                    'qty' => $validated['stok'],
-                    'subtotal' => $subtotal,
-                ]);
-            }
-
             DB::commit();
-
-            $pesan = (int) $validated['stok'] > 0
-                ? "Produk \"{$validated['nama_produk']}\" berhasil ditambahkan dan modal stok awal (Rp ".number_format((int) $validated['stok'] * (float) $validated['harga_beli'], 0, ',', '.').') telah dicatat ke Laporan Keuangan.'
-                : "Produk \"{$validated['nama_produk']}\" berhasil ditambahkan.";
 
             return redirect()
                 ->route('produk.index')
-                ->with('success', $pesan);
+                ->with('success', "Produk \"{$validated['nama_produk']}\" berhasil ditambahkan.");
         } catch (\Throwable $e) {
             DB::rollBack();
             report($e);
 
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat menyimpan produk: '.$e->getMessage());
+                ->with('error', 'Gagal menambahkan produk: '.$e->getMessage());
         }
     }
 
@@ -270,109 +238,21 @@ class ProdukController extends Controller
      */
     public function show(Produk $produk)
     {
-        $produk->load(['kategori', 'satuan', 'resepBahanBaku.satuan']);
+        $produk->load(['kategori', 'satuan']);
 
         $totalTerjual = $produk->transaksiDetails()->sum('qty');
-        $totalHasilProduksi = $produk->penerimaanDetails()->sum('qty_bagus');
-        $kapasitasProduksi = $produk->hitungKapasitasProduksi();
-        $semuaBahanBaku = Produk::bahanBaku()->orderBy('nama_produk')->get();
 
         $riwayatPenjualan = $produk->transaksiDetails()
             ->with('transaksi.user')
             ->latest()
-            ->limit(5)
-            ->get();
-
-        $riwayatPenerimaanProduksi = $produk->penerimaanDetails()
-            ->with('penerimaanProduk.user')
-            ->latest()
-            ->limit(5)
+            ->limit(10)
             ->get();
 
         return view('produk.show', compact(
             'produk',
             'totalTerjual',
-            'totalHasilProduksi',
-            'riwayatPenjualan',
-            'riwayatPenerimaanProduksi',
-            'kapasitasProduksi',
-            'semuaBahanBaku'
+            'riwayatPenjualan'
         ));
-    }
-
-    /**
-     * Simpan / Perbarui Resep Bahan Baku (BOM) Souvenir Jadi.
-     */
-    public function simpanResep(Request $request, Produk $produk)
-    {
-        $request->validate([
-            'resep' => ['nullable', 'array'],
-            'resep.*.bahan_baku_id' => ['required', 'integer', 'exists:produks,id'],
-            'resep.*.jumlah' => ['required', 'numeric', 'min:0.01'],
-            'resep.*.keterangan' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $syncData = [];
-        if ($request->has('resep')) {
-            foreach ($request->resep as $item) {
-                if (! empty($item['bahan_baku_id']) && (float) $item['jumlah'] > 0) {
-                    $syncData[$item['bahan_baku_id']] = [
-                        'jumlah' => (float) $item['jumlah'],
-                        'keterangan' => $item['keterangan'] ?? null,
-                    ];
-                }
-            }
-        }
-
-        $produk->resepBahanBaku()->sync($syncData);
-
-        return back()->with('success', "Resep bahan baku (BOM) untuk {$produk->nama_produk} berhasil disimpan.");
-    }
-
-    /**
-     * Konversi manual: Produksi sejumlah Souvenir Jadi untuk menambah stok etalase.
-     * Mengurangi bahan baku dan menambah stok souvenir jadi.
-     */
-    public function produksiStok(Request $request, Produk $produk)
-    {
-        $request->validate([
-            'qty_produksi' => ['required', 'integer', 'min:1'],
-        ]);
-
-        $qtyProduksi = (int) $request->qty_produksi;
-        $produk->loadMissing('resepBahanBaku.satuan');
-
-        if ($produk->resepBahanBaku->isEmpty()) {
-            return back()->with('error', 'Produk ini belum memiliki Resep Bahan Baku (BOM). Tentukan resep terlebih dahulu.');
-        }
-
-        // Cek kecukupan stok bahan baku
-        foreach ($produk->resepBahanBaku as $bahan) {
-            $kebutuhan = (float) $bahan->pivot->jumlah * $qtyProduksi;
-            if ($bahan->stok < $kebutuhan) {
-                return back()->with('error', "Stok bahan \"{$bahan->nama_produk}\" tidak mencukupi. Butuh: {$kebutuhan} {$bahan->satuan->singkatan}, tersedia di gudang: {$bahan->stok} {$bahan->satuan->singkatan}.");
-            }
-        }
-
-        DB::beginTransaction();
-        try {
-            // Potong stok bahan baku
-            foreach ($produk->resepBahanBaku as $bahan) {
-                $kebutuhan = (float) $bahan->pivot->jumlah * $qtyProduksi;
-                $bahan->decrement('stok', $kebutuhan);
-            }
-
-            // Tambah stok souvenir jadi
-            $produk->increment('stok', $qtyProduksi);
-
-            DB::commit();
-
-            return back()->with('success', "Berhasil memproduksi {$qtyProduksi} {$produk->satuan->singkatan} \"{$produk->nama_produk}\". Stok produk jadi bertambah dan stok bahan baku gudang otomatis terpotong.");
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            return back()->with('error', 'Gagal memproses produksi: '.$e->getMessage());
-        }
     }
 
     /**
@@ -508,16 +388,7 @@ class ProdukController extends Controller
             );
         }
 
-        // Proteksi 2: Produk sudah dipakai di transaksi pembelian
-        $pembelianCount = $produk->pembelianDetails()->count();
-        if ($pembelianCount > 0) {
-            return back()->with(
-                'error',
-                "Produk \"{$produk->nama_produk}\" tidak bisa dihapus karena sudah tercatat dalam {$pembelianCount} transaksi pembelian supplier."
-            );
-        }
-
-        // Proteksi 3: Kode produk default sistem
+        // Proteksi 2: Kode produk default sistem
         if (in_array($produk->kode_produk, self::PROTECTED_KODE_PRODUK, true)) {
             return back()->with('error', "Produk default \"{$produk->kode_produk}\" tidak bisa dihapus.");
         }

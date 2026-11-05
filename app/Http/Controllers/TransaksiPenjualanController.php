@@ -341,17 +341,6 @@ class TransaksiPenjualanController extends Controller
 
         $transaksiPenjualan->update($updateData);
 
-        // Otomatis potong bahan baku jika masuk tahapan siap packing / kirim
-        $faseProduksi = ['siap_packing', 'perlu_dikirim', 'dikirim', 'selesai'];
-        if (in_array($request->status_pesanan, $faseProduksi, true)) {
-            $transaksiPenjualan->potongBahanBakuOtomatis();
-        }
-
-        // Kembalikan bahan baku jika pesanan dibatalkan / diretur
-        if (in_array($request->status_pesanan, ['batal', 'retur'], true)) {
-            $transaksiPenjualan->kembalikanBahanBaku();
-        }
-
         $statusLabel = Transaksi::STATUS_PESANAN[$request->status_pesanan] ?? $request->status_pesanan;
 
         if ($request->ajax() || $request->wantsJson()) {

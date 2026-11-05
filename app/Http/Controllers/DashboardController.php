@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\KasMasuk;
 use App\Models\Kategori;
-use App\Models\PemakaianBahan;
-use App\Models\Pembelian;
-use App\Models\PenerimaanProduk;
 use App\Models\Pengeluaran;
 use App\Models\Produk;
 use App\Models\Transaksi;
@@ -62,12 +59,16 @@ class DashboardController extends Controller
 
         $pendapatanEfektif = $totalBersih > 0 ? $totalBersih : max(0, $totalPenjualan - $totalBiayaAdmin);
 
-        // Pembelian Bahan Baku & Ongkir Kargo
-        $pembelianBulanQuery = Pembelian::whereMonth('tanggal', $bulanIni)
-            ->whereYear('tanggal', $tahunIni);
-        $totalPembelian = (float) (clone $pembelianBulanQuery)->sum('grand_total');
-        $totalOngkirPembelian = (float) (clone $pembelianBulanQuery)->sum('ongkir');
-        $jumlahPembelian = (int) (clone $pembelianBulanQuery)->count();
+        // Modal Belanja Bahan Baku (dari Pengeluaran Modal Bahan)
+        $totalPembelian = (float) Pengeluaran::modalBahan()
+            ->whereMonth('tanggal', $bulanIni)
+            ->whereYear('tanggal', $tahunIni)
+            ->sum('jumlah');
+        $totalOngkirPembelian = 0;
+        $jumlahPembelian = (int) Pengeluaran::modalBahan()
+            ->whereMonth('tanggal', $bulanIni)
+            ->whereYear('tanggal', $tahunIni)
+            ->count();
 
         // Kas Masuk (Pendapatan Lain & Modal Pemilik)
         $totalPendapatanLain = (float) KasMasuk::whereMonth('tanggal', $bulanIni)
@@ -105,8 +106,12 @@ class DashboardController extends Controller
             ->sum('jumlah');
 
         // Laba Kotor & Laba Bersih Bisnis
+        $totalPengeluaranOperasional = (float) (clone $pengeluaranBisnisQuery)
+            ->whereNotIn('kategori', ['bahan_baku', 'perlengkapan', 'jasa_produksi'])
+            ->sum('jumlah');
+
         $labaKotor = ($pendapatanEfektif + $totalPendapatanLain) - $totalPembelian;
-        $labaBersih = $labaKotor - $totalPengeluaran;
+        $labaBersih = $labaKotor - $totalPengeluaranOperasional;
         $marginBersih = $totalPenjualan > 0 ? round(($labaBersih / $totalPenjualan) * 100, 1) : 0.0;
 
         // Performa 3 Channel Marketplace Bulan Ini
@@ -133,19 +138,6 @@ class DashboardController extends Controller
         $omzetLazada = $channelStats['lazada']['omzet'];
         $omzetTiktok = $channelStats['tiktok']['omzet'];
 
-        // Produksi & QC Gudang serta Pemakaian Bahan Baku Bulan Ini
-        $penerimaanBulanQuery = PenerimaanProduk::whereMonth('tanggal', $bulanIni)
-            ->whereYear('tanggal', $tahunIni);
-        $totalProduksiBagus = (int) (clone $penerimaanBulanQuery)->sum('total_qty_bagus');
-        $totalProduksiReject = (int) (clone $penerimaanBulanQuery)->sum('total_qty_reject');
-        $totalProduksiAll = $totalProduksiBagus + $totalProduksiReject;
-        $tingkatLolosQc = $totalProduksiAll > 0 ? round(($totalProduksiBagus / $totalProduksiAll) * 100, 1) : 100.0;
-
-        $pemakaianBulanQuery = PemakaianBahan::whereMonth('tanggal', $bulanIni)
-            ->whereYear('tanggal', $tahunIni);
-        $totalBahanTerpakai = (int) (clone $pemakaianBulanQuery)->sum('total_kuantitas');
-        $jumlahBonPemakaian = (int) (clone $pemakaianBulanQuery)->count();
-
         // Pipeline Status Pesanan Marketplace (Bulan Ini)
         $statusPipeline = [
             'perlu_diproses' => (int) Transaksi::whereMonth('tanggal', $bulanIni)->whereYear('tanggal', $tahunIni)->where('status_pesanan', 'perlu_diproses')->count(),
@@ -164,8 +156,8 @@ class DashboardController extends Controller
         $transaksiHariIni = (int) Transaksi::whereDate('tanggal', today())
             ->whereNotIn('status_pesanan', ['batal', 'retur'])
             ->count();
-        $pembelianHariIni = (float) Pembelian::whereDate('tanggal', today())->sum('grand_total');
-        $pengeluaranHariIni = (float) Pengeluaran::whereDate('tanggal', today())->sum('jumlah');
+        $pembelianHariIni = (float) Pengeluaran::modalBahan()->whereDate('tanggal', today())->sum('jumlah');
+        $pengeluaranHariIni = (float) Pengeluaran::operasionalMurni()->whereDate('tanggal', today())->sum('jumlah');
 
         $bulanLalu = $anchorDate->copy()->subMonth();
         $validBulanLaluQuery = Transaksi::whereMonth('tanggal', $bulanLalu->month)
@@ -182,15 +174,14 @@ class DashboardController extends Controller
             ->where('tipe', 'pendapatan_lain')
             ->sum('jumlah');
 
-        $pembelianBulanLalu = (float) Pembelian::whereMonth('tanggal', $bulanLalu->month)
+        $pembelianBulanLalu = (float) Pengeluaran::modalBahan()
+            ->whereMonth('tanggal', $bulanLalu->month)
             ->whereYear('tanggal', $bulanLalu->year)
-            ->sum('grand_total');
+            ->sum('jumlah');
 
-        $pengeluaranBulanLalu = (float) Pengeluaran::whereMonth('tanggal', $bulanLalu->month)
+        $pengeluaranBulanLalu = (float) Pengeluaran::operasionalMurni()
+            ->whereMonth('tanggal', $bulanLalu->month)
             ->whereYear('tanggal', $bulanLalu->year)
-            ->where(function ($q) {
-                $q->where('tipe_alokasi', 'bisnis')->orWhereNull('tipe_alokasi');
-            })
             ->sum('jumlah');
 
         $labaBulanLalu = ($bersihBulanLalu + $pendapatanLainBulanLalu) - $pembelianBulanLalu - $pengeluaranBulanLalu;
@@ -219,9 +210,6 @@ class DashboardController extends Controller
         $dataPembelian = [];
         $dataPengeluaran = [];
         $dataLabaBersih = [];
-        $dataProduksiBagus = [];
-        $dataProduksiReject = [];
-        $dataPemakaianBahan = [];
         $dataShopee = [];
         $dataTiktok = [];
         $dataLazada = [];
@@ -246,22 +234,17 @@ class DashboardController extends Controller
                 ->where('tipe', 'pendapatan_lain')
                 ->sum('jumlah');
 
-            $pembelianM = (float) Pembelian::whereMonth('tanggal', $m)
+            $pembelianM = (float) Pengeluaran::modalBahan()
+                ->whereMonth('tanggal', $m)
                 ->whereYear('tanggal', $y)
-                ->sum('grand_total');
+                ->sum('jumlah');
 
-            $pengeluaranM = (float) Pengeluaran::whereMonth('tanggal', $m)
+            $pengeluaranM = (float) Pengeluaran::operasionalMurni()
+                ->whereMonth('tanggal', $m)
                 ->whereYear('tanggal', $y)
-                ->where(function ($q) {
-                    $q->where('tipe_alokasi', 'bisnis')->orWhereNull('tipe_alokasi');
-                })
                 ->sum('jumlah');
 
             $labaM = ($bersihM + $pendLainM) - $pembelianM - $pengeluaranM;
-
-            $prodBagusM = (int) PenerimaanProduk::whereMonth('tanggal', $m)->whereYear('tanggal', $y)->sum('total_qty_bagus');
-            $prodRejectM = (int) PenerimaanProduk::whereMonth('tanggal', $m)->whereYear('tanggal', $y)->sum('total_qty_reject');
-            $pakaiBahanM = (int) PemakaianBahan::whereMonth('tanggal', $m)->whereYear('tanggal', $y)->sum('total_kuantitas');
 
             $shopeeM = (float) (clone $qTrx)->where('channel', 'shopee')->sum('grand_total');
             $tiktokM = (float) (clone $qTrx)->where('channel', 'tiktok')->sum('grand_total');
@@ -273,9 +256,6 @@ class DashboardController extends Controller
             $dataPembelian[] = $pembelianM;
             $dataPengeluaran[] = $pengeluaranM;
             $dataLabaBersih[] = $labaM;
-            $dataProduksiBagus[] = $prodBagusM;
-            $dataProduksiReject[] = $prodRejectM;
-            $dataPemakaianBahan[] = $pakaiBahanM;
             $dataShopee[] = $shopeeM;
             $dataTiktok[] = $tiktokM;
             $dataLazada[] = $lazadaM;
@@ -415,12 +395,13 @@ class DashboardController extends Controller
                 $stokSaatIni = (int) ($produkModel->stok ?? 0);
                 // Weighted forecast: 60% bulan berjalan + 40% rata-rata 3 bulan terakhir + faktor tren 5%
                 $prediksiQty = (int) ceil((($item->total_qty * 0.6) + ($avg3M * 0.4)) * 1.05);
-                $rekomendasiProduksi = max(0, $prediksiQty - $stokSaatIni);
+                $rekomendasiRestock = max(0, $prediksiQty - $stokSaatIni);
 
                 $item->stok_saat_ini = $stokSaatIni;
                 $item->satuan = $produkModel->satuan->singkatan ?? 'pcs';
                 $item->forecast_qty = max(1, $prediksiQty);
-                $item->rekomendasi_produksi = $rekomendasiProduksi;
+                $item->rekomendasi_restock = $rekomendasiRestock;
+                $item->rekomendasi_produksi = $rekomendasiRestock; // backward compatibility
 
                 return $item;
             });
@@ -428,11 +409,10 @@ class DashboardController extends Controller
         // ============================================
         // 6. DISTRIBUSI KATEGORI, BIAYA OPERASIONAL & STOK MENIPIS
         // ============================================
-        $kategoriData = Kategori::withCount([
-            'produks as souvenir_count' => fn ($q) => $q->where('jenis', 'souvenir_jadi'),
-            'produks as bahan_count' => fn ($q) => $q->where('jenis', 'bahan_baku'),
-            'produks',
-        ])->get();
+        $kategoriData = Kategori::has('produks')->withCount('produks')->get();
+        if ($kategoriData->isEmpty()) {
+            $kategoriData = Kategori::withCount('produks')->get();
+        }
         $kategoriLabels = $kategoriData->pluck('nama_kategori')->toArray();
         $kategoriCounts = $kategoriData->pluck('produks_count')->toArray();
 
@@ -470,7 +450,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        $pembelianTerbaru = Pembelian::with('details')
+        $pembelianTerbaru = Pengeluaran::modalBahan()
             ->latest('tanggal')
             ->latest('id')
             ->limit(5)
@@ -481,10 +461,10 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Statistik Master Gudang & Katalog
+        // Statistik Master Katalog
         $totalProduk = Produk::count();
-        $totalSouvenirJadi = Produk::where('jenis', 'souvenir_jadi')->count();
-        $totalBahanBaku = Produk::where('jenis', 'bahan_baku')->count();
+        $totalSouvenirJadi = $totalProduk;
+        $totalBahanBaku = 0;
         $totalKategori = Kategori::count();
 
         // Pilihan Filter Tahun & Bulan untuk Modal Filter Dashboard
@@ -512,8 +492,6 @@ class DashboardController extends Controller
             'omzetShopee', 'omzetLazada', 'omzetTiktok', 'channelStats',
             'labaKotor', 'labaBersih', 'marginBersih',
             'jumlahTransaksi', 'jumlahBatalRetur', 'statusPipeline',
-            'totalProduksiBagus', 'totalProduksiReject', 'tingkatLolosQc',
-            'totalBahanTerpakai', 'jumlahBonPemakaian',
             // Hari Ini & MoM
             'penjualanHariIni', 'transaksiHariIni',
             'pembelianHariIni', 'pengeluaranHariIni',
@@ -521,7 +499,6 @@ class DashboardController extends Controller
             'persenPenjualan', 'persenLaba', 'persenTransaksi',
             // Grafik Komprehensif & Forecasting
             'labels', 'dataPenjualan', 'dataPenghasilanBersih', 'dataPembelian', 'dataPengeluaran', 'dataLabaBersih',
-            'dataProduksiBagus', 'dataProduksiReject', 'dataPemakaianBahan',
             'chartForecastData', 'forecastTable', 'forecastSummary',
             'kategoriLabels', 'kategoriCounts', 'kategoriData',
             // Tabel & Ringkasan

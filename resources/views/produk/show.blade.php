@@ -381,10 +381,6 @@
                             <span class="info-list-value text-primary font-monospace fw-bold">{{ number_format($totalTerjual, 0, ',', '.') }} {{ $satuanSingkat }}</span>
                         </div>
                         <div class="info-list-item">
-                            <span class="info-list-label">Hasil Produksi Masuk</span>
-                            <span class="info-list-value text-success font-monospace fw-bold">+{{ number_format($totalHasilProduksi, 0, ',', '.') }} {{ $satuanSingkat }}</span>
-                        </div>
-                        <div class="info-list-item">
                             <span class="info-list-label">Dibuat Pada</span>
                             <span class="info-list-value">{{ $produk->created_at->translatedFormat('d M Y, H:i') }}</span>
                         </div>
@@ -485,80 +481,6 @@
                                         <td colspan="5" class="text-center py-4 text-muted">
                                             <i class="fas fa-inbox fa-2x mb-2 d-block text-secondary opacity-50"></i>
                                             Belum ada transaksi penjualan untuk produk ini.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Riwayat Hasil Produksi Masuk (Ready Stock / MTO) --}}
-            <div class="card card-modern">
-                <div class="card-header bg-white border-bottom py-2.5 px-3 d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="fas fa-boxes-stacked text-success"></i>
-                        <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em;">Riwayat Hasil Produksi Masuk (QC Workshop)</h6>
-                    </div>
-                    <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.72rem; padding: 0.25rem 0.55rem;">
-                        Total: +{{ number_format($totalHasilProduksi, 0, ',', '.') }} {{ $satuanSingkat }} diterima
-                    </span>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-detail-modern align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="ps-3">No Penerimaan</th>
-                                    <th>Tanggal</th>
-                                    <th>Tipe Produksi</th>
-                                    <th>PJ QC</th>
-                                    <th class="text-center">Lolos QC</th>
-                                    <th class="pe-3 text-center">Reject</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($riwayatPenerimaanProduksi as $item)
-                                    <tr>
-                                        <td class="ps-3 fw-medium">
-                                            @if($item->penerimaanProduk)
-                                                <a href="{{ route('penerimaan-produk.show', $item->penerimaanProduk) }}" class="text-decoration-none fw-semibold font-monospace" style="color: #26476f;">
-                                                    {{ $item->penerimaanProduk->kode_penerimaan }}
-                                                </a>
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                        <td>
-                                            {{ $item->penerimaanProduk ? $item->penerimaanProduk->tanggal->format('d/m/Y') : '-' }}
-                                        </td>
-                                        <td>
-                                            @if($item->penerimaanProduk && $item->penerimaanProduk->tipe_produksi === 'pesanan_custom')
-                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.72rem;">Custom (MTO)</span>
-                                            @else
-                                                <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle" style="font-size: 0.72rem;">Ready Stock</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            {{ $item->penerimaanProduk->nama_penanggung_jawab ?? '-' }}
-                                        </td>
-                                        <td class="text-center fw-bold text-success font-monospace">
-                                            +{{ number_format($item->qty_bagus) }} {{ $satuanSingkat }}
-                                        </td>
-                                        <td class="pe-3 text-center font-monospace">
-                                            @if($item->qty_reject > 0)
-                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">{{ number_format($item->qty_reject) }}</span>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="text-center py-4 text-muted">
-                                            <i class="fas fa-box-open fa-2x mb-2 d-block text-secondary opacity-50"></i>
-                                            Belum ada riwayat hasil produksi masuk untuk produk ini.
                                         </td>
                                     </tr>
                                 @endforelse

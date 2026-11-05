@@ -21,6 +21,12 @@ class TransaksiSeeder extends Seeder
             return;
         }
 
+        if (Transaksi::count() >= 400) {
+            $this->command->info('TransaksiSeeder: Data transaksi sudah lengkap ('.Transaksi::count().' pesanan), lewati.');
+
+            return;
+        }
+
         $souvenirProduks = Produk::where('jenis', 'souvenir_jadi')->get();
         if ($souvenirProduks->isEmpty()) {
             $souvenirProduks = Produk::all();
@@ -104,8 +110,6 @@ class TransaksiSeeder extends Seeder
                         'biaya_admin_marketplace' => 0,
                         'penghasilan_bersih' => 0,
                         'status_pesanan' => $statusPesanan,
-                        'bahan_baku_dipotong' => in_array($statusPesanan, ['siap_packing', 'perlu_dikirim', 'dikirim', 'selesai'], true),
-                        'waktu_potong_bahan' => in_array($statusPesanan, ['siap_packing', 'perlu_dikirim', 'dikirim', 'selesai'], true) ? $tanggal : null,
                         'metode_bayar' => 'saldo_'.$channel,
                         'catatan' => (rand(1, 100) <= 35) ? 'Custom desain logo/nama + kemasan box pita souvenir' : null,
                         'user_id' => $user->id,

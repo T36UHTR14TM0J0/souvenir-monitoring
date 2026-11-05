@@ -37,23 +37,26 @@ class Pengeluaran extends Model
     ];
 
     public const KATEGORI_BISNIS = [
-        'operasional' => 'Operasional Toko',
-        'iklan' => 'Iklan Marketplace (Shopee, Lazada, TikTok Ads)',
+        'bahan_baku' => 'Bahan Baku & Material (Akrilik, Kain, Silikon, Tumbler, dll)',
+        'jasa_produksi' => 'Jasa Luar (Cetak, Sablon & Potong)',
         'packing' => 'Packing & Pengemasan (Bubble wrap, lakban, kardus)',
+        'iklan' => 'Iklan Marketplace (Shopee, Lazada, TikTok Ads)',
+        'operasional' => 'Operasional Toko & Workshop',
+        'konsumsi' => 'Konsumsi & Makan (Lunch Tim)',
+        'transport' => 'Transportasi, Bensin & Parkir',
         'gaji' => 'Gaji Karyawan',
-        'listrik' => 'Listrik & Air',
+        'listrik' => 'Listrik, Air & Internet',
         'sewa' => 'Sewa Tempat / Gudang',
-        'transport' => 'Transportasi & Bensin',
+        'pemeliharaan' => 'Pemeliharaan & Sparepart Alat',
         'perlengkapan' => 'Perlengkapan & Bahan Souvenir',
-        'pemeliharaan' => 'Pemeliharaan',
         'pajak' => 'Pajak & Administrasi',
         'lainnya' => 'Lainnya',
     ];
 
     public const KATEGORI_PRIBADI = [
-        'makan_pribadi' => 'Makan / Lunch',
-        'kebutuhan_rumah' => 'Kebutuhan Rumah (Gas, Galon, Dapur)',
         'prive_penarikan' => 'Penarikan Prive Pemilik',
+        'makan_pribadi' => 'Makan / Lunch Pribadi',
+        'kebutuhan_rumah' => 'Kebutuhan Rumah (Gas, Galon, Dapur)',
         'pribadi_lainnya' => 'Pribadi Lainnya',
     ];
 
@@ -62,22 +65,26 @@ class Pengeluaran extends Model
     ];
 
     public const KATEGORI = [
-        // Bisnis
-        'operasional' => 'Operasional Toko',
-        'iklan' => 'Iklan Marketplace (Shopee, Lazada, TikTok Ads)',
+        // Bisnis - Modal Bahan & Produksi
+        'bahan_baku' => 'Bahan Baku & Material (Akrilik, Kain, Silikon, Tumbler, dll)',
+        'jasa_produksi' => 'Jasa Luar (Cetak, Sablon & Potong)',
+        'perlengkapan' => 'Perlengkapan & Bahan Souvenir',
+        // Bisnis - Operasional Toko
         'packing' => 'Packing & Pengemasan (Bubble wrap, lakban, kardus)',
+        'iklan' => 'Iklan Marketplace (Shopee, Lazada, TikTok Ads)',
+        'operasional' => 'Operasional Toko & Workshop',
+        'konsumsi' => 'Konsumsi & Makan (Lunch Tim)',
+        'transport' => 'Transportasi, Bensin & Parkir',
         'gaji' => 'Gaji Karyawan',
-        'listrik' => 'Listrik & Air',
-        'sewa' => 'Sewa Tempat',
-        'transport' => 'Transportasi & Bensin',
-        'perlengkapan' => 'Perlengkapan & Bahan',
-        'pemeliharaan' => 'Pemeliharaan',
+        'listrik' => 'Listrik, Air & Internet',
+        'sewa' => 'Sewa Tempat / Gudang',
+        'pemeliharaan' => 'Pemeliharaan & Sparepart Alat',
         'pajak' => 'Pajak & Administrasi',
         'lainnya' => 'Lainnya',
         // Pribadi
-        'makan_pribadi' => 'Makan / Lunch',
-        'kebutuhan_rumah' => 'Kebutuhan Rumah (Gas, Galon, Dapur)',
         'prive_penarikan' => 'Penarikan Prive Pemilik',
+        'makan_pribadi' => 'Makan / Lunch Pribadi',
+        'kebutuhan_rumah' => 'Kebutuhan Rumah (Gas, Galon, Dapur)',
         'pribadi_lainnya' => 'Pribadi Lainnya',
         // Kasbon
         'kasbon_karyawan' => 'Kasbon Tim / Karyawan',
@@ -102,6 +109,18 @@ class Pengeluaran extends Model
     public function scopeBisnis($query)
     {
         return $query->where('tipe_alokasi', 'bisnis');
+    }
+
+    public function scopeModalBahan($query)
+    {
+        return $query->where('tipe_alokasi', 'bisnis')
+            ->whereIn('kategori', ['bahan_baku', 'perlengkapan', 'jasa_produksi']);
+    }
+
+    public function scopeOperasionalMurni($query)
+    {
+        return $query->where('tipe_alokasi', 'bisnis')
+            ->whereNotIn('kategori', ['bahan_baku', 'perlengkapan', 'jasa_produksi']);
     }
 
     public function scopePribadi($query)

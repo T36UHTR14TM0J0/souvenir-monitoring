@@ -517,7 +517,7 @@
     <x-page-header
         icon="fas fa-chart-pie"
         title="Dashboard Monitoring & Predictive Forecasting"
-        subtitle="Ringkasan eksekutif performa 3 Marketplace (Shopee, TikTok Shop, Lazada), QC Produksi Gudang, Arus Kas, dan Proyeksi Bisnis Berbasis Time-Series."
+        subtitle="Ringkasan eksekutif performa 3 Marketplace (Shopee, TikTok Shop, Lazada), Arus Kas & Pengeluaran Toko, serta Proyeksi Bisnis Berbasis Time-Series."
     />
 
     {{-- 2. EMPAT KPI UTAMA (DESAIN EKSEKUTIF, RAPIH, TIDAK TERPOTONG) --}}
@@ -626,8 +626,8 @@
                         <span>3 Marketplace &amp; Produk</span>
                     </button>
                     <button type="button" class="dash-tab-btn" data-dash-target="pane-operasional">
-                        <i class="fas fa-industry"></i>
-                        <span>Produksi, Gudang &amp; Kas</span>
+                        <i class="fas fa-cash-register"></i>
+                        <span>Biaya, Kas &amp; Stok</span>
                     </button>
                     <button type="button" class="dash-tab-btn" data-dash-target="pane-aktivitas">
                         <i class="fas fa-clock-rotate-left"></i>
@@ -681,8 +681,8 @@
                 </span>
 
                 <span class="filter-chip" style="background: #f8fafc; color: #334155; border-color: #cbd5e1;">
-                    <i class="fas fa-industry text-success"></i>
-                    <span>QC Produksi: <strong>+{{ number_format($totalProduksiBagus) }} Lolos ({{ $tingkatLolosQc }}%)</strong></span>
+                    <i class="fas fa-wallet text-primary"></i>
+                    <span>Modal Disetor: <strong>Rp {{ number_format($totalModalDisetor, 0, ',', '.') }}</strong></span>
                 </span>
             </div>
         </div>
@@ -918,7 +918,7 @@
                             </span>
                             <div>
                                 <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Top 5 Souvenir Terlaris &amp; Demand Forecasting</h6>
-                                <div class="text-muted" style="font-size: 0.73rem; margin-top: 2px;">Prediksi permintaan &amp; saran jumlah produksi bulan depan</div>
+                                <div class="text-muted" style="font-size: 0.73rem; margin-top: 2px;">Prediksi permintaan &amp; estimasi restock produk bulan depan</div>
                             </div>
                         </div>
                         @can('produk-list')
@@ -939,7 +939,7 @@
                                         <th class="text-end">Omzet</th>
                                         <th class="text-center">Stok</th>
                                         <th class="text-center">Forecast Qty</th>
-                                        <th class="text-center pe-3">Saran Produksi</th>
+                                        <th class="text-center pe-3">Saran Restock</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -988,27 +988,27 @@
     </div>
 
     {{-- =====================================================================
-         TAB PANE 3: PRODUKSI QC, GUDANG BAHAN BAKU & REKONSILIASI KAS
+         TAB PANE 3: BIAYA OPERASIONAL, MODAL TOKO & ARUS KAS
          ===================================================================== --}}
     <div id="pane-operasional" class="dash-tab-pane d-none">
-        {{-- Baris 1: Grafik Produksi 12 Bulan (7 Kolom) & Struktur Arus Kas/Modal (5 Kolom) --}}
+        {{-- Baris 1: Grafik Pengeluaran 12 Bulan (7 Kolom) & Struktur Arus Kas/Modal (5 Kolom) --}}
         <div class="row g-3 mb-3">
             <div class="col-12 col-xl-7">
                 <div class="card card-modern bg-white h-100">
                     <div class="card-header-clean">
                         <div class="card-header-title-wrap">
                             <span class="header-icon-badge" style="background: #ecfdf5; color: #059669;">
-                                <i class="fas fa-industry"></i>
+                                <i class="fas fa-chart-column"></i>
                             </span>
                             <div>
-                                <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Tren Produksi Souvenir (Lolos QC vs Reject) &amp; Pemakaian Bahan</h6>
-                                <div class="text-muted" style="font-size: 0.73rem; margin-top: 2px;">Pass Rate QC: <strong>{{ $tingkatLolosQc }}%</strong> (+{{ number_format($totalProduksiBagus) }} Lolos / {{ $totalProduksiReject }} Reject)</div>
+                                <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Tren Pengeluaran Toko (Modal Bahan vs Biaya Operasional)</h6>
+                                <div class="text-muted" style="font-size: 0.73rem; margin-top: 2px;">Belanja Modal Bahan: <strong>Rp {{ number_format($totalPembelian, 0, ',', '.') }}</strong> &bull; Operasional/Ads: <strong>Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</strong></div>
                             </div>
                         </div>
                     </div>
                     <div class="card-body" style="padding: 20px;">
                         <div style="position: relative; height: 280px; width: 100%;">
-                            <canvas id="chartProduksiBahan"></canvas>
+                            <canvas id="chartTrenPengeluaran"></canvas>
                         </div>
                     </div>
                 </div>
@@ -1067,8 +1067,8 @@
                                 <i class="fas fa-tags"></i>
                             </span>
                             <div>
-                                <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Distribusi Kategori Item Gudang ({{ $totalProduk }} SKU)</h6>
-                                <div class="text-muted" style="font-size: 0.73rem; margin-top: 2px;">{{ $totalSouvenirJadi }} Produk Souvenir Jadi &amp; {{ $totalBahanBaku }} Item Bahan Baku</div>
+                                <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Distribusi Kategori Produk Souvenir ({{ $totalProduk }} SKU)</h6>
+                                <div class="text-muted" style="font-size: 0.73rem; margin-top: 2px;">{{ $totalProduk }} Katalog Souvenir Jadi di {{ $totalKategori }} Kategori</div>
                             </div>
                         </div>
                     </div>
@@ -1089,14 +1089,14 @@
                         <i class="fas fa-triangle-exclamation"></i>
                     </span>
                     <div>
-                        <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Peringatan Stok Menipis (Souvenir &amp; Bahan Baku)</h6>
-                        <div class="text-muted" style="font-size: 0.73rem; margin-top: 2px;">Daftar SKU yang mencapai atau berada di bawah ambang stok minimal gudang</div>
+                        <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Peringatan Stok Menipis (Katalog Souvenir)</h6>
+                        <div class="text-muted" style="font-size: 0.73rem; margin-top: 2px;">Daftar SKU souvenir yang mencapai atau berada di bawah ambang stok minimal toko</div>
                     </div>
                 </div>
-                @can('bahan-baku-list')
-                    <a href="{{ route('bahan-baku.index', ['stok_status' => 'menipis']) }}" class="btn-primary-custom">
-                        <i class="fas fa-layer-group"></i>
-                        <span>Cek Stok Bahan Baku</span>
+                @can('produk-list')
+                    <a href="{{ route('produk.index', ['stok_status' => 'menipis']) }}" class="btn-primary-custom">
+                        <i class="fas fa-boxes-stacked"></i>
+                        <span>Cek Stok Souvenir</span>
                     </a>
                 @endcan
             </div>
@@ -1106,9 +1106,8 @@
                         <thead>
                             <tr>
                                 <th class="ps-4">Kode SKU</th>
-                                <th>Nama Item</th>
+                                <th>Nama Produk Souvenir</th>
                                 <th>Kategori</th>
-                                <th class="text-center">Tipe Item</th>
                                 <th class="text-center">Sisa Stok</th>
                                 <th class="text-center pe-4">Batas Minimal</th>
                             </tr>
@@ -1122,13 +1121,6 @@
                                     <td class="fw-semibold text-dark">{{ $psm->nama_produk }}</td>
                                     <td class="text-muted">{{ $psm->kategori->nama_kategori ?? '-' }}</td>
                                     <td class="text-center">
-                                        @if($psm->jenis === 'bahan_baku')
-                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle" style="padding: 5px 10px;">Bahan Baku</span>
-                                        @else
-                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="padding: 5px 10px;">Souvenir Jadi</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
                                         @if($psm->stok <= 0)
                                             <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold" style="padding: 5px 10px;">Habis (0)</span>
                                         @else
@@ -1141,8 +1133,8 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-4 text-success fw-semibold">
-                                        <i class="fas fa-circle-check me-1"></i> Seluruh stok Souvenir &amp; Bahan Baku berada di level aman.
+                                    <td colspan="5" class="text-center py-4 text-success fw-semibold">
+                                        <i class="fas fa-circle-check me-1"></i> Seluruh stok Produk Souvenir berada di level aman.
                                     </td>
                                 </tr>
                             @endforelse
@@ -1221,23 +1213,23 @@
                 </div>
             </div>
 
-            {{-- Pembelian Bahan Baku Terbaru --}}
+            {{-- Belanja Modal Bahan Terbaru --}}
             <div class="col-12 col-xl-6">
                 <div class="card card-modern bg-white h-100">
                     <div class="card-header-clean">
                         <div class="card-header-title-wrap">
                             <span class="header-icon-badge" style="background: #e0f2fe; color: #0284c7;">
-                                <i class="fas fa-truck-ramp-box"></i>
+                                <i class="fas fa-boxes-packing"></i>
                             </span>
                             <div>
-                                <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">5 Pembelian Bahan Baku Terbaru</h6>
-                                <div class="text-muted" style="font-size: 0.73rem; margin-top: 2px;">Pengadaan stok material &amp; packaging supplier</div>
+                                <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">5 Belanja Modal Bahan Terbaru</h6>
+                                <div class="text-muted" style="font-size: 0.73rem; margin-top: 2px;">Catatan pengeluaran modal bahan baku &amp; jasa produksi toko</div>
                             </div>
                         </div>
-                        @can('pembelian-list')
-                            <a href="{{ route('transaksi-pembelian.index') }}" class="btn-primary-custom">
+                        @can('pengeluaran-list')
+                            <a href="{{ route('pengeluaran.index') }}" class="btn-primary-custom">
                                 <i class="fas fa-arrow-right"></i>
-                                <span>Semua Pembelian</span>
+                                <span>Semua Pengeluaran</span>
                             </a>
                         @endcan
                     </div>
@@ -1246,9 +1238,9 @@
                             <table class="table table-hover table-produk align-middle mb-0">
                                 <thead>
                                     <tr>
-                                        <th class="ps-3">Kode PO</th>
-                                        <th>Supplier &amp; Status</th>
-                                        <th class="text-end">Grand Total</th>
+                                        <th class="ps-3">Kode</th>
+                                        <th>Keterangan Biaya</th>
+                                        <th class="text-end">Jumlah</th>
                                         <th class="text-center pe-3 col-freeze-aksi">Aksi</th>
                                     </tr>
                                 </thead>
@@ -1256,26 +1248,26 @@
                                     @forelse($pembelianTerbaru as $pbl)
                                         <tr>
                                             <td class="ps-3">
-                                                <span class="badge-kode">{{ $pbl->kode_pembelian }}</span>
+                                                <span class="badge-kode">{{ $pbl->kode_pengeluaran }}</span>
                                                 <div class="text-muted mt-1" style="font-size: 0.7rem;">{{ $pbl->tanggal->translatedFormat('d M Y') }}</div>
                                             </td>
                                             <td>
-                                                <div class="fw-semibold text-dark">{{ $pbl->supplier ?: 'Supplier Online' }}</div>
-                                                <div class="text-muted" style="font-size: 0.7rem;">Status: {{ ucfirst($pbl->status_pembelian ?? 'diterima') }}</div>
+                                                <div class="fw-semibold text-dark">{{ $pbl->keterangan }}</div>
+                                                <div class="text-muted" style="font-size: 0.7rem;">Kategori: {{ $pbl->kategori_label }}</div>
                                             </td>
                                             <td class="text-end fw-bold font-monospace text-primary">
-                                                Rp {{ number_format($pbl->grand_total, 0, ',', '.') }}
+                                                Rp {{ number_format($pbl->jumlah, 0, ',', '.') }}
                                             </td>
                                             <td class="text-center pe-3 col-freeze-aksi">
-                                                @can('pembelian-list')
-                                                    <a href="{{ route('transaksi-pembelian.show', $pbl) }}" class="btn-action-icon" title="Lihat Detail">
-                                                        <i class="fas fa-eye"></i>
+                                                @can('pengeluaran-edit')
+                                                    <a href="{{ route('pengeluaran.edit', $pbl) }}" class="btn-action-icon btn-action-edit" title="Edit Pengeluaran">
+                                                        <i class="fas fa-pen-to-square"></i>
                                                     </a>
                                                 @endcan
                                             </td>
                                         </tr>
                                     @empty
-                                        <tr><td colspan="4" class="text-center py-4 text-muted">Belum ada transaksi pembelian.</td></tr>
+                                        <tr><td colspan="4" class="text-center py-4 text-muted">Belum ada transaksi belanja bahan.</td></tr>
                                     @endforelse
                                 </tbody>
                             </table>
@@ -1382,9 +1374,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const FC_DATA         = @json($chartForecastData);
     const HIST_LABELS     = @json($labels);
-    const PROD_BAGUS      = @json($dataProduksiBagus);
-    const PROD_REJECT     = @json($dataProduksiReject);
-    const PAKAI_BAHAN     = @json($dataPemakaianBahan);
     const CHANNEL_STATS   = @json(array_values($channelStats));
     const KATEGORI_LABELS = @json($kategoriLabels);
     const KATEGORI_COUNTS = @json($kategoriCounts);
@@ -1719,41 +1708,28 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // =========================================================================
-    // 3. CHART PRODUKSI WORKSHOP, QC & PEMAKAIAN BAHAN BAKU
+    // 3. CHART TREN PENGELUARAN TOKO (MODAL BAHAN VS OPERASIONAL & ADS)
     // =========================================================================
-    const elProd = document.getElementById('chartProduksiBahan');
-    if (elProd) {
-        chartInstances.prod = new Chart(elProd.getContext('2d'), {
+    const elPengeluaran = document.getElementById('chartTrenPengeluaran');
+    if (elPengeluaran) {
+        chartInstances.pengeluaran = new Chart(elPengeluaran.getContext('2d'), {
             type: 'bar',
             data: {
                 labels: HIST_LABELS,
                 datasets: [
                     {
-                        label: 'Souvenir Lolos QC (Pcs)',
-                        data: PROD_BAGUS,
-                        backgroundColor: '#10b981',
+                        label: 'Modal Belanja Bahan & Jasa',
+                        data: FC_DATA.actual_pembelian,
+                        backgroundColor: '#0284c7',
                         borderRadius: 4,
                         maxBarThickness: 22,
                     },
                     {
-                        label: 'Reject Produksi (Pcs)',
-                        data: PROD_REJECT,
-                        backgroundColor: '#ef4444',
+                        label: 'Biaya Operasional & Ads',
+                        data: FC_DATA.actual_pengeluaran,
+                        backgroundColor: '#f59e0b',
                         borderRadius: 4,
                         maxBarThickness: 22,
-                    },
-                    {
-                        type: 'line',
-                        label: 'Pemakaian Bahan Baku (Unit)',
-                        data: PAKAI_BAHAN,
-                        borderColor: '#0284c7',
-                        backgroundColor: 'rgba(2, 132, 199, 0.12)',
-                        borderWidth: 2.5,
-                        tension: 0.35,
-                        pointRadius: 3.5,
-                        pointBackgroundColor: '#0284c7',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 1.5,
                     },
                 ],
             },
@@ -1767,11 +1743,22 @@ document.addEventListener('DOMContentLoaded', function () {
                         align: 'end',
                         labels: { boxWidth: 8, boxHeight: 8, usePointStyle: true, pointStyle: 'circle', font: { size: 11, weight: '600' }, color: '#334155' },
                     },
-                    tooltip: commonTooltip,
+                    tooltip: {
+                        ...commonTooltip,
+                        callbacks: {
+                            label: function (ctx) {
+                                return ctx.dataset.label + ': ' + formatRupiah(ctx.parsed.y);
+                            },
+                        },
+                    },
                 },
                 scales: {
                     x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 0 } },
-                    y: { beginAtZero: true, grid: { color: 'rgba(15, 23, 42, 0.05)' }, ticks: { font: { size: 10 } } },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(15, 23, 42, 0.05)' },
+                        ticks: { font: { size: 10 }, callback: shortRupiah },
+                    },
                 },
             },
         });

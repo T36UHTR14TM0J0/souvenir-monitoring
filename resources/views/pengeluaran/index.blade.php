@@ -384,45 +384,45 @@
         subtitle="Kelola pengeluaran operasional workshop, biaya iklan marketplace (Ads), prive pemilik, dan kasbon tim."
     />
 
-    {{-- KPI STATS SUMMARY (4 CARDS) --}}
+    {{-- KPI STATS SUMMARY (4 CARDS SESUAI BUKU KEUANGAN) --}}
     <div class="row g-3 mb-3">
-        {{-- 1. Bisnis Toko (Bulan Ini) --}}
+        {{-- 1. Modal Bahan Baku & Produksi (Bulan Ini) --}}
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="kpi-card-modern kpi-accent-indigo">
                 <div class="d-flex align-items-center gap-3">
                     <div class="kpi-icon-wrap" style="background: #eef2ff; color: #4f46e5;">
-                        <i class="fas fa-store"></i>
+                        <i class="fas fa-boxes-stacked"></i>
                     </div>
                     <div>
-                        <div class="kpi-label">Bisnis &amp; Ads (Bulan Ini)</div>
+                        <div class="kpi-label">Modal Bahan &amp; Material</div>
                         <div class="kpi-value text-dark">
-                            Rp {{ number_format($totalBisnisBulanIni ?? 0, 0, ',', '.') }}
+                            Rp {{ number_format($totalModalBahanBulanIni ?? 0, 0, ',', '.') }}
                         </div>
-                        <div class="kpi-subtext">Operasional, iklan &amp; packing</div>
+                        <div class="kpi-subtext">Akrilik, kain, silikon, cetak luar</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- 2. Pribadi / Prive (Bulan Ini) --}}
+        {{-- 2. Operasional & Ads Toko (Bulan Ini) --}}
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="kpi-card-modern kpi-accent-danger">
+            <div class="kpi-card-modern kpi-accent-success">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="kpi-icon-wrap" style="background: #fef2f2; color: #dc2626;">
-                        <i class="fas fa-user-tie"></i>
+                    <div class="kpi-icon-wrap" style="background: #ecfdf5; color: #10b981;">
+                        <i class="fas fa-briefcase"></i>
                     </div>
                     <div>
-                        <div class="kpi-label" style="color: #dc2626;">Pribadi / Prive (Bulan Ini)</div>
-                        <div class="kpi-value text-danger">
-                            Rp {{ number_format($totalPribadiBulanIni ?? 0, 0, ',', '.') }}
+                        <div class="kpi-label" style="color: #047857;">Operasional &amp; Iklan Toko</div>
+                        <div class="kpi-value" style="color: #047857;">
+                            Rp {{ number_format($totalOperasionalBulanIni ?? 0, 0, ',', '.') }}
                         </div>
-                        <div class="kpi-subtext">Penarikan pemilik / rumah</div>
+                        <div class="kpi-subtext">Gaji, ads, packing, makan, bensin</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- 3. Kasbon Tim (Bulan Ini) --}}
+        {{-- 3. Kasbon & Prive (Bulan Ini) --}}
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="kpi-card-modern kpi-accent-warning">
                 <div class="d-flex align-items-center gap-3">
@@ -430,11 +430,11 @@
                         <i class="fas fa-hand-holding-dollar"></i>
                     </div>
                     <div>
-                        <div class="kpi-label" style="color: #d97706;">Kasbon Tim (Bulan Ini)</div>
+                        <div class="kpi-label" style="color: #d97706;">Kasbon &amp; Prive Owner</div>
                         <div class="kpi-value" style="color: #d97706;">
-                            Rp {{ number_format($totalKasbonBulanIni ?? 0, 0, ',', '.') }}
+                            Rp {{ number_format(($totalKasbonBulanIni ?? 0) + ($totalPribadiBulanIni ?? 0), 0, ',', '.') }}
                         </div>
-                        <div class="kpi-subtext">Piutang pinjaman karyawan</div>
+                        <div class="kpi-subtext">Kasbon: Rp {{ number_format($totalKasbonBulanIni ?? 0, 0, ',', '.') }} | Prive: Rp {{ number_format($totalPribadiBulanIni ?? 0, 0, ',', '.') }}</div>
                     </div>
                 </div>
             </div>

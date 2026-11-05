@@ -43,14 +43,6 @@ class KategoriSeeder extends Seeder
                 'deskripsi' => 'Poster A3+ laminasi glossy, postcard art set, dan wallscroll gantung',
             ],
             [
-                'nama_kategori' => 'Bahan Baku Produksi',
-                'deskripsi' => 'Mug polos keramik, lembaran akrilik, ring gantungan, blank pin, dan tinta cetak',
-            ],
-            [
-                'nama_kategori' => 'Bahan Packing & Pengiriman',
-                'deskripsi' => 'Kardus packaging die cut, bubble wrap roll, lakban fragile, dan polymailer',
-            ],
-            [
                 'nama_kategori' => 'Stiker & Decal Vinyl',
                 'deskripsi' => 'Stiker die cut vinyl tahan air, kiss cut sticker sheet, dan hologram laminasi',
             ],
@@ -75,6 +67,6 @@ class KategoriSeeder extends Seeder
             );
         }
 
-        $this->command->info('KategoriSeeder: '.count($data).' Kategori Souvenir & Bahan Baku berhasil dibuat.');
+        $this->command->info('KategoriSeeder: '.count($data).' Kategori Produk Merchandise Souvenir berhasil dibuat.');
     }
 }

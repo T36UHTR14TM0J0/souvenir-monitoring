@@ -3,8 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\KasMasuk;
-use App\Models\Pembelian;
-use App\Models\PembelianDetail;
 use App\Models\Pengeluaran;
 use App\Models\Produk;
 use App\Models\Transaksi;
@@ -57,7 +55,7 @@ class MultiActorE2ETest extends TestCase
             'grand_total' => 50000,
             'biaya_admin_marketplace' => 4000,
             'penghasilan_bersih' => 46000,
-            'status_pesanan' => 'menunggu_produksi',
+            'status_pesanan' => 'perlu_dikirim',
             'metode_bayar' => 'saldo_shopee',
             'catatan' => 'Pesanan kustomisasi nama',
             'user_id' => $this->admin->id,
@@ -72,29 +70,18 @@ class MultiActorE2ETest extends TestCase
             'subtotal' => 50000,
         ]);
 
-        // Sample Pembelian Bahan Baku
-        $bahan = Produk::where('jenis', 'bahan_baku')->first();
-        $pembelian = Pembelian::create([
-            'kode_pembelian' => 'PBL-SAMPLE-001',
+        // Sample Pengeluaran Bahan Baku
+        Pengeluaran::create([
+            'kode_pengeluaran' => 'PGL-BAHAN-001',
             'tanggal' => now()->toDateString(),
-            'supplier' => 'PT Keramik Sublimasi',
-            'total_harga' => 100000,
-            'total_diskon' => 0,
-            'grand_total' => 100000,
-            'catatan' => 'Restock bahan baku',
+            'tipe_alokasi' => 'bisnis',
+            'kategori' => 'bahan_baku',
+            'keterangan' => 'Belanja Blank Mug dan Dus Sublimasi',
+            'jumlah' => 350000,
             'user_id' => $this->bendahara->id,
         ]);
 
-        PembelianDetail::create([
-            'pembelian_id' => $pembelian->id,
-            'produk_id' => $bahan->id,
-            'nama_produk' => $bahan->nama_produk,
-            'harga_beli' => 10000,
-            'qty' => 10,
-            'subtotal' => 100000,
-        ]);
-
-        // Sample Pengeluaran
+        // Sample Pengeluaran Operasional & Ads
         Pengeluaran::create([
             'kode_pengeluaran' => 'PGL-SAMPLE-001',
             'tanggal' => now()->toDateString(),
@@ -127,9 +114,6 @@ class MultiActorE2ETest extends TestCase
 
         $responseProduk = $this->actingAs($this->pemilik)->get(route('produk.index'));
         $responseProduk->assertStatus(200);
-
-        $responsePembelian = $this->actingAs($this->pemilik)->get(route('transaksi-pembelian.index'));
-        $responsePembelian->assertStatus(200);
 
         $responsePengeluaran = $this->actingAs($this->pemilik)->get(route('pengeluaran.index'));
         $responsePengeluaran->assertStatus(200);
@@ -189,20 +173,16 @@ class MultiActorE2ETest extends TestCase
         $responseProduk->assertStatus(200);
     }
 
-    public function test_bendahara_can_manage_raw_materials_purchasing_and_financials(): void
+    public function test_bendahara_can_manage_financials_expenses_and_reports(): void
     {
         $response = $this->actingAs($this->bendahara)->get('/dashboard');
         $response->assertStatus(200);
-
-        // Pembelian Bahan Baku
-        $responsePembelian = $this->actingAs($this->bendahara)->get(route('transaksi-pembelian.index'));
-        $responsePembelian->assertStatus(200);
 
         // Kas Masuk & Pencairan Marketplace
         $responseKasMasuk = $this->actingAs($this->bendahara)->get(route('kas-masuk.index'));
         $responseKasMasuk->assertStatus(200);
 
-        // Biaya Operasional & Ads
+        // Biaya Operasional & Bahan Baku
         $responsePengeluaran = $this->actingAs($this->bendahara)->get(route('pengeluaran.index'));
         $responsePengeluaran->assertStatus(200);
 
@@ -212,12 +192,10 @@ class MultiActorE2ETest extends TestCase
         $responseLaporan->assertSee('Laporan Keuangan');
     }
 
-    public function test_database_has_seeded_differentiated_products(): void
+    public function test_database_has_seeded_souvenir_products(): void
     {
         $souvenirs = Produk::souvenirJadi()->count();
-        $bahanBaku = Produk::bahanBaku()->count();
 
-        $this->assertGreaterThan(0, $souvenirs, 'Souvenir Jadi harus ter-seed');
-        $this->assertGreaterThan(0, $bahanBaku, 'Bahan Baku harus ter-seed');
+        $this->assertEquals(14, $souvenirs, '14 Souvenir Jadi harus ter-seed');
     }
 }

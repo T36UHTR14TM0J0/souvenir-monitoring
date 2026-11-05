@@ -18,6 +18,10 @@ class PengeluaranSeeder extends Seeder
             return;
         }
 
+        // Cek apakah dataset riil client 2025 tersedia
+        $hasClientData = file_exists('C:/Users/teguh/Downloads/KEUANGAN TAHUN 2025 (2).xlsx')
+            || file_exists(database_path('data/import_keuangan_2025.json'));
+
         // 22 Bulan: Jan 2025 s.d. Des 2025 (12 bulan) & Jan 2026 s.d. Okt 2026 (10 bulan)
         $periods = [];
         for ($m = 1; $m <= 12; $m++) {
@@ -39,12 +43,46 @@ class PengeluaranSeeder extends Seeder
             $year = $p['year'];
             $month = $p['month'];
 
-            // 1. PENGELUARAN BISNIS RUTIN BULANAN
+            // Jika ada dataset riil client untuk Agu - Des 2025, lewati dummy seeder agar tidak tumpang tindih
+            if ($hasClientData && $year === 2025 && $month >= 8) {
+                continue;
+            }
+
+            // ========================================================
+            // 1. MODAL BAHAN BAKU & JASA PRODUKSI (HPP LANGSUNG TOKO)
+            // ========================================================
+            // A. Blank Mug Keramik SNI & Box Kemasan
+            $tglMug = Carbon::create($year, $month, rand(2, 5), 10, 15);
+            $this->createPengeluaran($pglCounter++, $tglMug, 'bisnis', 'bahan_baku', 'Restock Blank Mug Keramik SNI Putih & Dus Kemasan Die-Cut', rand(1500, 2400) * 1000, $user->id);
+
+            // B. Lembaran Akrilik & Gantungan Kunci
+            $tglAkrilik = Carbon::create($year, $month, rand(6, 9), 11, 40);
+            $this->createPengeluaran($pglCounter++, $tglAkrilik, 'bisnis', 'bahan_baku', 'Belanja Lembaran Akrilik Bening 2mm/3mm & Ring Gantungan Kunci Rantai', rand(850, 1650) * 1000, $user->id);
+
+            // C. Blank Tumbler Stainless / Termos LED Suhu
+            $tglTumbler = Carbon::create($year, $month, rand(11, 14), 14, 20);
+            $this->createPengeluaran($pglCounter++, $tglTumbler, 'bisnis', 'bahan_baku', 'Belanja Blank Tumbler Stainless Termal 500ml & Dus Silinder Gift', rand(1200, 2300) * 1000, $user->id);
+
+            // D. Bahan Pin Peniti, Kertas Transfer & Tinta Sublimasi
+            $tglPin = Carbon::create($year, $month, rand(15, 18), 13, 0);
+            $this->createPengeluaran($pglCounter++, $tglPin, 'bisnis', 'bahan_baku', 'Bahan Blank Pin Peniti 44mm/58mm, Mika Pelindung & Tinta Sublim CMYK', rand(450, 950) * 1000, $user->id);
+
+            // E. Jasa Luar Cetak DTF & Sublimasi Roll Meteran
+            $tglJasaCetak = Carbon::create($year, $month, rand(10, 13), 15, 10);
+            $this->createPengeluaran($pglCounter++, $tglJasaCetak, 'bisnis', 'jasa_produksi', 'Jasa Print DTF Meteran & Sublimasi Transfer Paper Roll', rand(650, 1250) * 1000, $user->id);
+
+            // F. Jasa Cutting Laser Akrilik Souvenir
+            $tglLaser = Carbon::create($year, $month, rand(19, 22), 16, 30);
+            $this->createPengeluaran($pglCounter++, $tglLaser, 'bisnis', 'jasa_produksi', 'Jasa Cutting Laser Presisi Akrilik Plakat & Gantungan Kunci', rand(400, 800) * 1000, $user->id);
+
+            // ========================================================
+            // 2. BIAYA OPERASIONAL BISNIS RUTIN
+            // ========================================================
             // A. Sewa Tempat Workshop (tiap tgl 1)
             $tglSewa = Carbon::create($year, $month, 1, 10, 0);
             $this->createPengeluaran($pglCounter++, $tglSewa, 'bisnis', 'sewa', 'Biaya sewa workshop produksi & gudang packing bulanan', 1500000, $user->id);
 
-            // B. Listrik & Air Workshop (mesin sublimasi, laser, press) (tgl 5 - 8)
+            // B. Listrik & Air Workshop (mesin sublimasi, press, laser) (tgl 5 - 8)
             $tglListrik = Carbon::create($year, $month, rand(5, 8), 11, 30);
             $this->createPengeluaran($pglCounter++, $tglListrik, 'bisnis', 'listrik', 'Listrik PLN daya 3500VA untuk mesin press & workshop', rand(450, 650) * 1000, $user->id);
 
@@ -60,17 +98,27 @@ class PengeluaranSeeder extends Seeder
             $tglPacking = Carbon::create($year, $month, rand(16, 19), 13, 15);
             $this->createPengeluaran($pglCounter++, $tglPacking, 'bisnis', 'packing', 'Restock bubble wrap tebal, lakban fragile, dan kardus die-cut', rand(250, 450) * 1000, $user->id);
 
-            // F. Gaji Staf Produksi & Admin Marketplace (tgl 25 - 28)
+            // F. Konsumsi Lembur & Jamuan Tim Workshop (tgl 14 - 18)
+            $tglKonsumsi = Carbon::create($year, $month, rand(14, 18), 12, 30);
+            $this->createPengeluaran($pglCounter++, $tglKonsumsi, 'bisnis', 'konsumsi', 'Konsumsi makan siang & snack lembur pesanan souvenir workshop', rand(250, 450) * 1000, $user->id);
+
+            // G. Transportasi Drop Paket Ekspedisi (tgl 20 - 24)
+            $tglTransport = Carbon::create($year, $month, rand(20, 24), 16, 45);
+            $this->createPengeluaran($pglCounter++, $tglTransport, 'bisnis', 'transport', 'Bensin motor & operasional drop paket ekspedisi SPX/J&T/JNE', rand(150, 300) * 1000, $user->id);
+
+            // H. Gaji Staf Produksi & Admin Marketplace (tgl 25 - 28)
             $tglGaji = Carbon::create($year, $month, rand(25, 28), 17, 0);
             $this->createPengeluaran($pglCounter++, $tglGaji, 'bisnis', 'gaji', 'Gaji bulanan tim produksi souvenir & admin marketplace', 3500000, $user->id);
 
-            // G. Pemeliharaan Mesin & Laser (tiap 3 bulan)
+            // I. Pemeliharaan Mesin & Laser (tiap 3 bulan)
             if ($month % 3 === 0) {
                 $tglMaint = Carbon::create($year, $month, rand(18, 22), 15, 30);
                 $this->createPengeluaran($pglCounter++, $tglMaint, 'bisnis', 'pemeliharaan', 'Servis berkala mesin heat press sublimasi & laser cutting', rand(200, 350) * 1000, $user->id);
             }
 
-            // 2. PENGELUARAN PRIBADI (PRIVE PEMILIK — variasi makan_pribadi, kebutuhan_rumah, prive_penarikan)
+            // ========================================================
+            // 3. PENGELUARAN PRIBADI (PRIVE PEMILIK)
+            // ========================================================
             $tglMakan = Carbon::create($year, $month, rand(6, 14), 12, 30);
             $this->createPengeluaran($pglCounter++, $tglMakan, 'pribadi', 'makan_pribadi', 'Konsumsi makan siang & jamuan keluarga pemilik', rand(250, 450) * 1000, $user->id);
 
@@ -80,7 +128,9 @@ class PengeluaranSeeder extends Seeder
             $tglPrive = Carbon::create($year, $month, rand(22, 27), 12, 0);
             $this->createPengeluaran($pglCounter++, $tglPrive, 'pribadi', 'prive_penarikan', 'Penarikan prive keuntungan bulanan pemilik toko', rand(1500, 2500) * 1000, $user->id);
 
-            // 3. KASBON KARYAWAN (Setiap 1-2 bulan)
+            // ========================================================
+            // 4. KASBON KARYAWAN (Setiap 1-2 bulan)
+            // ========================================================
             if ($month % 2 === 1 || ($year === 2026 && $month >= 8)) {
                 $tglKasbon = Carbon::create($year, $month, rand(8, 22), 14, 30);
                 $namaKaryawan = $karyawanList[($month + $year) % count($karyawanList)];
@@ -102,7 +152,7 @@ class PengeluaranSeeder extends Seeder
             }
         }
 
-        $this->command->info('PengeluaranSeeder: Biaya operasional, ads, prive & kasbon (Jan 2025 - Des 2025 & Jan 2026 - Okt 2026) berhasil di-seed.');
+        $this->command->info('PengeluaranSeeder: Modal bahan baku, operasional, prive & kasbon berhasil di-seed.');
     }
 
     private function createPengeluaran(
@@ -118,18 +168,20 @@ class PengeluaranSeeder extends Seeder
     ): void {
         $kode = 'PGL-'.$tanggal->format('Ymd').'-'.str_pad($counter, 4, '0', STR_PAD_LEFT);
 
-        Pengeluaran::create([
-            'kode_pengeluaran' => $kode,
-            'tanggal' => $tanggal->format('Y-m-d'),
-            'tipe_alokasi' => $kantong,
-            'kategori' => $kategori,
-            'keterangan' => $keterangan,
-            'jumlah' => $jumlah,
-            'karyawan_nama' => $namaKaryawan,
-            'status_kasbon' => $statusKasbon,
-            'user_id' => $userId,
-            'created_at' => $tanggal,
-            'updated_at' => $tanggal,
-        ]);
+        Pengeluaran::firstOrCreate(
+            ['kode_pengeluaran' => $kode],
+            [
+                'tanggal' => $tanggal->format('Y-m-d'),
+                'tipe_alokasi' => $kantong,
+                'kategori' => $kategori,
+                'keterangan' => $keterangan,
+                'jumlah' => $jumlah,
+                'karyawan_nama' => $namaKaryawan,
+                'status_kasbon' => $statusKasbon,
+                'user_id' => $userId,
+                'created_at' => $tanggal,
+                'updated_at' => $tanggal,
+            ]
+        );
     }
 }

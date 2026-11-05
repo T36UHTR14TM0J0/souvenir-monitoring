@@ -25,23 +25,23 @@ class RoleController extends Controller
             'badge_border' => '#c7d2fe',
             'icon' => 'fas fa-crown',
             'label' => 'Owner / Super Admin',
-            'desc' => 'Akses penuh 100% ke seluruh menu: Dashboard, Pesanan & Produk, Gudang & Bahan Baku, Master Data, Keuangan & Kas, 8 Laporan & Analitik, serta Pengaturan Akses (User, Role, Permission).',
+            'desc' => 'Akses penuh 100% ke seluruh menu: Dashboard, Pesanan & Produk, Master Data, Keuangan & Kas, 4 Laporan & Analitik, serta Pengaturan Akses (User, Role, Permission).',
         ],
         'Bendahara' => [
             'badge_bg' => '#ecfdf5',
             'badge_color' => '#059669',
             'badge_border' => '#a7f3d0',
             'icon' => 'fas fa-vault',
-            'label' => 'Keuangan, Kas & Pengadaan',
-            'desc' => 'Mengelola penuh Pencairan Saldo & Modal, Biaya Operasional/Ads/Prive/Kasbon, Pembelian Bahan Baku, audit read-only Pesanan & Stok Gudang, serta akses penuh 8 Laporan & Export PDF/Excel.',
+            'label' => 'Keuangan, Kas & Belanja Bahan',
+            'desc' => 'Mengelola penuh Pencairan Saldo & Modal, Biaya Operasional/Modal Bahan/Prive/Kasbon, audit read-only Pesanan & Katalog, serta akses penuh 4 Laporan & Export PDF/Excel.',
         ],
         'Admin' => [
             'badge_bg' => '#e0f2fe',
             'badge_color' => '#0284c7',
             'badge_border' => '#bae6fd',
             'icon' => 'fas fa-headset',
-            'label' => 'Operasional Marketplace, Produksi & Gudang',
-            'desc' => 'Mengelola penuh Pesanan Marketplace, Katalog Souvenir, Hasil Produksi Masuk (QC), Stok & Pemakaian Bahan Baku, input Pembelian Bahan, Master Kategori & Satuan, serta Laporan Operasional (Penjualan, Pembelian, Produksi).',
+            'label' => 'Operasional Marketplace & Katalog',
+            'desc' => 'Mengelola penuh Pesanan Marketplace, Katalog Souvenir, Master Kategori & Satuan, serta Laporan Penjualan Marketplace.',
         ],
     ];
 
@@ -52,18 +52,14 @@ class RoleController extends Controller
         'dashboard' => ['label' => '1. Menu Utama: Dashboard', 'icon' => 'fas fa-th-large'],
         'penjualan' => ['label' => '2. Pesanan & Produk: Pesanan Marketplace', 'icon' => 'fas fa-boxes-packing'],
         'produk' => ['label' => '3. Pesanan & Produk: Katalog Souvenir', 'icon' => 'fas fa-gift'],
-        'penerimaan-produk' => ['label' => '4. Pesanan & Produk: Hasil Produksi Masuk', 'icon' => 'fas fa-boxes-stacked'],
-        'bahan-baku' => ['label' => '5. Gudang & Bahan: Stok Bahan Baku', 'icon' => 'fas fa-layer-group'],
-        'pemakaian-bahan' => ['label' => '6. Gudang & Bahan: Pemakaian Bahan Baku', 'icon' => 'fas fa-dolly'],
-        'pembelian' => ['label' => '7. Gudang & Bahan: Pembelian Bahan Baku', 'icon' => 'fas fa-truck-ramp-box'],
-        'kategori' => ['label' => '8. Master Data: Kategori', 'icon' => 'fas fa-tags'],
-        'satuan' => ['label' => '9. Master Data: Satuan', 'icon' => 'fas fa-ruler-combined'],
-        'kas-masuk' => ['label' => '10. Keuangan & Kas: Pencairan Saldo & Modal', 'icon' => 'fas fa-hand-holding-dollar'],
-        'pengeluaran' => ['label' => '11. Keuangan & Kas: Biaya Operasional & Ads', 'icon' => 'fas fa-credit-card'],
-        'laporan' => ['label' => '12. Laporan & Analitik (8 Menu Laporan & Export)', 'icon' => 'fas fa-chart-line'],
-        'user' => ['label' => '13. Pengaturan Akses: Manajemen User', 'icon' => 'fas fa-users'],
-        'role' => ['label' => '14. Pengaturan Akses: Role', 'icon' => 'fas fa-user-shield'],
-        'permission' => ['label' => '15. Pengaturan Akses: Permission', 'icon' => 'fas fa-key'],
+        'kategori' => ['label' => '4. Master Data: Kategori', 'icon' => 'fas fa-tags'],
+        'satuan' => ['label' => '5. Master Data: Satuan', 'icon' => 'fas fa-ruler-combined'],
+        'kas-masuk' => ['label' => '6. Keuangan & Kas: Pencairan Saldo & Modal', 'icon' => 'fas fa-hand-holding-dollar'],
+        'pengeluaran' => ['label' => '7. Keuangan & Kas: Biaya Operasional & Bahan', 'icon' => 'fas fa-credit-card'],
+        'laporan' => ['label' => '8. Laporan & Analitik (4 Menu Laporan & Export)', 'icon' => 'fas fa-chart-line'],
+        'user' => ['label' => '9. Pengaturan Akses: Manajemen User', 'icon' => 'fas fa-users'],
+        'role' => ['label' => '10. Pengaturan Akses: Role', 'icon' => 'fas fa-user-shield'],
+        'permission' => ['label' => '11. Pengaturan Akses: Permission', 'icon' => 'fas fa-key'],
     ];
 
     /**
@@ -80,32 +76,10 @@ class RoleController extends Controller
         'penjualan-delete' => 'Hapus Transaksi Pesanan Marketplace',
 
         // Katalog Souvenir
-        'produk-list' => 'Lihat Katalog & Detail Souvenir Jadi',
+        'produk-list' => 'Lihat Katalog & Detail Souvenir',
         'produk-create' => 'Tambah Produk Souvenir Baru',
-        'produk-edit' => 'Edit Souvenir, Harga & Resep BOM',
+        'produk-edit' => 'Edit Data Souvenir, Harga & Diskon',
         'produk-delete' => 'Hapus Produk Souvenir',
-
-        // Hasil Produksi Masuk
-        'penerimaan-produk-list' => 'Lihat Daftar & Cetak Bon Hasil Produksi Masuk',
-        'penerimaan-produk-create' => 'Catat Hasil Produksi Masuk (QC Bagus/Reject)',
-        'penerimaan-produk-delete' => 'Batalkan / Hapus Catatan Hasil Produksi',
-
-        // Stok Bahan Baku
-        'bahan-baku-list' => 'Lihat Daftar & Detail Stok Bahan Baku',
-        'bahan-baku-create' => 'Tambah Item Bahan Baku & Kemasan Baru',
-        'bahan-baku-edit' => 'Edit Data & Harga Beli Bahan Baku',
-        'bahan-baku-delete' => 'Hapus Item Bahan Baku',
-
-        // Pemakaian Bahan Baku
-        'pemakaian-bahan-list' => 'Lihat Daftar & Cetak Bon Pemakaian Bahan',
-        'pemakaian-bahan-create' => 'Catat Pengambilan Bahan Baku Workshop',
-        'pemakaian-bahan-delete' => 'Batalkan Pengambilan & Kembalikan Stok',
-
-        // Pembelian Bahan Baku
-        'pembelian-list' => 'Lihat Daftar & Detail Pembelian Bahan Baku',
-        'pembelian-create' => 'Input Transaksi Pembelian Bahan Baku',
-        'pembelian-edit' => 'Update Status Pengiriman & Konfirmasi Diterima',
-        'pembelian-delete' => 'Hapus Transaksi Pembelian Bahan Baku',
 
         // Master Kategori
         'kategori-list' => 'Lihat Daftar Kategori',
@@ -125,21 +99,17 @@ class RoleController extends Controller
         'kas-masuk-edit' => 'Edit Data Kas Masuk',
         'kas-masuk-delete' => 'Hapus Data Kas Masuk',
 
-        // Biaya Operasional & Ads
-        'pengeluaran-list' => 'Lihat Daftar Biaya Operasional, Ads, Prive & Kasbon',
-        'pengeluaran-create' => 'Catat Pengeluaran Bisnis / Ads / Prive / Kasbon',
+        // Biaya Operasional & Bahan
+        'pengeluaran-list' => 'Lihat Daftar Biaya Operasional, Modal Bahan & Kasbon',
+        'pengeluaran-create' => 'Catat Pengeluaran Operasional / Modal Bahan / Kasbon',
         'pengeluaran-edit' => 'Edit Pengeluaran & Tandai Lunas Kasbon',
         'pengeluaran-delete' => 'Hapus Data Pengeluaran',
 
-        // Laporan & Analitik (8 Menu Sidebar)
+        // Laporan & Analitik (4 Menu Sidebar)
         'laporan-view' => 'Akses Modul Laporan & Analitik',
         'laporan-laba-rugi' => 'Menu: Laporan Laba/Rugi Bisnis',
         'laporan-penjualan' => 'Menu: Laporan Penjualan MP',
-        'laporan-pembelian' => 'Menu: Laporan Pembelian Bahan',
-        'laporan-pengeluaran' => 'Menu: Laporan Operasional & Ads',
-        'laporan-produksi' => 'Menu: Laporan Produksi & QC',
-        'laporan-pribadi' => 'Menu: Laporan Prive Pemilik',
-        'laporan-rekonsiliasi' => 'Menu: Rekonsiliasi Kas & Modal',
+        'laporan-pengeluaran' => 'Menu: Laporan Pengeluaran & Belanja Bahan',
         'laporan-kasbon' => 'Menu: Laporan Kasbon Tim',
         'laporan-export' => 'Tombol Export PDF & Export Excel Laporan',
 
