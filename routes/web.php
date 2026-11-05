@@ -226,5 +226,7 @@ Route::middleware(['auth', 'user.active'])->group(function () {
             ->name('laporan.keuangan.export-pdf');
         Route::get('/laporan/keuangan/export-excel', [LaporanKeuanganController::class, 'exportExcel'])
             ->name('laporan.keuangan.export-excel');
+        Route::get('/laporan/keuangan/export-excel-klien', [LaporanKeuanganController::class, 'exportExcelFormatKlien'])
+            ->name('laporan.keuangan.export-excel-klien');
     });
 });

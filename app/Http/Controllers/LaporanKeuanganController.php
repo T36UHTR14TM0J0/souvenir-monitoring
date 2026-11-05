@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\LaporanKeuanganExport;
+use App\Exports\RincianPembelanjaanClientExport;
 use App\Models\KasMasuk;
 use App\Models\Pengeluaran;
 use App\Models\Transaksi;
@@ -88,6 +89,27 @@ class LaporanKeuanganController extends Controller
 
         return Excel::download(
             new LaporanKeuanganExport($rows, $tab, 'Laporan '.str_replace('-', ' ', $labelTab), $labelPeriode),
+            $filename
+        );
+    }
+
+    /**
+     * Export Excel Buku Kas Rincian Pembelanjaan Toko (Format Asli Klien: Operasional vs Modal).
+     */
+    public function exportExcelFormatKlien(Request $request)
+    {
+        $bulan = $request->get('bulan', 'all');
+        $tahun = (int) $request->get('tahun', now()->year);
+        $bulanList = $this->getBulanList();
+
+        $labelPeriode = $bulan === 'all'
+            ? 'Tahunan-'.$tahun
+            : ($bulanList[(int) $bulan] ?? 'Bulan-'.$bulan).'-'.$tahun;
+
+        $filename = 'Rincian-Pembelanjaan-Toko-'.str_replace(' ', '-', $labelPeriode).'.xlsx';
+
+        return Excel::download(
+            new RincianPembelanjaanClientExport($bulan, $tahun),
             $filename
         );
     }

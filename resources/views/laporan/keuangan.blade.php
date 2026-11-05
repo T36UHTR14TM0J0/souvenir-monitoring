@@ -268,6 +268,24 @@
         transform: translateY(-1px);
         box-shadow: 0 4px 10px rgba(38, 71, 111, 0.35);
     }
+    .toolbar-filter-card,
+    .toolbar-filter-card .card-body {
+        overflow: visible !important;
+    }
+    .dropdown-export-menu {
+        position: absolute !important;
+        top: calc(100% + 6px) !important;
+        right: 0 !important;
+        z-index: 1060 !important;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.14) !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0.6rem !important;
+        background: #ffffff !important;
+        display: none;
+    }
+    .dropdown-export-menu.show {
+        display: block !important;
+    }
     .btn-secondary-custom {
         background: linear-gradient(135deg, #64748b 0%, #475569 100%);
         border-color: #475569;
@@ -627,8 +645,8 @@
         if ((int) $tahun !== (int) now()->year) $activeFilterCount++;
     @endphp
 
-    <div class="card card-modern bg-white mb-3">
-        <div class="card-body p-3">
+    <div class="card card-modern toolbar-filter-card bg-white mb-3" style="overflow: visible !important;">
+        <div class="card-body p-3" style="overflow: visible !important;">
             <div class="d-flex flex-column flex-xl-row justify-content-between align-items-stretch align-items-xl-center gap-2.5">
                 {{-- Form Pencarian Cepat --}}
                 <div class="flex-grow-1">
@@ -681,11 +699,47 @@
                             <span>Export PDF</span>
                         </a>
 
-                        <a href="{{ route('laporan.keuangan.export-excel', ['tab' => $tab, 'bulan' => $bulan, 'tahun' => $tahun]) }}"
-                           class="btn btn-primary-custom shadow-sm">
-                            <i class="fas fa-file-excel"></i>
-                            <span>Export Excel</span>
-                        </a>
+                        <div class="dropdown d-inline-block position-relative" style="overflow: visible;">
+                            <button type="button"
+                                    class="btn btn-primary-custom shadow-sm"
+                                    id="dropdownExportExcel"
+                                    data-bs-toggle="dropdown"
+                                    data-bs-display="static"
+                                    aria-expanded="false"
+                                    title="Pilihan Format Export Excel">
+                                <i class="fas fa-file-excel"></i>
+                                <span>Export Excel</span>
+                                <i class="fas fa-chevron-down ms-1" style="font-size: 0.65rem;"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-export-menu shadow border-0" id="menuExportExcel" aria-labelledby="dropdownExportExcel" style="font-size: 0.8125rem; min-width: 290px; z-index: 1060;">
+                                <li>
+                                    <h6 class="dropdown-header text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em; color: #64748b;">Pilihan Format Excel</h6>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2.5" href="{{ route('laporan.keuangan.export-excel', ['tab' => $tab, 'bulan' => $bulan, 'tahun' => $tahun]) }}">
+                                        <span class="d-inline-flex align-items-center justify-content-center rounded-2" style="width: 30px; height: 30px; background: #eef2ff; color: #26476f; flex-shrink: 0;">
+                                            <i class="fas fa-table"></i>
+                                        </span>
+                                        <div>
+                                            <div class="fw-semibold text-dark">Format Standar Laporan</div>
+                                            <div class="text-muted" style="font-size: 0.71rem;">Sesuai tab {{ $pageMeta[$tab]['title'] ?? ucfirst($tab) }}</div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2.5" href="{{ route('laporan.keuangan.export-excel-klien', ['bulan' => $bulan, 'tahun' => $tahun]) }}">
+                                        <span class="d-inline-flex align-items-center justify-content-center rounded-2" style="width: 30px; height: 30px; background: #ecfdf5; color: #059669; flex-shrink: 0;">
+                                            <i class="fas fa-file-invoice-dollar"></i>
+                                        </span>
+                                        <div>
+                                            <div class="fw-semibold text-dark">Format Asli Klien (Buku Kas)</div>
+                                            <div class="text-muted" style="font-size: 0.71rem;">Rincian Pembelanjaan (Operasional vs Modal)</div>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     @endcan
                 </div>
             </div>
@@ -932,6 +986,31 @@
                         modalFilterEl.style.display = 'none';
                     }
                 });
+            });
+        }
+
+        // Dropdown Export Excel Handler (Vanilla JS + Bootstrap Fallback)
+        const btnExport = document.getElementById('dropdownExportExcel');
+        const menuExport = document.getElementById('menuExportExcel');
+        if (btnExport && menuExport) {
+            btnExport.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const isShown = menuExport.classList.contains('show');
+                if (isShown) {
+                    menuExport.classList.remove('show');
+                    btnExport.setAttribute('aria-expanded', 'false');
+                } else {
+                    menuExport.classList.add('show');
+                    btnExport.setAttribute('aria-expanded', 'true');
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!btnExport.contains(e.target) && !menuExport.contains(e.target)) {
+                    menuExport.classList.remove('show');
+                    btnExport.setAttribute('aria-expanded', 'false');
+                }
             });
         }
 
